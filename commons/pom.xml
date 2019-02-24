@@ -11,5 +11,6 @@
   	<module>nephele-json</module>
   	<module>messagebus</module>
   	<module>servlet-utils</module>
+  	<module>nephele-jfc</module>
   </modules>
 </project>

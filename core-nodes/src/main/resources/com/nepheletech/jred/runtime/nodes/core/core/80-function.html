@@ -52,7 +52,8 @@
 
             this.editor = RED.editor.createEditor({
                 id: 'node-input-func-editor',
-                mode: 'ace/mode/nrjavascript',
+                //mode: 'ace/mode/nrjavascript',
+                mode: "ace/mode/java",
                 value: $("#node-input-func").val(),
                 globals: {
                     msg:true,
@@ -74,7 +75,8 @@
                 url:"functions", // where to get the data from
                 type:"function", // the type of object the library is for
                 editor:this.editor, // the field name the main text body goes to
-                mode:"ace/mode/nrjavascript",
+                //mode:"ace/mode/nrjavascript",
+                mode: "ace/mode/java",
                 fields:['name','outputs']
             });
             this.editor.focus();
@@ -86,7 +88,8 @@
                     value: value,
                     width: "Infinity",
                     cursor: that.editor.getCursorPosition(),
-                    mode: "ace/mode/nrjavascript",
+                    //mode: "ace/mode/nrjavascript",
+                    mode: "ace/mode/java",
                     complete: function(v,cursor) {
                         that.editor.setValue(v, -1);
                         that.editor.gotoLine(cursor.row+1,cursor.column,false);

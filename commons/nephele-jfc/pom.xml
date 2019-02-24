@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.nepheletech</groupId>
+    <artifactId>jred-commons</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>nephele-jfc</artifactId>
+  <dependencies>
+      <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-jci-core</artifactId>
+      <version>RELEASE</version>
+    </dependency>
+    <!-- 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-jci-eclipse</artifactId>
+			<version>1.1</version>
+		</dependency>
+     -->
+     <!-- 
+    <dependency>
+      <groupId>org.eclipse.jdt.core.compiler</groupId>
+      <artifactId>ecj</artifactId>
+      <version>RELEASE</version>
+    </dependency>
+     -->
+    <!-- https://mvnrepository.com/artifact/org.eclipse.jdt/ecj -->
+<dependency>
+    <groupId>org.eclipse.jdt</groupId>
+    <artifactId>ecj</artifactId>
+    <version>3.16.0</version>
+</dependency>
+  </dependencies>
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <release>${java.version}</release>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

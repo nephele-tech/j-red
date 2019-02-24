@@ -1,0 +1,27 @@
+
+<script type="text/x-red" data-template-name="ui">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
+    </div>
+</script>
+
+
+<script type="text/javascript">
+    RED.nodes.registerType('ui',{
+        category: 'function',
+        color:"#DEBD5C",
+        defaults: {
+            name: {value:""}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "parser-csv.png",
+        label: function() {
+            return this.name||"ui";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        }
+    });
+</script>
