@@ -98,7 +98,14 @@ public final class JsonUtil {
       e.asJsonObject().set(lastPath, value);
     } else if (e.isJsonArray()) {
       if (lastPath.startsWith("[")) {
-        e.asJsonArray().set(Integer.parseInt(lastPath.substring(1).trim()), value);
+        final JsonArray array = e.asJsonArray();
+        final int index = Integer.parseInt(lastPath.substring(1).trim());
+
+        for (int idx = array.size() - 1; idx < index; idx++) {
+          array.push(JsonNull.INSTANCE);
+        }
+        
+        e.asJsonArray().set(index, value);
       } else {
         throw new IllegalArgumentException("expecting array index: " + lastPath);
       }
