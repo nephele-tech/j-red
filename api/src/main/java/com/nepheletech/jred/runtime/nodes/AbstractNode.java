@@ -236,6 +236,7 @@ public abstract class AbstractNode implements Node {
     try {
       onMessage(msg);
     } catch (RuntimeException e) {
+    	e.printStackTrace();
       error(e, msg);
     }
   }

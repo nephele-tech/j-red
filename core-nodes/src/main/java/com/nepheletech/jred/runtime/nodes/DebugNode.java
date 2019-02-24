@@ -1,5 +1,6 @@
 package com.nepheletech.jred.runtime.nodes;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -65,7 +66,7 @@ public final class DebugNode extends AbstractNode {
   protected void onMessage(final JsonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
-    if ("true".equals(this.complete)) {
+    if ("true".equals(complete)) {
       // debug complete msg object
       if (this.console) {
         log(msg); // TODO: colors & depth
@@ -79,9 +80,9 @@ public final class DebugNode extends AbstractNode {
             .set("_path", msg.get("_path")));
       }
     } else {
-      prepareValue(msg, (m) -> {
-        if (m.has("error")) {
-          error(msg.get("error").asString(null), null);
+      prepareValue(msg, (error, m) -> {
+        if (error != null) {
+          error(error, null);
           return;
         }
         final JsonElement output = msg.get("msg");
@@ -115,7 +116,7 @@ public final class DebugNode extends AbstractNode {
         .set("data", msg));
   }
 
-  private void prepareValue(JsonObject msg, Consumer<JsonObject> done) {
+  private void prepareValue(JsonObject msg, BiConsumer<String, JsonObject> done) {
     // Either apply the jsonata expression or...
     if (preparedEditExpression != null) {
       // TODO
@@ -127,7 +128,7 @@ public final class DebugNode extends AbstractNode {
         property = this.complete;
         output = msg.get(property); // XXX FIXME
       }
-      done.accept(new JsonObject()
+      done.accept(null, new JsonObject()
           .set("id", getId())
           .set("z", getZ())
           .set("name", getName())
@@ -147,7 +148,7 @@ public final class DebugNode extends AbstractNode {
     final JsonElement _msg = msg.get("msg");
     if (_msg.isJsonObject()) {
       msg.set("format", "Object");
-      msg.set("msg", msg.toString());
+      msg.set("msg", _msg.toString());
     } else if (_msg.isJsonArray()) {
       final JsonArray a = _msg.asJsonArray();
       final int arrayLength = a.size();
