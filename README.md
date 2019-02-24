@@ -1,2 +1,2 @@
 # J-RED
-[Node-RED](https://github.com/node-red/node-red) for Java.
+[Node-RED](https://github.com/node-red/node-red) for JavaEE.
