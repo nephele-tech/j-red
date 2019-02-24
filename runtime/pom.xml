@@ -22,7 +22,7 @@
 
 		<dependency>
 			<groupId>com.nepheletech</groupId>
-			<artifactId>j-red-api</artifactId>
+			<artifactId>jred-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

@@ -36,7 +36,7 @@
 </head>
 <body spellcheck="false">
 <div id="header">
-    <span class="logo"><img src="red&#x2F;images&#x2F;node-red.png"> <span>Node-RED</span></span>
+    <span class="logo"><img src="red&#x2F;images&#x2F;node-red.png"> <span>J-RED</span></span>
     <ul class="header-toolbar hide">
         <li><a id="btn-sidemenu" class="button" data-toggle="dropdown" href="#"><i class="fa fa-bars"></i></a></li>
     </ul>

@@ -12,7 +12,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="com.nepheletech.flows" level="ALL"
+	<logger name="com.nepheletech.jred" level="ALL"
 		additivity="false">
 		<appender-ref ref="STDOUT" />
 	</logger>

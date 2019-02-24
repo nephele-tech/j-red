@@ -12,7 +12,7 @@
 
 	<servlet>
 		<servlet-name>MainServlet</servlet-name>
-		<servlet-class>com.nepheletech.flows.editor.MainServlet</servlet-class>
+		<servlet-class>com.nepheletech.jred.editor.MainServlet</servlet-class>
 		<init-param>
 			<param-name>template</param-name>
 			<param-value>/WEB-INF/pages/index-0.20.0-beta.5.jsp</param-value>
