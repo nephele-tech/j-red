@@ -10,3 +10,15 @@ buildNumber.properties
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
+
+.gitignore
+
+.settings/
+.classpath
+.project
+.DS_Store
+.github
+
+node-red-0.19.5/
+node-red-0.20.0-beta.4/
+
