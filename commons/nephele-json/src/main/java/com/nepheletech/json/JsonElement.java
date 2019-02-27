@@ -92,7 +92,7 @@ public abstract class JsonElement {
   }
   
   public JsonObject asJsonObject(final boolean create) {
-    return isJsonObject() ? asJsonObject() : new JsonObject();
+    return isJsonObject() ? asJsonObject() : create ? new JsonObject() : null;
   }
 
   /**
@@ -114,7 +114,7 @@ public abstract class JsonElement {
   }
 
   public JsonArray asJsonArray(final boolean create) {
-    return isJsonArray() ? asJsonArray() : new JsonArray();
+    return isJsonArray() ? asJsonArray() : create ? new JsonArray() : null;
   }
 
   /**
