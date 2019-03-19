@@ -5,12 +5,10 @@
     <artifactId>jred</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>jred-commons</artifactId>
+  <artifactId>jred-nodes</artifactId>
   <packaging>pom</packaging>
   <modules>
-    <module>nephele-jfc</module>
-  	<module>nephele-json</module>
-  	<module>messagebus</module>
-  	<module>servlet-utils</module>
+    <module>core</module>
+    <module>sql</module>
   </modules>
 </project>

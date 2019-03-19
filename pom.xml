@@ -9,8 +9,13 @@
 	<properties>
 		<java.version>8</java.version>
 		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-		<node-red.version>0.20.0-beta.5</node-red.version>
+		<node-red.version>0.20.2</node-red.version>
+		
+		<!-- logging -->
 		<slf4j.version>1.7.25</slf4j.version>
+		
+		<!-- Apache Camel -->
+		<apache.camel.version>3.0.0-M1</apache.camel.version>
 		
 		<!-- In sync with Apache Tomcat 9.0.14 -->
 		<servlet-api.version>4.0.1</servlet-api.version>
@@ -19,11 +24,11 @@
 		<jstl.version>1.2</jstl.version>
 	</properties>
 	<modules>
+    <module>commons</module>
+    <module>api</module>
+    <module>runtime</module>
+    <module>nodes</module>
 		<module>editor</module>
-		<module>commons</module>
-		<module>runtime</module>
-		<module>api</module>
-		<module>core-nodes</module>
-		<module>console</module>
+    <module>console</module>
 	</modules>
 </project>

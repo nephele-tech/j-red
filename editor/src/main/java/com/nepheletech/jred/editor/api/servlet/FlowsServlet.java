@@ -1,13 +1,15 @@
 package com.nepheletech.jred.editor.api.servlet;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.FlowsRuntime;
 import com.nepheletech.jred.editor.Constants;
@@ -20,10 +22,12 @@ import com.nepheletech.servlet.utils.HttpServletUtil;
 public class FlowsServlet extends HttpServlet {
   private static final long serialVersionUID = 1737212371334475104L;
 
-  private static Logger log = Logger.getLogger(FlowsServlet.class.getName());
+  private static Logger logger = LoggerFactory.getLogger(FlowsServlet.class);
 
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    logger.trace(">>> doGet:");
+    
     if (HttpServletUtil.acceptsJSON(req)) {
       final String version = req.getHeader(Constants.NODE_RED_API_VERSION);
       if (!(Constants.NODE_RED_API_V1.equals(version)
@@ -35,7 +39,7 @@ public class FlowsServlet extends HttpServlet {
         return;
       }
       
-      // XXX opts
+      logger.debug("{} = {}", Constants.NODE_RED_API_VERSION, version);
 
       final JsonObject result = getRuntime().getFlows();
       if (Constants.NODE_RED_API_V1.equals(version)) {
@@ -63,10 +67,16 @@ public class FlowsServlet extends HttpServlet {
     // XXX opts
 
     final JsonElement flows = HttpServletUtil.getJSONBody(req);
-    log.finest(() -> "flows: " + flows.toString(" "));
+    
+    if (logger.isDebugEnabled()) {
+      logger.debug("flows: {}", flows.toString(" "));
+    }
 
     final String deploymentType = req.getHeader(Constants.NODE_RED_DEPLOYMENT_TYPE);
-    log.fine(() -> String.format("deploymentType: %s, version: %s", deploymentType, version));
+    
+    if (logger.isDebugEnabled()) {
+      logger.debug("deploymentType: {}, version: {}", deploymentType, version);
+    }
 
     if (Constants.NODE_RED_DEPLOYMENT_TYPE_RELOAD.equals(deploymentType)) {
       final String flowRevision = getRuntime().loadFlows(true);

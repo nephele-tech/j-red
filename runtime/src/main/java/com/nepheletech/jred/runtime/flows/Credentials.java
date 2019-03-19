@@ -2,6 +2,7 @@ package com.nepheletech.jred.runtime.flows;
 
 import java.util.HashSet;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ public final class Credentials {
   private final FlowsRuntime flowsRuntime;
 
   private final JsonObject credentialCache = new JsonObject();
+  private final JsonObject credentialsDef = new JsonObject();
 
   private boolean dirty = false;
   private boolean encryptionEnabled;
@@ -27,6 +29,25 @@ public final class Credentials {
   public FlowsRuntime getFlowsRuntime() { return flowsRuntime; }
 
   public boolean isDirty() { return dirty; }
+  
+  /**
+   * Sets the credentials from storage.
+   */
+  public void load(JsonObject credentials) {
+    dirty = false;
+    
+    // TODO encrypted
+  }
+
+  /**
+   * Gets the credentials for the given node id.
+   * 
+   * @param id the node id for the credentials
+   * @return the credentials
+   */
+  public JsonObject get(String id) {
+    return credentialCache.getAsJsonObject(id, true);
+  }
 
   /**
    * Deletes any credentials for nodes that no longer exist.
@@ -69,21 +90,50 @@ public final class Credentials {
    * @param node the node to extract credentials from
    */
   public void extract(JsonObject node) {
-    final String nodeID = node.get("id").asString();
-    final String nodeType = node.get("type").asString();
-    final JsonObject newCreds = node.get("credentials").asJsonObject(null);
+    logger.trace(">>> extract: node={}", node);
+    
+    final String nodeID = node.getAsString("id");
+    final String nodeType = node.getAsString("type");
+    
+    final JsonObject newCreds = node.getAsJsonObject("credentials", false);
+    
+    logger.debug("------------ newCreds={}", newCreds);
+    
     if (newCreds != null) {
       node.remove("credentials");
+      final JsonObject savedCredentials = credentialCache.getAsJsonObject(nodeID, true);
+      final String dashedType = nodeType.replaceAll("\\s+", "-");
+      final JsonObject definition = credentialsDef.getAsJsonObject(dashedType, false);
+      if (definition == null) {
+        logger.warn("Credential type '{}' is not registered", nodeType);
+        return;
+      }
 
-      throw new UnsupportedOperationException();
+      for (String cred : definition.keySet()) {
+        logger.info("------------------------------ >>> {} <<<", newCreds.getAsString(cred));
+        final String newCreds_cred = newCreds.getAsString(cred, null);
+        if(newCreds_cred == null) {
+          continue;
+        }
+        final String type = definition.getAsString("type", null);
+        if ("password".equals(type) && "__PWRD__".equals(newCreds_cred)) {
+          continue;
+        }
+        if (StringUtils.trimToNull(newCreds_cred) == null) {
+          savedCredentials.remove(cred);
+          dirty = true;
+          continue;
+        }
+        // TODO
+      }
+      
+      credentialCache.set(nodeID, savedCredentials);
     }
   }
 
   public JsonObject export() {
     final JsonObject result = credentialCache;
-    if (encryptionEnabled) {
-      throw new UnsupportedOperationException();
-    }
+    if (encryptionEnabled) { throw new UnsupportedOperationException(); }
     dirty = false;
     if (removeDefaultKey) {
       throw new UnsupportedOperationException();

@@ -18,10 +18,11 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
     this.flowsManager = new FlowsManager(this);
   }
 
+  @Override
   public Storage getStorage() { return storage; }
-  
+
   public String loadFlows() {
-    return this.loadFlows(true);
+    return loadFlows(true);
   }
 
   @Override
@@ -50,5 +51,12 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
   @Override
   public Node getNode(String id) {
     return flowsManager.getNode(id);
+  }
+
+  @Override
+  public JsonObject getNodeCredentials(String type, String id) {
+    return flowsManager.getCredentials().get(id);
+    
+    // TODO some things I don't follow... (runtime/lib/api/flows.js)
   }
 }

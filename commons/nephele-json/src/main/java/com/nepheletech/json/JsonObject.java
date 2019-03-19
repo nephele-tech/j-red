@@ -16,6 +16,8 @@
 
 package com.nepheletech.json;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -72,7 +74,7 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @since 1.3
    */
   public JsonElement remove(String property) {
-    final JsonElement member =  members.remove(property);
+    final JsonElement member = members.remove(property);
     return member != null ? member : JsonNull.INSTANCE;
   }
 
@@ -142,8 +144,7 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
   }
 
   private JsonElement createJsonElement(Object value, boolean jsonTransient) {
-    return value == null ? JsonNull.INSTANCE : 
-      jsonTransient ? new JsonTransient(value) : new JsonPrimitive(value);
+    return value == null ? JsonNull.INSTANCE : jsonTransient ? new JsonTransient(value) : new JsonPrimitive(value);
   }
 
   /**
@@ -193,7 +194,8 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * Returns the member with the specified name.
    *
    * @param memberName name of the member that is being requested.
-   * @return the member matching the name. {@link JsonNull} if no such member exists.
+   * @return the member matching the name. {@link JsonNull} if no such member
+   *         exists.
    */
   public JsonElement get(String memberName) {
     final JsonElement member = members.get(memberName);
@@ -206,13 +208,95 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param memberName name of the member being requested.
    * @return the JsonPrimitive corresponding to the specified member.
    */
-  public JsonPrimitive asJsonPrimitive(String memberName) {
-    return (JsonPrimitive) members.get(memberName);
+  public JsonPrimitive getAsJsonPrimitive(String memberName) {
+    return get(memberName).asJsonPrimitive();
   }
-  
+
+  public JsonPrimitive getAsJsonPrimitive(String memberName, JsonPrimitive defaultValue) {
+    return get(memberName).asJsonPrimitive(defaultValue);
+  }
+
+  public JsonPrimitive getAsJsonPrimitive(String memberName, Object value) {
+    return get(memberName).asJsonPrimitive(value);
+  }
+
   public boolean isJsonPrimitive(String memberName) {
     return get(memberName).isJsonPrimitive();
   }
+
+  // ---
+
+  public BigDecimal getAsBigDecimal(String memberName) {
+    return getAsJsonPrimitive(memberName).asBigDecimal();
+  }
+
+  public BigInteger getAsBigInteger(String memberName) {
+    return getAsJsonPrimitive(memberName).asBigInteger();
+  }
+
+  public boolean getAsBoolean(String memberName) {
+    return getAsJsonPrimitive(memberName).asBoolean();
+  }
+
+  public boolean getAsBoolean(String memberName, boolean defaultValue) {
+    return isJsonPrimitive(memberName) 
+        ? getAsJsonPrimitive(memberName).asBoolean(defaultValue) : defaultValue;
+  }
+
+  public byte getAsByte(String memberName) {
+    return getAsJsonPrimitive(memberName).asByte();
+  }
+
+  public byte getAsByte(String memberName, final byte defaultValue) {
+    return isJsonPrimitive(memberName) 
+        ? getAsJsonPrimitive(memberName).asByte(defaultValue) : defaultValue;
+  }
+
+  public char getAsCharacter(String memberName) {
+    return getAsJsonPrimitive(memberName).asCharacter();
+  }
+
+  public char getAsCharacter(String memberName, final char defaultValue) {
+    return isJsonPrimitive(memberName) 
+        ? getAsJsonPrimitive(memberName).asCharacter(defaultValue) : defaultValue;
+  }
+
+  public double getAsDouble(String memberName) {
+    return getAsJsonPrimitive(memberName).asDouble();
+  }
+
+  public double getAsDouble(String memberName, final double defaultValue) {
+    return isJsonPrimitive(memberName) 
+        ? getAsJsonPrimitive(memberName).asDouble(defaultValue) : defaultValue;
+  }
+
+  public float getAsFloat(String memberName) {
+    return getAsJsonPrimitive(memberName).asFloat();
+  }
+
+  public float getAsFloat(String memberName, final float defaultValue) {
+    return isJsonPrimitive(memberName) 
+        ? getAsJsonPrimitive(memberName).asFloat(defaultValue) : defaultValue;
+  }
+  public int getAsInt(String memberName) {
+    return getAsJsonPrimitive(memberName).asInt();
+  }
+
+  public int getAsInt(String memberName, final int defaultValue) {
+    return isJsonPrimitive(memberName) 
+        ? getAsJsonPrimitive(memberName).asInt(defaultValue) : defaultValue;
+  }
+
+  public String getAsString(String memberName) {
+    return getAsJsonPrimitive(memberName).asString();
+  }
+
+  public String getAsString(String memberName, final String defaultValue) {
+    return isJsonPrimitive(memberName) 
+        ? getAsJsonPrimitive(memberName).asString(defaultValue) : defaultValue;
+  }
+  
+  // ---
 
   /**
    * Convenience method to get the specified member as a JsonArray.
@@ -220,10 +304,18 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param memberName name of the member being requested.
    * @return the JsonArray corresponding to the specified member.
    */
-  public JsonArray asJsonArray(String memberName) {
-    return (JsonArray) members.get(memberName);
+  public JsonArray getAsJsonArray(String memberName) {
+    return get(memberName).asJsonArray();
   }
-  
+
+  public JsonArray getAsJsonArray(String memberName, boolean create) {
+    return get(memberName).asJsonArray(create);
+  }
+
+  public JsonArray getAsJsonArray(String memberName, JsonArray defaultValue) {
+    return get(memberName).asJsonArray(defaultValue);
+  }
+
   public boolean isJsonArray(String memberName) {
     return get(memberName).isJsonArray();
   }
@@ -234,10 +326,18 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param memberName name of the member being requested.
    * @return the JsonObject corresponding to the specified member.
    */
-  public JsonObject asJsonObject(String memberName) {
-    return (JsonObject) members.get(memberName);
+  public JsonObject getAsJsonObject(String memberName) {
+    return get(memberName).asJsonObject();
   }
-  
+
+  public JsonObject getAsJsonObject(String memberName, boolean create) {
+    return get(memberName).asJsonObject(create);
+  }
+
+  public JsonObject getAsJsonObject(String memberName, JsonObject defaultValue) {
+    return get(memberName).asJsonObject(defaultValue);
+  }
+
   public boolean isJsonObject(String memberName) {
     return get(memberName).isJsonObject();
   }

@@ -2,14 +2,15 @@ package com.nepheletech.jred.runtime.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.storage.util.Crypto;
 import com.nepheletech.json.JsonArray;
@@ -20,7 +21,7 @@ import com.nepheletech.json.JsonParseException;
 import com.nepheletech.json.JsonParser;
 
 public class LocalFileSystemStorage implements Storage {
-  private static final Logger log = Logger.getLogger(LocalFileSystemStorage.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(LocalFileSystemStorage.class);
 
   private final String baseDir;
 
@@ -61,7 +62,9 @@ public class LocalFileSystemStorage implements Storage {
 
   @Override
   public JsonObject getFlows() {
+    logger.trace(">>> getFlows:");
     final JsonElement flows = readJSONFile(flowsFile, flowsBackupFile);
+    logger.debug("flows: {}", flows);
     final JsonElement credentials = readJSONFile(credentialsFile, credentialsBackupFile);
     final JsonObject result = new JsonObject()
         .set("flows", flows.isJsonArray() ? flows : new JsonArray())
@@ -137,10 +140,13 @@ public class LocalFileSystemStorage implements Storage {
       try {
         return JsonParser.parse(data);
       } catch (JsonParseException e1) {
+        logger.debug(e1.getMessage(), e1);
+        // try again with backup file only
         data = readFile(backupPath);
         try {
           return JsonParser.parse(data);
         } catch (JsonParseException e2) {
+          logger.debug(e1.getMessage(), e2);
           return JsonNull.INSTANCE;
         }
       }
@@ -150,21 +156,21 @@ public class LocalFileSystemStorage implements Storage {
   }
 
   private static String readFile(Path path, Path backupPath) {
-    String data = readFile(path);
-
-    // read backup
-    if (StringUtils.trimToNull(data) == null) {
-      data = readFile(backupPath);
+    String data = StringUtils.trimToNull(readFile(path));
+    
+    if (data == null) {
+      // read backup file
+      data = StringUtils.trimToNull(readFile(backupPath));
     }
 
-    return StringUtils.trimToNull(null);
+    return data;
   }
 
   private static String readFile(Path path) {
     try {
-      return new String(Files.readAllBytes(path), "UTF-8");
+      return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
     } catch (IOException e) {
-      log.log(Level.WARNING, "Failed to open file: {0}", path);
+      logger.warn("Failed to open file: {}", path);
       return null;
     }
   }

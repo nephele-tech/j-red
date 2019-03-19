@@ -131,6 +131,18 @@ public abstract class JsonElement {
     throw new IllegalStateException("Not a JSON Primitive: " + this);
   }
   
+  public JsonPrimitive asJsonPrimitive(final JsonPrimitive defaultValue) {
+    return isJsonPrimitive() ? asJsonPrimitive() : defaultValue;
+  }
+
+  public JsonPrimitive asJsonPrimitive(final Object value) {
+    return isJsonPrimitive() ? asJsonPrimitive() : value != null ? new JsonPrimitive(value) : null;
+  }
+  
+  /**
+   * 
+   * @return
+   */
   public JsonTransient asJsonTransient() {
     if (isJsonTransient()) { return (JsonTransient) this; }
     throw new IllegalStateException("Not a JSON Transient: " + this);

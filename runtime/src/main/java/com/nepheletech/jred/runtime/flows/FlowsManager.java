@@ -28,7 +28,7 @@ public final class FlowsManager {
   private JsonObject activeConfig = null;
   private JsonObject activeFlowConfig = null;
 
-  private final Map<String, FlowImpl> activeFlows = new HashMap<>();
+  private final Map<String, Flow> activeFlows = new HashMap<>();
   private boolean started = false;
   private boolean credentialsPendingReset = false;
 
@@ -37,13 +37,18 @@ public final class FlowsManager {
 
   private final Credentials credentials;
 
+  // TODO missing implementation
+  private boolean settings_safeMode = false;
+
   public FlowsManager(FlowsRuntime flowsRuntime) {
     this.flowsRuntime = flowsRuntime;
     this.credentials = new Credentials(flowsRuntime);
   }
 
   public FlowsRuntime getFlowsRuntime() { return flowsRuntime; }
-
+  
+  public Credentials getCredentials() { return credentials; }
+  
   private JsonObject loadFlows() {
     logger.trace(">>> loadFlows");
 
@@ -65,20 +70,20 @@ public final class FlowsManager {
   public String load(boolean forceStart) {
     logger.trace(">>> load: {}", forceStart);
 
-    if (forceStart /* settings.safeMode */) {
+    if (forceStart && settings_safeMode) {
       // This is a force reload from the API - disable safeMode
-      // TODO delete settings.safeMode
+      settings_safeMode = false;
     }
     return setFlows(null, "load", forceStart);
   }
 
   /**
-   * Sets the current active config.
+   * Sets the current active configuration.
    * 
-   * @param _config the configuration to enable.
+   * @param _config new node array configuration.
    * @param type    the type of deployment to do: full (default), nodes, flows,
    *                load
-   * @return the revision of the new flow
+   * @return the revision of the new flow.
    */
   public String setFlows(final JsonArray _config, final String type) {
     logger.trace(">>> setFlows: _config={}, type={}", _config, type);
@@ -86,21 +91,30 @@ public final class FlowsManager {
     return setFlows(_config, type, false);
   }
 
+  /**
+   * Sets the current active configuration.
+   * 
+   * @param _config    new node array configuration.
+   * @param type       the type of deployment to do: full (default), nodes, flows,
+   *                   load
+   * @param forceStart
+   * @return the revision of the new flow.
+   */
   public String setFlows(final JsonArray _config, String type, boolean forceStart) {
-    type = (StringUtils.trimToNull(type) != null) ? type : "full";
-
     logger.trace(">>> setFlows: _config={}, type={}, forceStart={}", _config, type, forceStart);
 
-    // if (settings.safeMode) {
-    if (!"load".equals(type)) {
-      // If in safeMode, the flows are stopped. We cannont do a modified nodes/flows
-      // type deploy as nothing is running. Can only do a "load" or "full" deploy.
-      // The "load" case is already handled in `load()` to distinguish between
-      // startup-load and api-request-load.
-      type = "full";
-      // TODO delete settings.safeMode
+    type = (StringUtils.trimToNull(type) != null) ? type : "full";
+
+    if (settings_safeMode) {
+      if (!"load".equals(type)) {
+        // If in safeMode, the flows are stopped. We cannot do a modified nodes/flows
+        // type deploy as nothing is running. Can only do a "load" or "full" deploy.
+        // The "load" case is already handled in `load()` to distinguish between
+        // startup-load and api-request-load.
+        type = "full";
+        settings_safeMode = false;
+      }
     }
-    // }
 
     JsonArray config = null;
     JsonObject diff = null;
@@ -110,10 +124,12 @@ public final class FlowsManager {
     if ("load".equals(type)) {
       isLoad = true;
       final JsonObject __config = loadFlows();
-      config = __config.get("flows").asJsonArray();
+      // --- Future
+      config = __config.getAsJsonArray("flows").deepCopy();
       newFlowConfig = FlowUtil.parseConfig(config.deepCopy());
       type = "full";
-      flowRevision = __config.get("rev").asString();
+      flowRevision = __config.asString("rev"); // Future return
+      // ---
     } else {
       // Clone the provided config so it can be manipulated
       config = _config.deepCopy();
@@ -124,7 +140,7 @@ public final class FlowsManager {
 
       // Now the flows have been compared, remove any credentials from newFlowConfig
       // so they don't cause false-positive diffs the next time a flow is deployed
-      final JsonObject allNewNodes = newFlowConfig.get("allNodes").asJsonObject();
+      final JsonObject allNewNodes = newFlowConfig.getAsJsonObject("allNodes");
       for (JsonElement value : allNewNodes.values()) {
         value.asJsonObject().remove("credentials");
       }
@@ -138,6 +154,7 @@ public final class FlowsManager {
       // Get the latest credentials and ask storage to save them (if needed)
       // as well as the new flow configuration.
       final JsonObject creds = credentials.export();
+      // --- Future
       final JsonObject saveConfig = new JsonObject()
           .set("flows", config)
           .set("credentialsDirty", credsDirty)
@@ -149,8 +166,10 @@ public final class FlowsManager {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
+      // ---
     }
 
+    // --- Future
     if (!isLoad) {
       logger.debug("saved flow revision: {}", flowRevision);
     }
@@ -176,12 +195,13 @@ public final class FlowsManager {
     MessageBus.sendMessage(new RuntimeDeployEvent(this, flowRevision));
 
     return flowRevision;
+    // ---
   }
 
   public Node getNode(String id) {
     Node node = null;
     if (activeNodesToFlow.containsKey(id) && activeFlows.containsKey(activeNodesToFlow.get(id))) {
-      FlowImpl flow = activeFlows.get(activeNodesToFlow.get(id));
+      Flow flow = activeFlows.get(activeNodesToFlow.get(id));
       node = flow.getNode(id, true);
     } else {
       for (final String flowId : activeFlows.keySet()) {
@@ -213,15 +233,17 @@ public final class FlowsManager {
   }
 
   private void startFlows(String type, JsonObject diff) {
+    logger.trace(">>> startFlows: type={}, diff={}", type, diff);
+    
     type = StringUtils.trimToNull(type) != null ? type : "full";
 
     started = true;
 
-    // If there are missing types, report them, emit the necessary runtime event and
-    // return
+    // If there are missing types, report them, emit the necessary runtime event
+    // and return
     final JsonElement missingTypes = activeFlowConfig.get("missingTypes");
     if (missingTypes.isJsonArray() && missingTypes.asJsonArray().size() > 0) {
-      throw new UnsupportedOperationException("missing types");
+      throw new UnsupportedOperationException("TODO: missing types");
     }
 
     if (logger.isInfoEnabled()) {
@@ -238,18 +260,18 @@ public final class FlowsManager {
       // Check the 'global' flow is running
       if (!activeFlows.containsKey("global")) {
         logger.debug("starting flow : global");
-        activeFlows.put("global", new FlowImpl(flowsRuntime, activeFlowConfig));
+        activeFlows.put("global", new FlowImpl(flowAPI, activeFlowConfig));
       }
 
       // Check each flow in the active configuration
-      final JsonObject flows = activeFlowConfig.get("flows").asJsonObject(null);
+      final JsonObject flows = activeFlowConfig.get("flows").asJsonObject(false);
       if (flows != null) {
         for (Entry<String, JsonElement> entry : flows.entrySet()) {
           final String id = entry.getKey();
           final JsonObject flow = entry.getValue().asJsonObject();
           if (!flow.get("disabled").asBoolean(false) && !activeFlows.containsKey(id)) {
             // This flow is not disabled, nor is it currently active, so create it
-            activeFlows.put(id, new FlowImpl(flowsRuntime, activeFlowConfig, flow));
+            activeFlows.put(id, new FlowImpl(flowAPI, activeFlowConfig, flow));
             logger.debug("starting flow : {}", id);
           } else {
             logger.debug("not starting disabled flow : {}", id);
@@ -271,7 +293,7 @@ public final class FlowsManager {
               activeFlows.get(id).update(activeFlowConfig, flow);
             } else {
               // This flow didn't previously exist, so create it
-              activeFlows.put(id, new FlowImpl(flowsRuntime, activeFlowConfig, flow));
+              activeFlows.put(id, new FlowImpl(flowAPI, activeFlowConfig, flow));
               logger.debug("starting flow: {}", id);
             }
           } else {
@@ -282,9 +304,9 @@ public final class FlowsManager {
     }
 
     // Having created or updated all flows, now start them.
-    for (Entry<String, FlowImpl> activeFlow : activeFlows.entrySet()) {
+    for (Entry<String, Flow> activeFlow : activeFlows.entrySet()) {
       final String id = activeFlow.getKey();
-      final FlowImpl flow = activeFlow.getValue();
+      final Flow flow = activeFlow.getValue();
 
       flow.start(diff);
 
@@ -369,10 +391,10 @@ public final class FlowsManager {
       stopList = changedList.concat(removedList).concat(linkedList); // XXX
     }
 
-    for (Iterator<Entry<String, FlowImpl>> it = activeFlows.entrySet().iterator(); it.hasNext();) {
-      final Entry<String, FlowImpl> activeFlow = it.next();
+    for (Iterator<Entry<String, Flow>> it = activeFlows.entrySet().iterator(); it.hasNext();) {
+      final Entry<String, Flow> activeFlow = it.next();
       final String id = activeFlow.getKey();
-      final FlowImpl flow = activeFlow.getValue();
+      final Flow flow = activeFlow.getValue();
       final JsonPrimitive _id = new JsonPrimitive(id);
       final boolean flowStateChanged = addedList.indexOf(_id) != -1 || removedList.indexOf(_id) != -1;
       logger.debug("stopping flow: {}", id);
@@ -404,4 +426,46 @@ public final class FlowsManager {
 
     // TODO events.emit("nodes-stopped");
   }
+
+  private Flow flowAPI = new Flow() {
+    @Override
+    public Node getNode(String id) {
+      return getNode(id);
+    }
+
+    @Override
+    public Node getNode(String id, boolean cancelBubble) {
+      return getNode(id, cancelBubble);
+    }
+
+    @Override
+    public Map<String, Node> getActiveNodes() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void update(JsonObject global, JsonObject flow) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void start(JsonObject diff) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void stop(JsonArray stopList, JsonArray removedList) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean handleError(Node node, Throwable t, JsonObject msg, Node reportingNode) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getSetting(String key) {
+      return System.getenv(key);
+    }
+  };
 }
