@@ -16,7 +16,7 @@ public final class Credentials {
   private final FlowsRuntime flowsRuntime;
 
   private final JsonObject credentialCache = new JsonObject();
-  private final JsonObject credentialsDef = new JsonObject();
+  //private final JsonObject credentialsDef = new JsonObject();
 
   private boolean dirty = false;
   private boolean encryptionEnabled;
@@ -37,6 +37,7 @@ public final class Credentials {
     dirty = false;
     
     // TODO encrypted
+    credentialCache.putAll(credentials);
   }
 
   /**
@@ -59,7 +60,7 @@ public final class Credentials {
     final HashSet<String> existingIds = new HashSet<>();
     config.forEach(_n -> {
       final JsonObject n = _n.asJsonObject();
-      final String nId = n.get("id").asString();
+      final String nId = n.getAsString("id");
       existingIds.add(nId);
       if (n.has("credentials")) {
         extract(n);
@@ -93,38 +94,25 @@ public final class Credentials {
     logger.trace(">>> extract: node={}", node);
     
     final String nodeID = node.getAsString("id");
-    final String nodeType = node.getAsString("type");
     
     final JsonObject newCreds = node.getAsJsonObject("credentials", false);
     
-    logger.debug("------------ newCreds={}", newCreds);
-    
     if (newCreds != null) {
       node.remove("credentials");
+      
       final JsonObject savedCredentials = credentialCache.getAsJsonObject(nodeID, true);
-      final String dashedType = nodeType.replaceAll("\\s+", "-");
-      final JsonObject definition = credentialsDef.getAsJsonObject(dashedType, false);
-      if (definition == null) {
-        logger.warn("Credential type '{}' is not registered", nodeType);
-        return;
-      }
-
-      for (String cred : definition.keySet()) {
-        logger.info("------------------------------ >>> {} <<<", newCreds.getAsString(cred));
-        final String newCreds_cred = newCreds.getAsString(cred, null);
-        if(newCreds_cred == null) {
-          continue;
-        }
-        final String type = definition.getAsString("type", null);
-        if ("password".equals(type) && "__PWRD__".equals(newCreds_cred)) {
-          continue;
-        }
-        if (StringUtils.trimToNull(newCreds_cred) == null) {
+      for (String cred : newCreds.keySet()) {
+        final String value = newCreds.getAsString(cred, null);
+        if (StringUtils.trimToNull(value) == null) {
           savedCredentials.remove(cred);
           dirty = true;
           continue;
         }
-        // TODO
+        if (!savedCredentials.has(cred)
+            || !savedCredentials.get(cred).equals(newCreds.get(cred))) {
+          savedCredentials.set(cred, newCreds.get(cred));
+          dirty = true;
+        }
       }
       
       credentialCache.set(nodeID, savedCredentials);

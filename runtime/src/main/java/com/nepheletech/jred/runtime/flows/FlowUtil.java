@@ -10,14 +10,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.text.WordUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonElement;
 import com.nepheletech.json.JsonObject;
+import com.nepheletech.messagebus.MessageBus;
 
 public final class FlowUtil {
+  private static final Logger logger = LoggerFactory.getLogger(FlowUtil.class);
 
   private static Pattern subflowInstanceRE = Pattern.compile("^subflow:(.+)$", Pattern.MULTILINE);
 
@@ -181,6 +186,7 @@ public final class FlowUtil {
   }
 
   public static JsonObject diffConfigs(JsonObject oldConfig, JsonObject newConfig) {
+    logger.trace(">>> diffConfigs: oldConfig={}, newConfig={}", oldConfig, newConfig);
 
     if (oldConfig == null) {
       oldConfig = new JsonObject()
@@ -258,12 +264,12 @@ public final class FlowUtil {
           }
         }
         // This node has been removed
-        final String nodeZ = StringUtils.trimToNull(node.get("z").asString(null));
+        final String nodeZ = StringUtils.trimToNull(node.getAsString("z", null));
         if (removed.has(nodeZ) || !allNewNodes.has(id)) {
           removed.set(id, node);
           // Mark the container as changed
           if (!removed.has(nodeZ) && allNewNodes.has(nodeZ)) {
-            final JsonObject container = changed.get(nodeZ).asJsonObject();
+            final JsonObject container = allNewNodes.getAsJsonObject(nodeZ);
             final String containerType = container.get("type").asString();
             changed.set(nodeZ, container);
             if ("subflow".equals(containerType)) {
@@ -283,8 +289,8 @@ public final class FlowUtil {
               if ("subflow".equals(newNodeType)) {
                 changedSubflows.set(id, newNode);
               }
-              // Mark the container as changed
-              final String newNodeZ = newNode.get("z").asString();
+              // Mark the container as changed 
+              final String newNodeZ = newNode.getAsString("z", null);
               if (allNewNodes.has(newNodeZ)) {
                 final JsonObject container = allNewNodes.get(newNodeZ).asJsonObject();
                 changed.set(newNodeZ, container);
@@ -479,21 +485,43 @@ public final class FlowUtil {
   private static boolean diffNodes(JsonObject oldNode, JsonObject newNode) {
     return !Objects.equals(oldNode, newNode);
   }
-  
+
+  // TODO should be moved to a JSON helper class.
+  private static JsonArray stackTrace(Throwable t) {
+    final JsonArray stackTrace = new JsonArray();
+    StackTraceElement elements[] = t.getStackTrace();
+    for (StackTraceElement e : elements) {
+      stackTrace.push(new JsonObject()
+          .set("className", e.getClassName())
+          .set("methodName", e.getMethodName())
+          .set("fileName", e.getFileName())
+          .set("lineNumber", e.getLineNumber()));
+    }
+    return stackTrace;
+  }
+
+  protected static void publish(String topic, JsonObject data) {
+    publish(topic, topic, data);
+  }
+
+  protected static void publish(String localTopic, String topic, JsonObject data) {
+    MessageBus.sendMessage(localTopic, new JsonObject()
+        .set("topic", topic)
+        .set("data", data));
+  }
+
   /**
    * Create a new instance of a node.
    * 
-   * @param flow the containing flow
+   * @param flow   the containing flow
    * @param config the node configuration object
    * @return the instance of the node
    */
   public static Node createNode(Flow flow, JsonObject config) {
     Node newNode = null;
 
-    final String type = config.get("type").asString();
-
     try {
-
+      final String type = config.get("type").asString();
       final Constructor<?> nodeTypeConstructor = getConstructor(type);
       if (nodeTypeConstructor != null) {
         final JsonObject conf = config.deepCopy();
@@ -501,18 +529,34 @@ public final class FlowUtil {
         for (String p : conf.keySet()) {
           // TODO mapEnvVarProperties(conf, p, flow);
         }
-
-        try {
-          newNode = (Node) nodeTypeConstructor.newInstance(flow, conf);
-        } catch (Throwable t) {
-          t.printStackTrace();
-        }
+        newNode = (Node) nodeTypeConstructor.newInstance(flow, conf);
       } else {
         // TODO Log.error(Log._("nodes.flow.unknown-type", {type:type}));
       }
-
     } catch (Exception e) {
       e.printStackTrace();
+      
+      Throwable rootCause = ExceptionUtils.getRootCause(e);
+      if (rootCause == null) {
+        rootCause = e;
+      }
+
+      final StringBuilder sb = new StringBuilder()
+          .append(rootCause.getClass())
+          .append(": ")
+          .append(rootCause.getMessage());
+
+      publish("debug", new JsonObject()
+          .set("id", config.get("id"))
+          .set("name", config.get("name"))
+          .set("type", config.get("type"))
+          .set("level", 20)
+          .set("msg", new JsonObject()
+              .set("message", sb.toString())
+              .set("stackTrace", stackTrace(e))
+              .set("config", config))
+          .set("timestamp", System.currentTimeMillis())
+          .set("format", "string[" + sb.toString().length() + "]"));
     }
 
     return newNode;

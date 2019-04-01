@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,19 +26,21 @@ import com.nepheletech.messagebus.MessageBus;
 public class FlowImpl implements Flow {
   private static final Logger logger = LoggerFactory.getLogger(FlowImpl.class);
 
-  private final Flow parent;
+  protected final Flow parent;
 
-  private JsonObject global;
-  private JsonObject flow;
+  protected JsonObject global;
+  protected JsonObject flow;
 
   private final boolean isGlobalFlow;
 
   private final String id;
 
-  private final Map<String, Node> activeNodes;
+  protected final Map<String, Node> activeNodes;
   private final Map<String, Subflow> subflowInstanceNodes;
   private final Map<String, List<CatchNode>> catchNodes;
   private final Map<String, List<StatusNode>> statusNodes;
+  
+  private final JsonObject context;
 
   /**
    * Create a {@code Flow} object.
@@ -71,6 +74,7 @@ public class FlowImpl implements Flow {
     this.subflowInstanceNodes = new HashMap<>();
     this.catchNodes = new HashMap<>();
     this.statusNodes = new HashMap<>();
+    this.context = new JsonObject();
   }
 
   /**
@@ -90,26 +94,26 @@ public class FlowImpl implements Flow {
     catchNodes.clear();
     statusNodes.clear();
 
-    final JsonObject configs = flow.get("configs").asJsonObject(true);
+    final JsonObject configs = flow.getAsJsonObject("configs", true);
     final List<String> configNodes = new ArrayList<>(configs.keySet());
     final JsonObject configNodesAttempts = new JsonObject();
     while (configNodes.size() > 0) {
       final String id = configNodes.remove(0);
-      final JsonObject node = configs.get(id).asJsonObject();
+      final JsonObject node = configs.getAsJsonObject(id);
       if (!activeNodes.containsKey(id)) {
         boolean readyToCreate = true;
         // This node doesn't exist.
         // Check it doesn't reference another non-existing config node.
         for (String prop : node.keySet()) {
           if (!"id".equals(prop) && !"wires".equals(prop) && !"_users".equals(prop)) {
-            final String configRef = node.get(prop).asString(null);
+            final String configRef = node.getAsString(prop, null);
             if (configRef != null && configs.has(configRef)) {
               if (!activeNodes.containsKey(configRef)) {
                 // References a non-existing config node
                 // Add it to the back of the list to try again later
                 configNodes.add(id);
-                configNodesAttempts.set(id, configNodesAttempts.get(id).asInt(0) + 1);
-                if (configNodesAttempts.get(id).asInt() == 100) {
+                configNodesAttempts.set(id, configNodesAttempts.getAsInt(id, 0) + 1);
+                if (configNodesAttempts.getAsInt(id) == 100) {
                   throw new RuntimeException("Circular config node dependency detected: " + id);
                 }
                 readyToCreate = false;
@@ -128,21 +132,21 @@ public class FlowImpl implements Flow {
     }
 
     if (diff != null && diff.has("rewired")) {
-      final JsonArray rewired = diff.get("rewired").asJsonArray();
+      final JsonArray rewired = diff.getAsJsonArray("rewired");
       for (JsonElement rewireNodeRef : rewired) {
         final Node rewireNode = activeNodes.get(rewireNodeRef.asString());
         if (rewireNode != null) {
-          final JsonObject flowNodes = flow.get("nodes").asJsonObject();
-          final JsonObject node = flowNodes.get(rewireNode.getId()).asJsonObject();
-          rewireNode.updateWires(node.get("wires").asJsonArray());
+          final JsonObject flowNodes = flow.getAsJsonObject("nodes");
+          final JsonObject node = flowNodes.getAsJsonObject(rewireNode.getId());
+          rewireNode.updateWires(node.getAsJsonArray("wires"));
         }
       }
     }
 
-    final JsonObject flowNodes = flow.get("nodes").asJsonObject(false);
+    final JsonObject flowNodes = flow.getAsJsonObject("nodes", false);
     if (flowNodes != null) {
       for (String id : flowNodes.keySet()) {
-        final JsonObject node = flowNodes.get(id).asJsonObject();
+        final JsonObject node = flowNodes.getAsJsonObject(id);
         if (!node.has("subflow")) {
           if (!activeNodes.containsKey(id)) {
             newNode = FlowUtil.createNode(this, node);
@@ -153,28 +157,18 @@ public class FlowImpl implements Flow {
         } else {
           if (!subflowInstanceNodes.containsKey(id)) {
             try {
-              final String subflowRef = node.get("subflow").asString();
-              final JsonObject flowSubflows = flow.get("subflows").asJsonObject();
-              final JsonObject globalSubflows = global.get("subflows").asJsonObject();
+              final String subflowRef = node.getAsString("subflow");
+              final JsonObject flowSubflows = flow.getAsJsonObject("subflows");
+              final JsonObject globalSubflows = global.getAsJsonObject("subflows");
               final JsonObject subflowDefinition = flowSubflows.has(subflowRef)
-                  ? flowSubflows.get(subflowRef).asJsonObject()
-                  : globalSubflows.get(subflowRef).asJsonObject();
+                  ? flowSubflows.getAsJsonObject(subflowRef)
+                  : globalSubflows.getAsJsonObject(subflowRef);
+              // console.log("NEED TO CREATE A SUBFLOW",id,node.subflow);
               // subflowInstanceNodes.put(id, true);
               final Subflow subflow = new Subflow(this, this.global, subflowDefinition, node);
-              subflow.start();
-              this.activeNodes.put(id, subflow.getNode());
               subflowInstanceNodes.put(id, subflow);
-
-              //@formatter:off
-//              final List<String> subflowInstanceNodes_i = new ArrayList<>();
-//              subflowInstanceNodes.put(id, subflowInstanceNodes_i);
-//              for (Node n : nodes) {
-//                if (n != null) {
-//                  subflowInstanceNodes_i.add(n.getId());
-//                  activeNodes.put(n.getId(), n);
-//                }
-//              }
-              //@formatter:on
+              subflow.start(null);
+              this.activeNodes.put(id, subflow.node);
             } catch (Exception e) {
               e.printStackTrace();
             }
@@ -183,11 +177,23 @@ public class FlowImpl implements Flow {
       }
     }
 
+    final int activeCount = activeNodes.size();
+    if (activeCount > 0) {
+      logger.trace("--------------------------------------|------------------------------|-----------------");
+      logger.trace(" id                                   | type                         | alias           ");
+      logger.trace("--------------------------------------|------------------------------|-----------------");
+    }
+
     // Build the map of catch/status nodes.
     for (Entry<String, Node> entry : activeNodes.entrySet()) {
-      @SuppressWarnings("unused")
       final String id = entry.getKey();
       final Node node = entry.getValue();
+
+      logger.trace(" {} | {} | {}",
+          StringUtils.rightPad(id, 36),
+          StringUtils.rightPad(node.getType(), 28),
+          node.getAlias());
+
       if (node instanceof CatchNode) {
         if (!catchNodes.containsKey(node.getZ())) {
           catchNodes.put(node.getZ(), new ArrayList<CatchNode>());
@@ -202,6 +208,10 @@ public class FlowImpl implements Flow {
     }
 
     // TODO catchNodes sort by scope
+
+    if (activeCount > 0) {
+      logger.trace("--------------------------------------|------------------------------|-----------------");
+    }
   }
 
   /**
@@ -216,10 +226,15 @@ public class FlowImpl implements Flow {
   @Override
   public void stop(JsonArray stopList, JsonArray removedList) {
     logger.trace(">>> stop: stopList: {}, removedList: {}", stopList, removedList);
-    
+
     if (stopList == null) {
       stopList = JsonObject.keys(this.activeNodes);
       logger.debug("stopList=", stopList);
+    }
+
+    if (removedList == null) {
+      removedList = new JsonArray();
+      logger.debug("removedList=", removedList);
     }
 
     // Convert the list to a map to avoid multiple scans of the list
@@ -236,7 +251,7 @@ public class FlowImpl implements Flow {
           try {
             final Subflow subflow = subflowInstanceNodes.get(id);
             stopNode(node, false);
-            subflow.stop();
+            subflow.stop(null, null);
           } catch (Exception e) {
             e.printStackTrace(); // TODO node.error(err)
           }
@@ -310,23 +325,26 @@ public class FlowImpl implements Flow {
    */
   @Override
   public Node getNode(String id, boolean cancelBubble) {
+    logger.trace(">>> getNode: id={}, cancelBubble={}", id, cancelBubble);
+
     if (id == null) { return null; }
 
-    final JsonObject configs = flow.get("configs").asJsonObject();
-    final JsonObject nodes = flow.get("nodes").asJsonObject();
-
-    if (configs.has(id) || nodes.has(id)) {
+    final JsonObject configs = flow.getAsJsonObject("configs", false);
+    final JsonObject nodes = flow.getAsJsonObject("nodes", false);
+    if ((configs != null && configs.has(id)) || (nodes != null && nodes.has(id))) {
       // This is a node owned by this flow, so return whatever we have got during a
       // stop/start, activeNodes could be null for this id
       return activeNodes.get(id);
     } else if (activeNodes.containsKey(id)) {
       // TEMP: this is a subflow internal node within this flow
       return activeNodes.get(id);
+    } else if (cancelBubble) {
+      // The node could be inside one of this flow's subflows
+      throw new UnsupportedOperationException("TODO");
+    } else {
+      // Node not found inside this flow - ask the parent
+      return parent.getNode(id);
     }
-
-    if (!cancelBubble) { return parent.getNode(id); }
-
-    return null;
   }
 
   /**
@@ -348,7 +366,7 @@ public class FlowImpl implements Flow {
    * @return
    */
   @Override
-  public String getSetting(String key) {
+  public JsonElement getSetting(String key) {
     return parent.getSetting(key);
   }
 
@@ -360,19 +378,21 @@ public class FlowImpl implements Flow {
    * @param reportingNode   The emitting the status event.
    * @param muteStatusEvent Whether to emit the status event.
    */
-  public final boolean handleStatus(final Node node, final JsonObject statusMessage,  Node reportingNode, final boolean muteStatusEvent) {
+  @Override
+  public boolean handleStatus(final Node node, final JsonObject statusMessage, Node reportingNode,
+      final boolean muteStatusEvent) {
     if (reportingNode == null) {
       reportingNode = node;
     }
     if (!muteStatusEvent) {
       MessageBus.sendMessage("node-status", new JsonObject()
           .set("id", node.getId())
-          .set("stats",statusMessage));
+          .set("stats", statusMessage));
     }
-    
+
     boolean handled = false;
 
-    //final JsonArray users = node.get("users").asJsonArray(true);
+    // final JsonArray users = node.get("users").asJsonArray(true);
     if ("global".equals(this.id)) {
       // This is a global config node
       // Delegate status to any nodes using this config node
@@ -398,7 +418,7 @@ public class FlowImpl implements Flow {
    * {@link CatchNode}s within this flow, pass the event to the parent flow.
    */
   @Override
-  public final boolean handleError(final Node node, Throwable t, final JsonObject msg, Node reportingNode) {
+  public boolean handleError(final Node node, final String logMessage, final JsonObject msg, Node reportingNode) {
     if (reportingNode == null) {
       reportingNode = node;
     }
@@ -444,5 +464,14 @@ public class FlowImpl implements Flow {
   @Override
   public String toString() {
     return "Flow [flow=" + id + "]";
+  }
+
+  @Override
+  public JsonObject getContext(String type) {
+    if ("flow".equalsIgnoreCase(type)) {
+      return context;
+    } else {
+      return parent.getContext(type);
+    }
   }
 }
