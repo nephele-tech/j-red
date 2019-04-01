@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 
 public abstract class AbstractNode implements Node {
-  private final Logger logger = LoggerFactory.getLogger(AbstractNode.class);
+  protected final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final String id;
   private final String type;
@@ -32,7 +33,7 @@ public abstract class AbstractNode implements Node {
   private int _wireCount;
 
   protected final Flow flow;
-  
+
   // Event listeners...
   private MessageBusListener<NodesStartedEvent> nodesStartedEventListener = null;
 
@@ -43,7 +44,8 @@ public abstract class AbstractNode implements Node {
     this.z = config.get("z").asString();
     this.name = config.get("name").asString(null);
     this._alias = config.get("_alias").asString(null);
-    updateWires(config.get("wires"));
+
+    updateWires(config.getAsJsonArray("wires", true));
 
     if (this instanceof NodesStartedEventListener) {
       nodesStartedEventListener = new MessageBusListener<NodesStartedEvent>() {
@@ -53,15 +55,24 @@ public abstract class AbstractNode implements Node {
             ((NodesStartedEventListener) AbstractNode.this).onNodesStarted(message);
           } catch (Exception e) {
             logger.error("Unhandled exception", e);
+            logger.debug(e.getMessage(), e);
           } finally {
             MessageBus.unsubscribe(NodesStartedEvent.class, nodesStartedEventListener);
             nodesStartedEventListener = null;
           }
         }
       };
-      
+
       MessageBus.subscribe(NodesStartedEvent.class, nodesStartedEventListener);
     }
+  }
+  
+  @Override
+  public Flow getFlow() { return flow; }
+
+  @Override
+  public JsonObject getContext(String type) {
+    return getFlow().getContext(type);
   }
 
   @Override
@@ -80,10 +91,10 @@ public abstract class AbstractNode implements Node {
   public String getAlias() { return _alias; }
 
   @Override
-  public void updateWires(JsonElement wires) {
+  public void updateWires(JsonArray wires) {
     logger.debug("UPDATE {}", this.id);
 
-    this.wires = wires.isJsonArray() ? wires.asJsonArray() : new JsonArray();
+    this.wires = wires;
     this._wire = null;
 
     int wc = 0;
@@ -97,7 +108,7 @@ public abstract class AbstractNode implements Node {
     } else {
       if (this.wires.size() == 1 && this.wires.get(0).asJsonArray().size() == 1) {
         // Single wire, so we can shortcut the send when a single message is sent
-        this._wire = this.wires.get(0).asJsonArray().get(0).asString();
+        this._wire = this.wires.getAsJsonArray(0).getAsString(0);
       }
     }
   }
@@ -120,6 +131,7 @@ public abstract class AbstractNode implements Node {
   @Override
   public final void send(JsonElement _msg) {
     logger.trace(">>> send: _msg={}", _msg);
+    logger.trace(">>> send: wires={}", wires);
 
     if (this._wireCount == 0) {
       // With nothing wired to the node, no-op send
@@ -236,18 +248,20 @@ public abstract class AbstractNode implements Node {
     try {
       onMessage(msg);
     } catch (RuntimeException e) {
-    	e.printStackTrace();
+      e.printStackTrace();
       error(e, msg);
     }
   }
 
   protected abstract void onMessage(JsonObject msg);
-
-  protected void log(JsonObject msg) {
+  
+  private void log_helper(int level, JsonObject msg) {
+    logger.trace(">>> log_helper: level={}, msg={}", level, msg);
+    
     final JsonObject o = new JsonObject()
-        .set("id", getId())
+        .set("id", getId()) // id or alias ?
         .set("type", getType())
-        .set("msg", msg);
+        .set("msg", msg, false);
 
     final String _alias = getAlias();
     if (_alias != null) {
@@ -264,42 +278,158 @@ public abstract class AbstractNode implements Node {
       o.set("name", name);
     }
 
-    LoggerFactory.getLogger(getClass()).info(o.toString());
+    switch (level) {
+    case FATAL:
+      LoggerFactory.getLogger(getClass()).error(o.toString());
+      break;
+    case ERROR:
+      LoggerFactory.getLogger(getClass()).error(o.toString());
+      break;
+    case WARN:
+      LoggerFactory.getLogger(getClass()).warn(o.toString());
+      break;
+    case INFO:
+      LoggerFactory.getLogger(getClass()).info(o.toString());
+      break;
+    case DEBUG:
+      LoggerFactory.getLogger(getClass()).debug(o.toString());
+      break;
+    case TRACE:
+      LoggerFactory.getLogger(getClass()).trace(o.toString());
+      break;
+    case AUDIT:
+      LoggerFactory.getLogger(getClass()).trace(o.toString());
+      break;
+    case METRIC:
+      LoggerFactory.getLogger(getClass()).trace(o.toString());
+      break;
+    }
+
+    if (level > OFF) {
+      o.set("level", level);
+    }
+
+    publish("debug", o);
   }
 
+  protected void log(JsonObject msg) {
+    log_helper(INFO, msg);
+  }
+
+  protected void warn(JsonObject msg) {
+    log_helper(WARN, msg);
+  }
+
+  /**
+   * Log processing error.
+   * 
+   * @param t
+   * @param msg
+   */
+  protected void error(Throwable t, JsonObject msg) {
+    if (t == null) {
+      throw new IllegalArgumentException("Throwable is null");
+    }
+    if (msg == null) {
+      throw new IllegalArgumentException("Message is null");
+    }
+    
+    if (t != null) {
+      Throwable rootCause = ExceptionUtils.getRootCause(t);
+      if (rootCause == null) {
+        rootCause = t;
+      }
+
+      final StringBuilder sb = new StringBuilder()
+          .append(rootCause.getClass())
+          .append(": ")
+          .append(rootCause.getMessage());
+
+      error0(sb.toString(), msg.deepCopy()
+          .set("error", new JsonObject()
+              .set("message", sb.toString())
+              .set("stackTrace", stackTrace(t))));
+    }
+  }
+
+  // TODO should be moved to a JSON helper class.
+  private static JsonArray stackTrace(Throwable t) {
+    final JsonArray stackTrace = new JsonArray();
+    StackTraceElement elements[] = t.getStackTrace();
+    for (StackTraceElement e : elements) {
+      stackTrace.push(new JsonObject()
+          .set("className", e.getClassName())
+          .set("methodName", e.getMethodName())
+          .set("fileName", e.getFileName())
+          .set("lineNumber", e.getLineNumber()));
+    }
+    return stackTrace;
+  }
+
+  /**
+   * Log processing error.
+   * 
+   * @param logMessage
+   * @param msg
+   */
   protected void error(String logMessage, JsonObject msg) {
+    if (logMessage == null) {
+      throw new IllegalArgumentException("`logMessage` is null");
+    }
+    if (msg == null) {
+      throw new IllegalArgumentException("Message is null");
+    }
+    
+    error0(logMessage, msg.deepCopy()
+        .set("error", new JsonObject()
+            .set("message", logMessage)));
+  }
+
+  private void error0(String logMessage, JsonObject msg) {
     boolean handled = false;
     if (msg != null) {
-      handled = flow.handleError(this, new RuntimeException(logMessage), msg, null);
+      handled = flow.handleError(this, logMessage, msg, null);
     }
     if (!handled) {
-      final JsonObject o = new JsonObject()
-          .set("id", getId())
-          .set("type", getType())
-          .set("msg", logMessage);
-
-      final String _alias = getAlias();
-      if (_alias != null) {
-        o.set("_alias", _alias);
-      }
-
-      final String z = getZ();
-      if (z != null) {
-        o.set("z", z);
-      }
-
-      final String name = getName();
-      if (name != null) {
-        o.set("name", name);
-      }
-
-      LoggerFactory.getLogger(getClass()).error(o.toString());
+      log_helper(ERROR, msg);
     }
   }
 
-  protected void error(RuntimeException e, JsonObject msg) {
-    // TODO Auto-generated method stub
-
+  protected void debug(JsonObject msg) {
+    log_helper(DEBUG, msg);
   }
 
+  protected void trace(JsonObject msg) {
+    log_helper(TRACE, msg);
+  }
+
+  protected void metric() {
+    throw new UnsupportedOperationException();
+  }
+
+  protected void status(JsonObject status) {
+    flow.handleStatus(this, status, null, false);
+  }
+
+  private static final int OFF = 1;
+  private static final int FATAL = 10;
+  private static final int ERROR = 20;
+  private static final int WARN = 30;
+  private static final int INFO = 40;
+  private static final int DEBUG = 50;
+  private static final int TRACE = 60;
+  private static final int AUDIT = 98;
+  private static final int METRIC = 99;
+
+  // ---
+
+  protected static void publish(String topic, JsonObject data) {
+    publish(topic, topic, data);
+  }
+
+  protected static void publish(String localTopic, String topic, JsonObject data) {
+    MessageBus.sendMessage(localTopic, new JsonObject()
+        .set("topic", topic)
+        .set("data", data));
+  }
 }
