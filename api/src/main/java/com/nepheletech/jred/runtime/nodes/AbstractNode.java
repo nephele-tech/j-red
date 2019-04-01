@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonElement;
 import com.nepheletech.json.JsonObject;
@@ -255,11 +256,11 @@ public abstract class AbstractNode implements Node {
 
   protected abstract void onMessage(JsonObject msg);
   
-  private void log_helper(int level, JsonObject msg) {
+  private void log_helper(int level, Object msg) {
     logger.trace(">>> log_helper: level={}, msg={}", level, msg);
     
     final JsonObject o = new JsonObject()
-        .set("id", getId()) // id or alias ?
+        .set("id", getAlias() != null ? getAlias() : getId())
         .set("type", getType())
         .set("msg", msg, false);
 
@@ -335,35 +336,8 @@ public abstract class AbstractNode implements Node {
     }
     
     if (t != null) {
-      Throwable rootCause = ExceptionUtils.getRootCause(t);
-      if (rootCause == null) {
-        rootCause = t;
-      }
-
-      final StringBuilder sb = new StringBuilder()
-          .append(rootCause.getClass())
-          .append(": ")
-          .append(rootCause.getMessage());
-
-      error0(sb.toString(), msg.deepCopy()
-          .set("error", new JsonObject()
-              .set("message", sb.toString())
-              .set("stackTrace", stackTrace(t))));
+      error0(t, msg.deepCopy());
     }
-  }
-
-  // TODO should be moved to a JSON helper class.
-  private static JsonArray stackTrace(Throwable t) {
-    final JsonArray stackTrace = new JsonArray();
-    StackTraceElement elements[] = t.getStackTrace();
-    for (StackTraceElement e : elements) {
-      stackTrace.push(new JsonObject()
-          .set("className", e.getClassName())
-          .set("methodName", e.getMethodName())
-          .set("fileName", e.getFileName())
-          .set("lineNumber", e.getLineNumber()));
-    }
-    return stackTrace;
   }
 
   /**
@@ -372,6 +346,8 @@ public abstract class AbstractNode implements Node {
    * @param logMessage
    * @param msg
    */
+//@formatter:on
+  /*
   protected void error(String logMessage, JsonObject msg) {
     if (logMessage == null) {
       throw new IllegalArgumentException("`logMessage` is null");
@@ -384,14 +360,24 @@ public abstract class AbstractNode implements Node {
         .set("error", new JsonObject()
             .set("message", logMessage)));
   }
+  */
+//@formatter:off
 
-  private void error0(String logMessage, JsonObject msg) {
+  private void error0(Throwable logMessage, JsonObject msg) {
     boolean handled = false;
     if (msg != null) {
       handled = flow.handleError(this, logMessage, msg, null);
     }
     if (!handled) {
-      log_helper(ERROR, msg);
+      Throwable rootCause = ExceptionUtils.getRootCause(logMessage);
+      if (rootCause == null) {
+        rootCause = logMessage;
+      }
+      
+      log_helper(ERROR, new JsonObject()
+          .set("message", rootCause.toString())
+          .set("stack", JRedUtil.stackTrace(rootCause))
+          .set("msg", msg));
     }
   }
 

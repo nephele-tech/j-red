@@ -177,4 +177,21 @@ public final class JRedUtil {
     }
     return byteArray;
   }
+
+  /**
+   * 
+   * @return
+   */
+  public static JsonArray stackTrace(Throwable t) {
+    final JsonArray stackTrace = new JsonArray();
+    StackTraceElement elements[] = t.getStackTrace();
+    for (StackTraceElement e : elements) {
+      stackTrace.push(new JsonObject()
+          .set("className", e.getClassName())
+          .set("methodName", e.getMethodName())
+          .set("fileName", e.getFileName())
+          .set("lineNumber", e.getLineNumber()));
+    }
+    return stackTrace;
+  }
 }

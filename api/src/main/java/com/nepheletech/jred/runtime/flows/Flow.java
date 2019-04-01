@@ -56,7 +56,7 @@ public interface Flow {
    *                      up.
    * @return {@code true} if the error event was handled; {@code false} otherwise.
    */
-  boolean handleError(Node node, String logMessage, JsonObject msg, Node reportingNode);
+  boolean handleError(Node node, Throwable logMessage, JsonObject msg, Node reportingNode);
 
   /**
    * 

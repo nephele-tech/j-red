@@ -116,7 +116,7 @@ public final class DebugNode extends AbstractNode {
         .set("data", msg));
   }
 
-  private void prepareValue(JsonObject msg, BiConsumer<String, JsonObject> done) {
+  private void prepareValue(JsonObject msg, BiConsumer<Throwable, JsonObject> done) {
     // Either apply the jsonata expression or...
     if (preparedEditExpression != null) {
       // TODO

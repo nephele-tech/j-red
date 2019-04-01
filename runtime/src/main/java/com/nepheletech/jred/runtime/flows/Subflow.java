@@ -318,7 +318,7 @@ public class Subflow extends FlowImpl {
   }
 
   @Override
-  public boolean handleError(Node node, String logMessage, JsonObject msg, Node reportingNode) {
+  public boolean handleError(Node node, Throwable logMessage, JsonObject msg, Node reportingNode) {
     logger.trace(">>> handleError: logMessage={}, msg={}", logMessage, msg);
 
     boolean handled = super.handleError(node, logMessage, msg, reportingNode);

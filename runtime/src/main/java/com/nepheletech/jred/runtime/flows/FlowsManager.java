@@ -478,7 +478,7 @@ public final class FlowsManager {
     }
 
     @Override
-    public boolean handleError(Node node, String logMessage, JsonObject msg, Node reportingNode) {
+    public boolean handleError(Node node, Throwable logMessage, JsonObject msg, Node reportingNode) {
       throw new UnsupportedOperationException();
     }
 

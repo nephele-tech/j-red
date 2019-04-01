@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jfc.ScriptEvaluator;
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonElement;
 import com.nepheletech.json.JsonObject;
 
@@ -97,6 +98,14 @@ public class FunctionNode extends AbstractNode {
         send(se.evaluate(new Object[] { this, msg, logger }).asJsonObject(null));
       }
     } catch (ScriptException e) {
+      final JsonArray sourceCode = new JsonArray()
+          .push("// JFunction1.java");
+      final String[] script = se.getScript().split("\n");
+      for (String line : script) {
+        sourceCode.push(line);
+      }
+      msg.set("_sourceCode", sourceCode);
+      // ---
       throw new RuntimeException(e);
     }
   }

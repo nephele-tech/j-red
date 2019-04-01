@@ -7,6 +7,10 @@
             <option value="target" data-i18n="catch.scope.selected"></options>
         </select>
     </div>
+    <div class="form-row node-input-uncaught-row">
+        <input type="checkbox" id="node-input-uncaught" style="display: inline-block; width: auto; vertical-align: top; margin-left: 30px; margin-right: 5px;">
+        <label for="node-input-uncaught" style="width: auto" data-i18n="catch.label.uncaught"></label>
+    </div>
     <div class="form-row node-input-target-row" style="display: none;">
         <div id="node-input-catch-target-container-div" style="min-height: 100px;position: relative;   box-sizing: border-box; border-radius: 2px; height: 180px;  border: 1px solid #ccc;overflow:hidden; ">
             <div style="box-sizing: border-box; line-height: 20px; font-size: 0.8em; border-bottom: 1px solid #ddd; height: 20px;">
@@ -24,31 +28,7 @@
         <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
     </div>
 </script>
-<script type="text/x-red" data-help-name="catch">
-    <p>Catch errors thrown by nodes on the same tab.</p>
-    <h3>Outputs</h3>
-    <dl class="message-properties">
-        <dt>error.message <span class="property-type">string</span></dt>
-        <dd>the error message.</dd>
-        <dt>error.source.id <span class="property-type">string</span></dt>
-        <dd>the id of the node that threw the error.</dd>
-        <dt>error.source.type <span class="property-type">string</span></dt>
-        <dd>the type of the node that threw the error.</dd>
-        <dt>error.source.name <span class="property-type">string</span></dt>
-        <dd>the name, if set, of the node that threw the error.</dd>
-    </dl>
-    <h3>Details</h3>
-    <p>If a node throws an error whilst handling a message, the flow will typically
-       halt. This node can be used to catch those errors and handle them with a
-       dedicated flow.</p>
-    <p>By default, the node will catch errors thrown by any node on the same tab. Alternatively
-    it can be targetted at specific nodes.</p>
-    <p>When an error is thrown, all matching catch nodes will receive the message.</p>
-    <p>If an error is thrown within a subflow, the error will get handled by any
-       catch nodes within the subflow. If none exists, the error will be propagated
-       up to the tab the subflow instance is on.</p>
-   <p>If the message already has a <code>error</code> property, it is copied to <code>_error</code>.</p>
-</script>
+
 <style>
 #node-input-catch-target-container {
     position: relative;
@@ -88,13 +68,20 @@
         color:"#e49191",
         defaults: {
             name: {value:""},
-            scope: {value:null}
+            scope: {value:null},
+            uncaught: {value:false}
         },
         inputs:0,
         outputs:1,
         icon: "alert.png",
         label: function() {
-            return this.name||(this.scope?this._("catch.catchNodes",{number:this.scope.length}):this._("catch.catch"));
+            if (this.name) {
+                return this.name;
+            }
+            if (this.scope) {
+                return this._("catch.catchNodes",{number:this.scope.length});
+            }
+            return this.uncaught?this._("catch.catchUncaught"):this._("catch.catch")
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";
@@ -234,8 +221,10 @@
                 if (scope === "target") {
                     createNodeList();
                     $(".node-input-target-row").show();
+                    $(".node-input-uncaught-row").hide();
                 } else {
                     $(".node-input-target-row").hide();
+                    $(".node-input-uncaught-row").show();
                 }
                 node.resize();
             });
@@ -251,6 +240,7 @@
             if (scope === 'all') {
                 this.scope = null;
             } else {
+                $("#node-input-uncaught").prop("checked",false);
                 var node = this;
                 node.scope = [];
                 $(".node-input-target-node-checkbox").each(function(n) {

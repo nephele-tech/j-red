@@ -1,19 +1,23 @@
 package com.nepheletech.jred.runtime.flows;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.nodes.CatchNode;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jred.runtime.nodes.StatusNode;
+import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonElement;
 import com.nepheletech.json.JsonObject;
@@ -37,9 +41,9 @@ public class FlowImpl implements Flow {
 
   protected final Map<String, Node> activeNodes;
   private final Map<String, Subflow> subflowInstanceNodes;
-  private final Map<String, List<CatchNode>> catchNodes;
-  private final Map<String, List<StatusNode>> statusNodes;
-  
+  private final List<CatchNode> catchNodes;
+  private final List<StatusNode> statusNodes;
+
   private final JsonObject context;
 
   /**
@@ -72,8 +76,8 @@ public class FlowImpl implements Flow {
     this.id = this.flow.get("id").asString("global");
     this.activeNodes = new HashMap<>();
     this.subflowInstanceNodes = new HashMap<>();
-    this.catchNodes = new HashMap<>();
-    this.statusNodes = new HashMap<>();
+    this.catchNodes = new ArrayList<>();
+    this.statusNodes = new ArrayList<>();
     this.context = new JsonObject();
   }
 
@@ -195,17 +199,25 @@ public class FlowImpl implements Flow {
           node.getAlias());
 
       if (node instanceof CatchNode) {
-        if (!catchNodes.containsKey(node.getZ())) {
-          catchNodes.put(node.getZ(), new ArrayList<CatchNode>());
-        }
-        catchNodes.get(node.getZ()).add((CatchNode) node);
+        catchNodes.add((CatchNode) node);
       } else if (node instanceof StatusNode) {
-        if (!statusNodes.containsKey(node.getZ())) {
-          statusNodes.put(node.getZ(), new ArrayList<StatusNode>());
-        }
-        statusNodes.get(node.getZ()).add((StatusNode) node);
+        statusNodes.add((StatusNode) node);
       }
     }
+
+    catchNodes.sort(new Comparator<CatchNode>() {
+      @Override
+      public int compare(CatchNode o1, CatchNode o2) {
+        if (o1.getScope() != null && o2.getScope() == null) {
+          return -1;
+        } else if (o1.getScope() == null && o2.getScope() != null) {
+          return 1;
+        } else if (o1.isUncaught() && !o2.isUncaught()) {
+          return 1;
+        } else if (!o1.isUncaught() && o2.isUncaught()) { return -1; }
+        return 0;
+      }
+    });
 
     // TODO catchNodes sort by scope
 
@@ -400,15 +412,7 @@ public class FlowImpl implements Flow {
       // TODO
 
       handled = true;
-    } else {
-      boolean handledByUncaught = false;
-
-      catchNodes.values().forEach(targetCatchNode -> {
-
-        // TODO
-
-      });
-    }
+    } else {}
 
     return handled;
   }
@@ -418,7 +422,9 @@ public class FlowImpl implements Flow {
    * {@link CatchNode}s within this flow, pass the event to the parent flow.
    */
   @Override
-  public boolean handleError(final Node node, final String logMessage, final JsonObject msg, Node reportingNode) {
+  public boolean handleError(final Node node, final Throwable logMessage, final JsonObject msg, Node reportingNode) {
+    logger.trace("-------------------------------> handleError: {}", logMessage);
+
     if (reportingNode == null) {
       reportingNode = node;
     }
@@ -445,17 +451,49 @@ public class FlowImpl implements Flow {
       // This is a global config node
       // Delegate status to any nodes using this config node
 
+      throw new UnsupportedOperationException("global");
+
       // TODO
 
-      handled = true;
+      // handled = true;
     } else {
       boolean handledByUncaught = false;
 
-      catchNodes.values().forEach(targetCatchNode -> {
+      for (CatchNode targetCatchNode : catchNodes) {
+        final Set<String> scope = targetCatchNode.getScope();
+        if (scope != null && !scope.contains(reportingNode.getId())) {
+          break;
+        }
+        if (scope == null && targetCatchNode.isUncaught() && !handledByUncaught) {
+          if (handled) {
+            // This has been handled by a !uncaught catch node
+            break;
+          }
+          // This is an uncaught error
+          handledByUncaught = true;
+        }
+        final JsonObject errorMessage = msg != null ? msg.deepCopy() : new JsonObject();
+        if (errorMessage.has("error")) {
+          errorMessage.set("_error", errorMessage.get("error"));
+        }
 
-        // TODO
+        Throwable rootCause = ExceptionUtils.getRootCause(logMessage);
+        if (rootCause == null) {
+          rootCause = logMessage;
+        }
 
-      });
+        errorMessage.set("error", new JsonObject()
+            .set("message", rootCause.toString())
+            .set("source", new JsonObject()
+                .set("id", node.getId())
+                .set("type", node.getType())
+                .set("name", node.getName())
+                .set("count", count))
+            .set("stack", JRedUtil.stackTrace(rootCause)));
+        
+        targetCatchNode.receive(errorMessage);
+        handled = true;
+      }
     }
 
     return handled;
