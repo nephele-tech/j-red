@@ -16,6 +16,9 @@ import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpoint;
 import javax.websocket.server.ServerEndpointConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonElement;
 import com.nepheletech.json.JsonObject;
@@ -26,7 +29,7 @@ import com.nepheletech.messagebus.MessageBusListener;
 
 @ServerEndpoint(value = "/comms", configurator = CommsEndpoint.CommsEndpointConfigurator.class)
 public class CommsEndpoint implements MessageBusListener<JsonObject> {
-  //private static final Log LOG = Log.get(CommsEndpoint.class);
+  private static final Logger logger = LoggerFactory.getLogger(CommsEndpoint.class);
 
   public static class CommsEndpointConfigurator extends ServerEndpointConfig.Configurator {
 
@@ -46,21 +49,17 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
   private Session session;
 
   private final JsonArray stack = new JsonArray();
-  // private volatile boolean ok2tx = false;
 
   @OnOpen
   public void onOpen(Session session, EndpointConfig config) {
-    //LOG.d("session id: %s", session.getId());
+    logger.trace(">>> onOpen: id={}", session.getId());
 
     this.session = session;
-
-    // this.stack = new JtonArray();
-    // this.ok2tx = true;
   }
 
   @OnClose
   public void onClose() {
-    //LOG.d("session id: %s", session.getId());
+    logger.trace(">>> onClose: id={}", session.getId());
 
     synchronized (subscriptions) {
       for (Iterator<String> i = subscriptions.keySet().iterator(); i.hasNext();) {
@@ -77,7 +76,7 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
 
   @OnMessage
   public void onMessage(String message) {
-    //LOG.d("message: %s", message);
+    logger.trace("onMessage: message={}", message);
 
     try {
       JsonElement jsonMsg = JsonParser.parse(message);
@@ -128,7 +127,7 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
 
   @Override
   public void messageSent(String topic, JsonObject message) {
-    //LOG.t(">>> messageSent: topic=%s, message=%s", new Object[] { topic, message });
+    logger.trace(">>> messageSent: topic={}, message={}", topic, message );
 
     if (topic != null && message != null) {
       this.stack.push(message);
@@ -167,6 +166,5 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
   @OnError
   public void onError(Session session, Throwable thr) {
     thr.printStackTrace();
-    //LOG.d(thr, () -> format("session: %s, error: %s", session.getId(), thr.getMessage()));
   }
 }

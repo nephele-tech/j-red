@@ -15,7 +15,7 @@
 		<servlet-class>com.nepheletech.jred.editor.MainServlet</servlet-class>
 		<init-param>
 			<param-name>template</param-name>
-			<param-value>/WEB-INF/pages/index-0.20.0-beta.5.jsp</param-value>
+			<param-value>/WEB-INF/pages/index-0.20.2.jsp</param-value>
 		</init-param>
 	</servlet>
 	<servlet-mapping>
