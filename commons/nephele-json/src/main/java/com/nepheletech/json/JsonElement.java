@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Date;
 
 import com.nepheletech.json.internal.Streams;
 import com.nepheletech.json.stream.JsonWriter;
@@ -61,8 +62,14 @@ public abstract class JsonElement {
    * @return true if this element is of type {@link JsonPrimitive}, false
    *         otherwise.
    */
-  public boolean isJsonPrimitive() { return this instanceof JsonPrimitive; }
-  
+  public boolean isJsonPrimitive() { return this instanceof AbstractJsonPrimitive; }
+
+  /**
+   * provides check for verifying if this element is a transient or not.
+   *
+   * @return true if this element is of type {@link JsonTransient}, false
+   *         otherwise.
+   */
   public boolean isJsonTransient() { return this instanceof JsonTransient; }
 
   /**
@@ -90,7 +97,7 @@ public abstract class JsonElement {
   public JsonObject asJsonObject(final JsonObject defaultValue) {
     return isJsonObject() ? asJsonObject() : defaultValue;
   }
-  
+
   public JsonObject asJsonObject(final boolean create) {
     return isJsonObject() ? asJsonObject() : create ? new JsonObject() : null;
   }
@@ -130,7 +137,7 @@ public abstract class JsonElement {
     if (isJsonPrimitive()) { return (JsonPrimitive) this; }
     throw new IllegalStateException("Not a JSON Primitive: " + this);
   }
-  
+
   public JsonPrimitive asJsonPrimitive(final JsonPrimitive defaultValue) {
     return isJsonPrimitive() ? asJsonPrimitive() : defaultValue;
   }
@@ -138,14 +145,27 @@ public abstract class JsonElement {
   public JsonPrimitive asJsonPrimitive(final Object value) {
     return isJsonPrimitive() ? asJsonPrimitive() : value != null ? new JsonPrimitive(value) : null;
   }
-  
+
   /**
-   * 
-   * @return
+   * convenience method to get this element as a {@link JsonTransient}. If the
+   * element is of some other type, a {@link IllegalStateException} will result.
+   * Hence it is best to use this method after ensuring that this element is of
+   * the desired type by calling {@link #isJsonTransient()} first.
+   *
+   * @return get this element as a {@link JsonTransient}.
+   * @throws IllegalStateException if the element is of another type.
    */
   public JsonTransient asJsonTransient() {
     if (isJsonTransient()) { return (JsonTransient) this; }
     throw new IllegalStateException("Not a JSON Transient: " + this);
+  }
+
+  public JsonTransient asJsonTransient(final JsonTransient defaultValue) {
+    return isJsonTransient() ? asJsonTransient() : defaultValue;
+  }
+
+  public JsonTransient asJsonTransient(final Object value) {
+    return isJsonTransient() ? asJsonTransient() : value != null ? new JsonTransient(value) : null;
   }
 
   /**
@@ -408,6 +428,58 @@ public abstract class JsonElement {
     } catch (RuntimeException e) {
       return defaultValue;
     }
+  }
+  
+  public Date asDate() {
+    throw new UnsupportedOperationException(getClass().getSimpleName());
+  }
+  
+  public Date asDate(Date defaultValue) {
+    try {
+      return isJsonPrimitive() ? asDate() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+  
+  public java.sql.Date asSqlDate() {
+    throw new UnsupportedOperationException(getClass().getSimpleName());
+  }
+  
+  public java.sql.Date asSqlDate(java.sql.Date defaultValue) {
+    try {
+      return isJsonPrimitive() ? asSqlDate() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+  
+  public java.sql.Time asSqlTime() {
+    throw new UnsupportedOperationException(getClass().getSimpleName());
+  }
+  
+  public java.sql.Time asSqlTime(java.sql.Time defaultValue) {
+    try {
+      return isJsonPrimitive() ? asSqlTime() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+  
+  public java.sql.Timestamp asSqlTimestamp() {
+    throw new UnsupportedOperationException(getClass().getSimpleName());
+  }
+  
+  public java.sql.Timestamp asSqlTimestamp(java.sql.Timestamp defaultValue) {
+    try {
+      return isJsonPrimitive() ? asSqlTimestamp() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+  
+  public byte[] asBytes() {
+    throw new UnsupportedOperationException(getClass().getSimpleName());
   }
 
   /**

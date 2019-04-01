@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -46,7 +47,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
   public JsonArray(int capacity) {
     elements = new ArrayList<JsonElement>(capacity);
   }
-  
+
   public JsonArray(Collection<? extends JsonElement> c) {
     elements = new ArrayList<JsonElement>();
     addAll(c);
@@ -142,7 +143,15 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *                                   bounds
    */
   public JsonElement set(int index, JsonElement element) {
-    return elements.set(index, element);
+    if (elements.size() < index) {
+      for (int i = elements.size(); i < index; i++) {
+        elements.add(JsonNull.INSTANCE);
+      }
+      elements.add(element);
+      return JsonNull.INSTANCE;
+    } else {
+      return elements.set(index, element);
+    }
   }
 
   /**
@@ -212,9 +221,61 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *                                   to the {@link #size()} of the array.
    */
   public JsonElement get(int i) {
-    final JsonElement e = elements.get(i);
-    return e != null ? e : JsonNull.INSTANCE;
+    if (elements.size() < i) {
+      return JsonNull.INSTANCE;
+    } else {
+      final JsonElement e = elements.get(i);
+      return e != null ? e : JsonNull.INSTANCE;
+    }
   }
+  
+  // ---
+
+  public JsonObject getAsJsonObject(int i) {
+    return get(i).asJsonObject();
+  }
+  
+  public JsonObject getAsJsonObject(int i, JsonObject defaultValue) {
+    return get(i).asJsonObject(defaultValue);
+  }
+  
+  public JsonObject getAsJsonObject(int i, boolean create) {
+    return get(i).asJsonObject(create);
+  }
+  
+  public boolean isJsonObject(int i) {
+    return get(i).isJsonObject();
+  }
+
+  public JsonArray getAsJsonArray(int i) {
+    return get(i).asJsonArray();
+  }
+
+  public JsonArray getAsJsonArray(int i, JsonArray defaultValue) {
+    return get(i).asJsonArray(defaultValue);
+  }
+
+  public JsonArray getAsJsonArray(int i, boolean create) {
+    return get(i).asJsonArray(create);
+  }
+
+  public boolean isJsonArray(int i) {
+    return get(i).isJsonArray();
+  }
+
+  public byte getAsByte(int i) {
+    return get(i).asByte();
+  }
+  
+  public String getAsString(int i) {
+    return get(i).asString();
+  }
+  
+  public String getAsString(int i, String defaultValue) {
+    return get(i).asString(defaultValue);
+  }
+  
+  // ---
 
   /**
    * convenience method to get this array as a {@link Number} if it contains a
@@ -391,6 +452,26 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
     throw new IllegalStateException();
   }
 
+  public Date asDate() {
+    if (elements.size() == 1) { return elements.get(0).asDate(); }
+    throw new IllegalStateException();
+  }
+
+  public java.sql.Date asSqlDate() {
+    if (elements.size() == 1) { return elements.get(0).asSqlDate(); }
+    throw new IllegalStateException();
+  }
+
+  public java.sql.Time asSqlTime() {
+    if (elements.size() == 1) { return elements.get(0).asSqlTime(); }
+    throw new IllegalStateException();
+  }
+
+  public java.sql.Timestamp asSqlTimestamp() {
+    if (elements.size() == 1) { return elements.get(0).asSqlTimestamp(); }
+    throw new IllegalStateException();
+  }
+
   @Override
   public boolean equals(Object o) {
     return (o == this) || (o instanceof JsonArray && ((JsonArray) o).elements.equals(elements));
@@ -469,7 +550,14 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
 
   @Override
   public void add(int index, JsonElement element) {
-    elements.add(index, element);
+    if (elements.size() < index) {
+      for (int i = elements.size(); i < index; i++) {
+        elements.add(JsonNull.INSTANCE);
+      }
+      elements.add(element);
+    } else {
+      elements.add(index, element);
+    }
   }
 
   @Deprecated
@@ -508,7 +596,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
   }
 
   // ---
-  
+
   public JsonArray concat(JsonElement element) {
     return concat(this, element);
   }

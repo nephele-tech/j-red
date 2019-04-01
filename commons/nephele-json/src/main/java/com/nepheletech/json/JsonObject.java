@@ -19,6 +19,7 @@ package com.nepheletech.json;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -126,8 +127,19 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
     return this;
   }
 
+  public JsonObject set(String property, Date value) {
+    set(property, createJsonElement(value));
+    return this;
+  }
+
+  public JsonObject set(String property, byte[] value) {
+    set(property, createJsonElement(value));
+    return this;
+  }
+
   public JsonObject set(String property, Object value, boolean jsonTransient) {
-    final JsonElement e = createJsonElement(value, jsonTransient);
+    final JsonElement e = value instanceof JsonElement 
+        ? (JsonElement) value : createJsonElement(value, jsonTransient);
     return set(property, e);
   }
 
@@ -224,6 +236,28 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
     return get(memberName).isJsonPrimitive();
   }
 
+  /**
+   * Convenience method to get the specified member as a JsonTransient element.
+   *
+   * @param memberName name of the member being requested.
+   * @return the JsonTransient corresponding to the specified member.
+   */
+  public JsonTransient getAsJsonTransient(String memberName) {
+    return get(memberName).asJsonTransient();
+  }
+
+  public JsonTransient getAsJsonTransient(String memberName, JsonTransient defaultValue) {
+    return get(memberName).asJsonTransient(defaultValue);
+  }
+
+  public JsonTransient getAsJsonTransient(String memberName, Object value) {
+    return get(memberName).asJsonTransient(value);
+  }
+
+  public boolean isJsonTransient(String memberName) {
+    return get(memberName).isJsonTransient();
+  }
+
   // ---
 
   public BigDecimal getAsBigDecimal(String memberName) {
@@ -239,8 +273,9 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
   }
 
   public boolean getAsBoolean(String memberName, boolean defaultValue) {
-    return isJsonPrimitive(memberName) 
-        ? getAsJsonPrimitive(memberName).asBoolean(defaultValue) : defaultValue;
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asBoolean(defaultValue)
+        : defaultValue;
   }
 
   public byte getAsByte(String memberName) {
@@ -248,8 +283,9 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
   }
 
   public byte getAsByte(String memberName, final byte defaultValue) {
-    return isJsonPrimitive(memberName) 
-        ? getAsJsonPrimitive(memberName).asByte(defaultValue) : defaultValue;
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asByte(defaultValue)
+        : defaultValue;
   }
 
   public char getAsCharacter(String memberName) {
@@ -257,8 +293,9 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
   }
 
   public char getAsCharacter(String memberName, final char defaultValue) {
-    return isJsonPrimitive(memberName) 
-        ? getAsJsonPrimitive(memberName).asCharacter(defaultValue) : defaultValue;
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asCharacter(defaultValue)
+        : defaultValue;
   }
 
   public double getAsDouble(String memberName) {
@@ -266,8 +303,9 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
   }
 
   public double getAsDouble(String memberName, final double defaultValue) {
-    return isJsonPrimitive(memberName) 
-        ? getAsJsonPrimitive(memberName).asDouble(defaultValue) : defaultValue;
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asDouble(defaultValue)
+        : defaultValue;
   }
 
   public float getAsFloat(String memberName) {
@@ -275,16 +313,19 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
   }
 
   public float getAsFloat(String memberName, final float defaultValue) {
-    return isJsonPrimitive(memberName) 
-        ? getAsJsonPrimitive(memberName).asFloat(defaultValue) : defaultValue;
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asFloat(defaultValue)
+        : defaultValue;
   }
+
   public int getAsInt(String memberName) {
     return getAsJsonPrimitive(memberName).asInt();
   }
 
   public int getAsInt(String memberName, final int defaultValue) {
-    return isJsonPrimitive(memberName) 
-        ? getAsJsonPrimitive(memberName).asInt(defaultValue) : defaultValue;
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asInt(defaultValue)
+        : defaultValue;
   }
 
   public String getAsString(String memberName) {
@@ -292,10 +333,55 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
   }
 
   public String getAsString(String memberName, final String defaultValue) {
-    return isJsonPrimitive(memberName) 
-        ? getAsJsonPrimitive(memberName).asString(defaultValue) : defaultValue;
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asString(defaultValue)
+        : defaultValue;
   }
-  
+
+  public Date getAsDate(String memberName) {
+    return getAsJsonPrimitive(memberName).asDate();
+  }
+
+  public Date getAsDate(String memberName, final Date defaultValue) {
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asDate(defaultValue)
+        : defaultValue;
+  }
+
+  public java.sql.Date getAsSqlDate(String memberName) {
+    return getAsJsonPrimitive(memberName).asSqlDate();
+  }
+
+  public java.sql.Date getAsSqlDate(String memberName, final java.sql.Date defaultValue) {
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asSqlDate(defaultValue)
+        : defaultValue;
+  }
+
+  public java.sql.Time getAsSqlTime(String memberName) {
+    return getAsJsonPrimitive(memberName).asSqlTime();
+  }
+
+  public java.sql.Time getAsSqlTime(String memberName, final java.sql.Time defaultValue) {
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asSqlTime(defaultValue)
+        : defaultValue;
+  }
+
+  public java.sql.Timestamp getAsSqlTimestamp(String memberName) {
+    return getAsJsonPrimitive(memberName).asSqlTimestamp();
+  }
+
+  public java.sql.Timestamp getAsSqlTimestamp(String memberName, final java.sql.Timestamp defaultValue) {
+    return isJsonPrimitive(memberName)
+        ? getAsJsonPrimitive(memberName).asSqlTimestamp(defaultValue)
+        : defaultValue;
+  }
+
+  public byte[] getAsBytes(String memberName) {
+    return getAsJsonPrimitive(memberName).asBytes();
+  }
+
   // ---
 
   /**

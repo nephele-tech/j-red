@@ -1,5 +1,7 @@
 package com.nepheletech.json;
 
+import java.util.Date;
+
 /**
  * 
  */
@@ -33,15 +35,33 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
   }
 
   /**
-   * Create a primitive containing a character. The character is turned into a one character String
-   * since Json only supports String.
+   * Create a primitive containing a character. The character is turned into a one
+   * character String since Json only supports String.
    *
    * @param c the value to create the primitive with.
    */
   public JsonPrimitive(Character c) {
     setValue(c);
   }
-  
+
+  /**
+   * Creates a primitive containing a date value.
+   * 
+   * @param date the value to create the primitive with.
+   */
+  public JsonPrimitive(Date date) {
+    setValue(date);
+  }
+
+  /**
+   * Creates a primitive containing a bytes value.
+   * 
+   * @param bytes the value to create the primitive with.
+   */
+  public JsonPrimitive(byte[] bytes) {
+    setValue(bytes);
+  }
+
   /**
    * Create a primitive using the specified Object. It must be an instance of
    * {@link Number}, a Java primitive type, or a String.
@@ -54,6 +74,7 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
 
   /**
    * Returns the same value as primitives are immutable.
+   * 
    * @since 2.8.2
    */
   @Override
