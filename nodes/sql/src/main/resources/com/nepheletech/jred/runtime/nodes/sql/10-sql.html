@@ -1,11 +1,11 @@
-<script type="text/x-red" data-template-name="jdbc-datasource">
+<script type="text/x-red" data-template-name="jdbc datasource">
     <div class="form-row">
         <label for="node-config-input-driver"><i class="fa fa-database"></i> <span>Driver</span></label>
         <select type="text" id="node-config-input-driver" style="width:70%;">
-            <option value="com.mysql.jdbc.Driver">MySQL</option>
+            <option value="com.mysql.cj.jdbc.Driver">MySQL</option>
             <option value="org.mariadb.jdbc.Driver">MariaDB</option>
             <option value="org.postgresql.Driver">PostgreSQL</option>
-        </select>
+        </select><!-- TODO dataSource -->
     </div>
     <div class="form-row">
         <label for="node-config-input-url"><i class="fa fa-globe"></i> <span>Url</span></label>
@@ -46,43 +46,44 @@
 </script>
 
 <script type="text/javascript">
-		RED.nodes.registerType('jdbc-datasource',{
+(function(){
+		RED.nodes.registerType('jdbc datasource',{
 				category: 'config',
 			  defaults: {
 				  name: {value: ""},
 				  driver: {value:"com.mysql.jdbc.Driver",required:true},
-				  url: {value:"",required:true}
+				  url: {value:"",required:true},
 			  },
 			  credentials: {
 				  user: {type: "text"},
 				  password: {type: "password"}
 			  },
 			  label: function() {
-			    return this.name||this.url||"jdbc-datasource";
+			    return this.name||this.url||"jdbc datasource";
 			  },
 			  labelStyle: function() {
 				  return this.name?"node_label_italic":"";
 			  },
-			  oneditprepare: function() {
-				  $("#node-config-input-driver").change(function(){
-						var driver = $("#node-config-input-driver option:selected").val();
-						if (driver === "org.mariadb.jdbc.Driver") {
-						  $("#node-config-input-url").attr("placeholder", "jdbc:mariadb://<host>:3306/<database>");
-						} else if (driver === "com.mysql.jdbc.Driver") {
-						  $("#node-config-input-url").attr("placeholder", "jdbc:mysql://<host>:3306/<database>");
-						} else if (driver === "org.postgresql.Driver") {
-						  $("#node-config-input-url").attr("placeholder", "jdbc:postgresql://host:port/<database>");
-						} else if (driver === "net.sourceforge.jtds.jdbc.Driver") {
-						  $("#node-config-input-url").attr("placeholder", "dbc:jtds:sqlserver://host:port/<database>;instance=<instance>");
-						} else if (driver === "org.apache.derby.jdbc.ClientDriver") {
-						  $("#node-config-input-url").attr("placeholder", "jdbc:derby://<host>:1527/<database>");
-						} else if (driver === "org.sqlite.JDBC") {
-						  $("#node-config-input-url").attr("placeholder", "jdbc:sqlite:<full path to Database file> or jdbc:sqlite::memory for in memory database");
-						} else {
-						  $("#node-config-input-url").attr("placeholder", "jdbc:<vendor>://<host>:<port>/<database>");
-						}
-				  });
-			  }
+        oneditprepare: function() {
+       	  $("#node-config-input-driver").change(function(){
+       		var driver = $("#node-config-input-driver option:selected").val();
+       	    if (driver === "org.mariadb.jdbc.Driver") {
+       	      $("#node-config-input-url").attr("placeholder", "jdbc:mariadb://<host>:3306/<database>");
+       	    } else if (driver === "com.mysql.cj.jdbc.Driver") {
+       	      $("#node-config-input-url").attr("placeholder", "jdbc:mysql://<host>:3306/<database>");
+       	    } else if (driver === "org.postgresql.Driver") {
+       	      $("#node-config-input-url").attr("placeholder", "jdbc:postgresql://host:port/<database>");
+       	    } else if (driver === "net.sourceforge.jtds.jdbc.Driver") {
+       	      $("#node-config-input-url").attr("placeholder", "dbc:jtds:sqlserver://host:port/<database>;instance=<instance>");
+       	    } else if (driver === "org.apache.derby.jdbc.ClientDriver") {
+       	      $("#node-config-input-url").attr("placeholder", "jdbc:derby://<host>:1527/<database>");
+       	    } else if (driver === "org.sqlite.JDBC") {
+       	      $("#node-config-input-url").attr("placeholder", "jdbc:sqlite:<full path to Database file> or jdbc:sqlite::memory for in memory database");
+       	    } else {
+       	      $("#node-config-input-url").attr("placeholder", "jdbc:<vendor>://<host>:<port>/<database>");
+       	    }
+       	  });
+        }
 		});
 
     RED.nodes.registerType('sql query',{
@@ -91,11 +92,11 @@
         defaults: {
             name: {value:""},
             sql: {value:""},
-            datasource: {type:"jdbc-datasource",required:true},
+            datasource: {type:"jdbc datasource",required:true}
         },
         inputs:1,
         outputs:1,
-        icon: "function.png",
+        icon: "db.png",
         label: function() {
             return this.name||"sql query";
         },
@@ -184,4 +185,5 @@
             this.editor.resize();
         }
     });
+})();
 </script>

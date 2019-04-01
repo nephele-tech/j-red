@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.json.JsonObject;
 
 import it.sauronsoftware.cron4j.Scheduler;
@@ -125,14 +126,14 @@ public class InjectNode extends AbstractNode implements NodesStartedEventListene
         } else if ("none".equals(payloadType)) {
           msg.set("payload", "");
         } else {
-          msg.set("payload", evaluateNodeProperty(payload, payloadType, this, msg));
+          msg.set("payload", JRedUtil.evaluateNodeProperty(payload, payloadType, this, msg));
         }
       } catch (Exception err) {
         // error(err, msg);
       }
     } else {
       try {
-        msg.set("payload", evaluateNodeProperty(payload, payloadType, this, msg));
+        msg.set("payload", JRedUtil.evaluateNodeProperty(payload, payloadType, this, msg));
       } catch (Exception err) {
         // error(err, msg);
       }

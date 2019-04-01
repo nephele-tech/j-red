@@ -14,16 +14,16 @@
 			<artifactId>jred-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-    <dependency>
-      <groupId>com.nepheletech</groupId>
-      <artifactId>servlet-utils</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>servlet-utils</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.8.1</version>
+			<version>${apache.commons-lang3.version}</version>
 		</dependency>
 
 		<!-- JavaEE Parts -->
@@ -56,21 +56,34 @@
 			<artifactId>compiler</artifactId>
 			<version>0.9.6</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.thymeleaf</groupId>
-			<artifactId>thymeleaf</artifactId>
-			<version>3.0.11.RELEASE</version>
-		</dependency>
-		 -->
-		 
+		<!-- <dependency> <groupId>org.thymeleaf</groupId> <artifactId>thymeleaf</artifactId> 
+			<version>3.0.11.RELEASE</version> </dependency> -->
+
 		<!-- FunctionNode dependencies -->
-		 
-    <dependency>
-      <groupId>com.nepheletech</groupId>
-      <artifactId>nephele-jfc</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>nephele-jfc</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Apache Camel -->
+
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core</artifactId>
+			<version>${apache.camel.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-http4</artifactId>
+			<version>${apache.camel.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-stream</artifactId>
+			<version>${apache.camel.version}</version>
+		</dependency>
 
 	</dependencies>
 	<build>

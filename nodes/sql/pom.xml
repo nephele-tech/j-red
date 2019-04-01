@@ -9,18 +9,36 @@
 	</parent>
 	<artifactId>jred-sql-nodes</artifactId>
 	<dependencies>
-    <dependency>
-      <groupId>com.nepheletech</groupId>
-      <artifactId>jred-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>jred-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Tomcat JDBC : https://tomcat.apache.org/tomcat-9.0-doc/jdbc-pool.html -->
+
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-jdbc</artifactId>
+			<version>9.0.16</version>
+		</dependency>
+
 		<!-- Camel SQL support -->
+
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-sql</artifactId>
 			<version>${apache.camel.version}</version>
 		</dependency>
+		
+		<!-- JDBC Driver(s) -->
+		
+		<dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.15</version>
+    </dependency>
+		
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>

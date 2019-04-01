@@ -3,22 +3,18 @@ package com.nepheletech.jred.runtime.nodes;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.json.JsonElement;
 import com.nepheletech.json.JsonObject;
 import com.nepheletech.json.JsonParser;
 import com.nepheletech.json.JsonPrimitive;
 
 public class TemplateNode extends AbstractNode {
-  private static final Logger logger = LoggerFactory.getLogger(TemplateNode.class);
-
   private final String field;
   private final String template;
   private final String syntax;
@@ -102,7 +98,7 @@ public class TemplateNode extends AbstractNode {
     }
 
     if ("msg".equals(fieldType)) {
-      Node.setMessageproperty(msg, field, value, true);
+      JRedUtil.setMessageproperty(msg, field, value, true);
     } else if ("flow".equals(fieldType)
         || "global".equals(fieldType)) { throw new UnsupportedOperationException(); }
   }
