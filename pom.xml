@@ -16,6 +16,7 @@
 		
 		<!-- Apache Camel -->
 		<apache.camel.version>3.0.0-M1</apache.camel.version>
+    <apache.commons-lang3.version>3.8.1</apache.commons-lang3.version>
 		
 		<!-- In sync with Apache Tomcat 9.0.14 -->
 		<servlet-api.version>4.0.1</servlet-api.version>
