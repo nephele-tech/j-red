@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
+import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
+import com.nepheletech.jred.runtime.events.NodesStoppedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.json.JsonArray;
@@ -36,7 +38,8 @@ public abstract class AbstractNode implements Node {
   protected final Flow flow;
 
   // Event listeners...
-  private MessageBusListener<NodesStartedEvent> nodesStartedEventListener = null;
+  private final MessageBusListener<NodesStartedEvent> nodesStartedEventListener;
+  private final MessageBusListener<NodesStoppedEvent> nodesStoppedEventListener;
 
   public AbstractNode(final Flow flow, final JsonObject config) {
     this.flow = flow;
@@ -57,17 +60,34 @@ public abstract class AbstractNode implements Node {
           } catch (Exception e) {
             logger.error("Unhandled exception", e);
             logger.debug(e.getMessage(), e);
-          } finally {
-            MessageBus.unsubscribe(NodesStartedEvent.class, nodesStartedEventListener);
-            nodesStartedEventListener = null;
           }
         }
       };
 
       MessageBus.subscribe(NodesStartedEvent.class, nodesStartedEventListener);
+    } else {
+      nodesStartedEventListener = null;
+    }
+
+    if (this instanceof NodesStoppedEventListener) {
+      nodesStoppedEventListener = new MessageBusListener<NodesStoppedEvent>() {
+        @Override
+        public void messageSent(String topic, NodesStoppedEvent message) {
+          try {
+            ((NodesStoppedEventListener) AbstractNode.this).onNodesStopped(message);
+          } catch (Exception e) {
+            logger.error("Unhandled exception", e);
+            logger.debug(e.getMessage(), e);
+          }
+        }
+      };
+
+      MessageBus.subscribe(NodesStoppedEvent.class, nodesStoppedEventListener);
+    } else {
+      nodesStoppedEventListener = null;
     }
   }
-  
+
   @Override
   public Flow getFlow() { return flow; }
 
@@ -115,19 +135,38 @@ public abstract class AbstractNode implements Node {
   }
 
   @Override
-  public void close() {
-    logger.debug("type:{}, id:{}, removed", type, id);
+  public final void close(boolean removed) {
+    logger.trace(">>> close: type={}, id={}, removed={}", type, id, removed);
 
     if (nodesStartedEventListener != null) {
       try {
         MessageBus.unsubscribe(NodesStartedEvent.class, nodesStartedEventListener);
       } catch (IllegalArgumentException e) {
         // ignore...
-      } finally {
-        nodesStartedEventListener = null;
       }
     }
+
+    if (nodesStoppedEventListener != null) {
+      try {
+        MessageBus.unsubscribe(NodesStoppedEvent.class, nodesStoppedEventListener);
+      } catch (IllegalArgumentException e) {
+        // ignore...
+      }
+
+      if (this instanceof NodesStoppedEventListener) {
+        try {
+          ((NodesStoppedEventListener) AbstractNode.this).onNodesStopped(new NodesStoppedEvent(this));
+        } catch (Exception e) {
+          logger.error("Unhandled exception", e);
+          logger.debug(e.getMessage(), e);
+        }
+      }
+    }
+
+    onClosed(removed);
   }
+
+  protected void onClosed(boolean removed) {}
 
   @Override
   public final void send(JsonElement _msg) {
@@ -255,10 +294,10 @@ public abstract class AbstractNode implements Node {
   }
 
   protected abstract void onMessage(JsonObject msg);
-  
+
   private void log_helper(int level, Object msg) {
     logger.trace(">>> log_helper: level={}, msg={}", level, msg);
-    
+
     final JsonObject o = new JsonObject()
         .set("id", getAlias() != null ? getAlias() : getId())
         .set("type", getType())
@@ -310,7 +349,7 @@ public abstract class AbstractNode implements Node {
       o.set("level", level);
     }
 
-    publish("debug", o);
+    JRedUtil.publish("debug", "debug", o);
   }
 
   protected void log(JsonObject msg) {
@@ -328,13 +367,9 @@ public abstract class AbstractNode implements Node {
    * @param msg
    */
   protected void error(Throwable t, JsonObject msg) {
-    if (t == null) {
-      throw new IllegalArgumentException("Throwable is null");
-    }
-    if (msg == null) {
-      throw new IllegalArgumentException("Message is null");
-    }
-    
+    if (t == null) { throw new IllegalArgumentException("Throwable is null"); }
+    if (msg == null) { throw new IllegalArgumentException("Message is null"); }
+
     if (t != null) {
       error0(t, msg.deepCopy());
     }
@@ -346,21 +381,15 @@ public abstract class AbstractNode implements Node {
    * @param logMessage
    * @param msg
    */
-//@formatter:on
+  //@formatter:on
   /*
-  protected void error(String logMessage, JsonObject msg) {
-    if (logMessage == null) {
-      throw new IllegalArgumentException("`logMessage` is null");
-    }
-    if (msg == null) {
-      throw new IllegalArgumentException("Message is null");
-    }
-    
-    error0(logMessage, msg.deepCopy()
-        .set("error", new JsonObject()
-            .set("message", logMessage)));
-  }
-  */
+   * protected void error(String logMessage, JsonObject msg) { if (logMessage ==
+   * null) { throw new IllegalArgumentException("`logMessage` is null"); } if (msg
+   * == null) { throw new IllegalArgumentException("Message is null"); }
+   * 
+   * error0(logMessage, msg.deepCopy() .set("error", new JsonObject()
+   * .set("message", logMessage))); }
+   */
 //@formatter:off
 
   private void error0(Throwable logMessage, JsonObject msg) {
@@ -393,7 +422,13 @@ public abstract class AbstractNode implements Node {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * 
+   * @param status <code>{ fill:"red|green", shape:"dot|ring", text:"blah" }</code>
+   */
   protected void status(JsonObject status) {
+    logger.trace(">>> status: {}", status);
+    
     flow.handleStatus(this, status, null, false);
   }
 
@@ -407,15 +442,4 @@ public abstract class AbstractNode implements Node {
   private static final int AUDIT = 98;
   private static final int METRIC = 99;
 
-  // ---
-
-  protected static void publish(String topic, JsonObject data) {
-    publish(topic, topic, data);
-  }
-
-  protected static void publish(String localTopic, String topic, JsonObject data) {
-    MessageBus.sendMessage(localTopic, new JsonObject()
-        .set("topic", topic)
-        .set("data", data));
-  }
 }

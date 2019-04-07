@@ -23,7 +23,7 @@ public interface Node {
 
   void receive(JsonObject msg);
 
-  void close();
+  void close(boolean removed);
 
   Flow getFlow();
 

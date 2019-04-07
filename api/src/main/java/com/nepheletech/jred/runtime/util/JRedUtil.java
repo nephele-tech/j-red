@@ -1,5 +1,8 @@
 package com.nepheletech.jred.runtime.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jayway.jsonpath.JsonPath;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.json.JsonArray;
@@ -9,8 +12,10 @@ import com.nepheletech.json.JsonObject;
 import com.nepheletech.json.JsonParser;
 import com.nepheletech.json.JsonPrimitive;
 import com.nepheletech.json.JsonUtil;
+import com.nepheletech.messagebus.MessageBus;
 
 public final class JRedUtil {
+  private static final Logger logger = LoggerFactory.getLogger(JRedUtil.class);
 
   private JRedUtil() {}
   
@@ -49,7 +54,8 @@ public final class JRedUtil {
     } else if ("date".equals(type)) {
       return new JsonPrimitive(System.currentTimeMillis());
     } else if ("bin".equals(type)) {
-      throw new UnsupportedOperationException();
+      final JsonArray byteArray = JsonParser.parse(value).asJsonArray();
+      return new JsonPrimitive(JRedUtil.toBuffer(byteArray));
     } else if ("msg".equals(type) && msg != null) {
       return getMessageProperty(msg, value);
     } else if ("flow".equals(type) || "global".equals(type)) {
@@ -193,5 +199,17 @@ public final class JRedUtil {
           .set("lineNumber", e.getLineNumber()));
     }
     return stackTrace;
+  }
+  
+  public static void publish(String localTopic, String topic, JsonObject data) {
+    MessageBus.sendMessage(localTopic, new JsonObject()
+        .set("topic", topic)
+        .set("data", data));
+  }
+  
+  public static void publish(String localTopic, String topic, JsonObject data, boolean retain) { // TODO retain
+    MessageBus.sendMessage(localTopic, new JsonObject()
+        .set("topic", topic)
+        .set("data", data));
   }
 }
