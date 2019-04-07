@@ -1,0 +1,24 @@
+<script type="text/x-red" data-template-name="camel context">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
+        <input type="text" id="node-config-input-name" data-i18n="[placeholder]common.label.name">
+    </div>
+    <div class="form-tips"><span>lala</span></div>
+</script>
+
+<script type="text/javascript">
+(function(){
+	RED.nodes.registerType('camel context',{
+		category: 'config',
+		defaults: {
+			name: {value:""}
+		},
+		label: function() {
+			  return this.name||"camel context";
+		},
+		labelStyle: function() {
+			  return this.name?"node_label_italic":"";
+		}
+	});
+})();
+</script>

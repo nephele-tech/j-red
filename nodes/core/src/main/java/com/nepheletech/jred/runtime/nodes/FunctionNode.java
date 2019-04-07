@@ -69,21 +69,18 @@ public class FunctionNode extends AbstractNode {
 
   public void setStopHandler(Runnable stopHandler) { this.stopHandler = stopHandler; }
 
-  public void stop() {
-    logger.trace(">>> stop");
+  @Override
+  protected void onClosed(boolean removed) {
+    logger.trace(">>> onClosed");
 
-    try {
-      if (stopHandler != null) {
-        try {
-          stopHandler.run();
-        } catch (Exception e) {
-          e.printStackTrace();
-          // TODO report error
-        }
-        stopHandler = null;
+    if (stopHandler != null) {
+      try {
+        stopHandler.run();
+      } catch (Exception e) {
+        e.printStackTrace();
+        // TODO report error
       }
-    } finally {
-      super.close();
+      stopHandler = null;
     }
   }
 

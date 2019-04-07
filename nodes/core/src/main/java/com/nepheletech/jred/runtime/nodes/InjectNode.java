@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
+import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
+import com.nepheletech.jred.runtime.events.NodesStoppedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.json.JsonObject;
@@ -20,7 +22,8 @@ import it.sauronsoftware.cron4j.Scheduler;
 /**
  * 
  */
-public class InjectNode extends AbstractNode implements NodesStartedEventListener {
+public class InjectNode extends AbstractNode 
+    implements NodesStartedEventListener, NodesStoppedEventListener {
   private final Logger logger = LoggerFactory.getLogger(InjectNode.class);
 
   private final String topic;
@@ -50,7 +53,7 @@ public class InjectNode extends AbstractNode implements NodesStartedEventListene
   }
 
   @Override
-  public void onNodesStarted(NodesStartedEvent event) {
+  public void onNodesStarted(NodesStartedEvent event) throws Exception {
     logger.trace(">>> onNodesStarted");
 
     if (this.once && this.onceDelay > 0L) {
@@ -82,10 +85,10 @@ public class InjectNode extends AbstractNode implements NodesStartedEventListene
       receive(null);
     }
   }
-
+  
   @Override
-  public void close() {
-    logger.trace(">>> close");
+  public void onNodesStopped(NodesStoppedEvent event) throws Exception {
+    logger.trace(">>> onNodesStopped");
 
     if (cron4jScheduler != null) {
       try {
@@ -106,13 +109,11 @@ public class InjectNode extends AbstractNode implements NodesStartedEventListene
         fixedRateScheduler = null;
       }
     }
-
-    super.close();
   }
 
   @Override
   protected void onMessage(JsonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
+    logger.trace(">>> onMessage: id={}, msg={}", getId(), msg);
 
     msg.set("topic", topic);
 

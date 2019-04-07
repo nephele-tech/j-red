@@ -87,14 +87,13 @@ public class SqlQueryNode extends AbstractNode implements NodesStartedEventListe
   }
 
   @Override
-  public void close() {
+  protected void onClosed(boolean removed) {
+    logger.trace(">>> onClosed");
     try {
       camelContext.stop();
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
-    } finally {
-      super.close();
     }
   }
 

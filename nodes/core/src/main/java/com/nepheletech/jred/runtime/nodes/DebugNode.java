@@ -1,17 +1,19 @@
 package com.nepheletech.jred.runtime.nodes;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
+import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonElement;
 import com.nepheletech.json.JsonObject;
 import com.nepheletech.json.JsonPrimitive;
-import com.nepheletech.messagebus.MessageBus;
 
 public final class DebugNode extends AbstractNode {
   private final Logger logger = LoggerFactory.getLogger(DebugNode.class);
@@ -35,7 +37,7 @@ public final class DebugNode extends AbstractNode {
     final String complete = hasEditExpression ? null : config.get("complete").asString("payload");
     this.complete = "false".equals(complete) ? "payload" : complete;
     this.console = config.get("console").asBoolean(false);
-    this.tostatus = !"true".contentEquals(this.complete) && config.get("tostatus").asBoolean(false);
+    this.tostatus = !"true".contentEquals(this.complete) && config.getAsBoolean("tostatus", false);
     this.tosidebar = config.get("tosidebar").asBoolean(true);
     this.severity = config.get("severity").asInt(40);
     this.active = config.get("active").asBoolean(true);
@@ -64,7 +66,7 @@ public final class DebugNode extends AbstractNode {
 
   @Override
   protected void onMessage(final JsonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
+    logger.trace(">>> onMessage: id={}, msg={}", getId(), msg);
 
     if ("true".equals(complete)) {
       // debug complete msg object
@@ -80,12 +82,12 @@ public final class DebugNode extends AbstractNode {
             .set("_path", msg.get("_path")));
       }
     } else {
-      prepareValue(msg, (error, m) -> {
+      prepareValue(msg, (error, _msg) -> {
         if (error != null) {
           error(error, null);
           return;
         }
-        final JsonElement output = msg.get("msg");
+        final JsonElement output = _msg.get("msg");
         if (this.console) {
           if (output.isJsonPrimitive()) {
             final JsonPrimitive _output = output.asJsonPrimitive();
@@ -97,10 +99,20 @@ public final class DebugNode extends AbstractNode {
           }
         }
         if (tostatus) {
-          // TODO
+          String st = output.isJsonPrimitive() ? output.asString() : output.toString();
+          if (st.length() > 32) {
+            st = st.substring(0, 32) + "...";
+          }
+          
+          logger.debug("send status: {}", st);
+          
+          status(new JsonObject()
+              .set("fill", "grey")
+              .set("shape", "dot")
+              .set("text", st));
         }
         if (active && tosidebar) {
-          sendDebug(m);
+          sendDebug(_msg);
         }
       });
     }
@@ -111,9 +123,8 @@ public final class DebugNode extends AbstractNode {
 
     // don't put blank errors in sidebar (but do add to logs)
     msg = encodeObject(msg, null); // FIXME maxLength
-    MessageBus.sendMessage("debug", new JsonObject()
-        .set("topic", "debug")
-        .set("data", msg));
+    
+    JRedUtil.publish("debug", "debug", msg);
   }
 
   private void prepareValue(JsonObject msg, BiConsumer<Throwable, JsonObject> done) {
@@ -129,6 +140,7 @@ public final class DebugNode extends AbstractNode {
         output = msg.get(property); // XXX FIXME
       }
       done.accept(null, new JsonObject()
+          //.set("id", Optional.ofNullable(getAlias()).orElse(getId()))
           .set("id", getId())
           .set("z", getZ())
           .set("name", getName())
@@ -146,6 +158,7 @@ public final class DebugNode extends AbstractNode {
     }
 
     final JsonElement _msg = msg.get("msg");
+    
     if (_msg.isJsonObject()) {
       msg.set("format", "Object");
       msg.set("msg", _msg.toString());
@@ -171,6 +184,15 @@ public final class DebugNode extends AbstractNode {
       } else if (p.isNumber()) {
         msg.set("format", "number");
         msg.set("msg", _msg);
+      } else if (p.getValue() instanceof byte[]) {
+        final byte[] buffer = (byte[]) p.getValue();
+        final int bufferLength = buffer.length;
+        msg.set("format", "buffer[" + bufferLength + "]");
+        if (bufferLength > debugLength) {
+          msg.set("msg", new JsonPrimitive(Hex.encodeHexString(Arrays.copyOf(buffer, debugLength))));
+        } else {
+          msg.set("msg", new JsonPrimitive(Hex.encodeHexString(buffer)));
+        }
       } else {
         final String str = p.asString();
         final int strLength = str.length();

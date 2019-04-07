@@ -11,8 +11,6 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.Builder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
@@ -23,7 +21,6 @@ import com.nepheletech.json.JsonParser;
 import com.nepheletech.json.JsonPrimitive;
 
 public class HttpRequestNode extends AbstractNode implements NodesStartedEventListener, Processor {
-  private static final Logger logger = LoggerFactory.getLogger(HttpRequestNode.class);
 
   private final String method;
   private final String url;
@@ -181,14 +178,13 @@ public class HttpRequestNode extends AbstractNode implements NodesStartedEventLi
   }
 
   @Override
-  public void close() {
+  protected void onClosed(boolean removed) {
+    logger.trace(">>> onClosed");
     try {
       this.camelContext.stop();
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
-    } finally {
-      super.close();
     }
   }
 }

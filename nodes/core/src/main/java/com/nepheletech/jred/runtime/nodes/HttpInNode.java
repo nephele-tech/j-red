@@ -43,20 +43,16 @@ public class HttpInNode extends AbstractNode implements NodesStartedEventListene
   @Override
   public void onNodesStarted(NodesStartedEvent event) {
     logger.trace(">>> ----------------------------- onNodesStarted: event={}", event);
-    
+
     logger.debug("subscribe to: {}", requestListenerTopic);
     MessageBus.subscribe(requestListenerTopic, requestListener);
   }
 
   @Override
-  public void close() {
-    logger.trace(">>> close");
+  protected void onClosed(boolean removed) {
+    logger.trace(">>> onClosed");
 
-    try {
-      MessageBus.subscribe(requestListenerTopic, requestListener);
-    } finally {
-      super.close();
-    }
+    MessageBus.subscribe(requestListenerTopic, requestListener);
   }
 
   @Override
@@ -64,9 +60,9 @@ public class HttpInNode extends AbstractNode implements NodesStartedEventListene
     logger.trace(">>> onMessage: msg={}", msg);
 
     // TODO uploads...
-    
+
     logger.info("-------------------------{}", JsonUtil.getProperty(msg, "req._pathInfo"));
-    
+
     send(msg);
   }
 }

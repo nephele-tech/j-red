@@ -1,0 +1,87 @@
+<script type="text/x-red" data-template-name="kafka in">
+    <div class="form-row">
+        <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
+        <input type="text" id="node-input-context">
+    </div>
+    <div class="form-row">
+        <label for="node-input-broker"><i class="fa fa-globe"></i> <span">Broker</span></label>
+        <input type="text" id="node-input-broker" placeholder="localhost:9092">
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic"><i class="fa fa-tasks"></i> <span data-i18n="common.label.topic"></span></label>
+        <input type="text" id="node-input-topic" data-i18n="[placeholder]common.label.topic">
+    </div>
+    <div class="form-row">
+        <label for="node-input-groupId"><i class="fa fa-tags"></i> <span">Group Id</span></label>
+        <input type="text" id="node-input-groupId" placeholder="localhost:9092">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
+    </div>
+</script>
+
+<script type="text/javascript">
+RED.nodes.registerType('kafka in',{
+    category: 'input',
+    defaults: {
+        name: {value:""},
+        broker: {value:"",required:true},
+        topic: {value:"",required:true},
+        groupId: {value:""},
+        context: {type:'camel context',required:true},
+    },
+    color:"#d8bfd8",
+    inputs:0,
+    outputs:1,
+    icon: "bridge.png",
+    label: function() {
+        return this.name||this.topic||"kafka";
+    },
+    labelStyle: function() {
+        return this.name?"node_label_italic":"";
+    }
+});
+</script>
+
+<script type="text/x-red" data-template-name="kafka out">
+    <div class="form-row">
+        <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
+        <input type="text" id="node-input-context">
+    </div>
+    <div class="form-row">
+        <label for="node-input-broker"><i class="fa fa-globe"></i> <span">Broker</span></label>
+        <input type="text" id="node-input-broker" placeholder="localhost:9092">
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic"><i class="fa fa-tasks"></i> <span data-i18n="common.label.topic"></span></label>
+        <input type="text" id="node-input-topic" data-i18n="[placeholder]common.label.topic">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
+    </div>
+</script>
+
+<script type="text/javascript">
+RED.nodes.registerType('kafka out',{
+    category: 'output',
+    defaults: {
+        name: {value:""},
+        broker: {value:"",required:true},
+        topic: {value:"",required:true},
+        context: {type:'camel context',required:true},
+    },
+    color:"#d8bfd8",
+    inputs:1,
+    outputs:0,
+    icon: "bridge.png",
+    align: "right",
+    label: function() {
+        return this.name||this.topic||"kafka";
+    },
+    labelStyle: function() {
+        return this.name?"node_label_italic":"";
+    }
+});
+</script>
