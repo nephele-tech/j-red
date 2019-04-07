@@ -274,14 +274,33 @@ public class Subflow extends FlowImpl {
    */
   @Override
   public JsonElement getSetting(String name) {
-    if (env.has(name)) {
-      final JsonObject val = env.getAsJsonObject(name);
-      try {
-        return JRedUtil.evaluateNodeProperty(val.getAsString("value"), val.getAsString("type"), this.node, null);
-      } catch (RuntimeException e) {
-        e.printStackTrace(); // TODO
-        return JsonNull.INSTANCE;
+    if (!name.startsWith("$parent.")) {
+      if (env.has(name)) {
+        final JsonObject val = env.getAsJsonObject(name);
+        // If this is an env type property we need to be careful not
+        // to get into lookup loops.
+        // 1. if the value to lookup is the same as this one, go straight to parent
+        // 2. otherwise, check if it is a compound env var ("foo $(bar)")
+        // and if so, substitute any instances of `name` with $parent.name
+        // See https://github.com/node-red/node-red/issues/2099
+        if (!"env".equals(val.getAsString("type")) || !name.equals(val.getAsString("value"))) {
+          String value = val.getAsString("value");
+          if ("env".equals(val.getAsString("type"))) {
+            value = value.replaceAll("\\${" + name + "}", "${$parent." + name + "}"); // XXX ???
+          }
+          try {
+            return JRedUtil.evaluateNodeProperty(value, val.getAsString("type"), this.node, null);
+          } catch (RuntimeException e) {
+            e.printStackTrace(); // TODO
+            return JsonNull.INSTANCE;
+          }
+        } else {
+          // This _is_ an env property pointing at itself - go to parent
+        }
       }
+    } else {
+      // name start $parent. ... so delegate to parent automatically
+      name = name.substring(8);
     }
 
     return (parent != null)
