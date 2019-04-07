@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -91,7 +92,7 @@ public class FlowImpl implements Flow {
    */
   @Override
   public void start(final JsonObject diff) {
-    logger.trace(">>> start: diff={}", diff);
+    logger.trace("------------------------------------------------------->>> start: id={}, diff={}", this.id, diff);
 
     Node newNode = null;
 
@@ -289,7 +290,7 @@ public class FlowImpl implements Flow {
     logger.trace(">>> stopNode: {}:{} {}", node.getType(), node.getId(), (removed ? " removed" : ""));
 
     try {
-      node.close(); // TODO timeout
+      node.close(removed);
       logger.trace("Stopped node: {}:{}", node.getType(), node.getId());
     } catch (RuntimeException e) {
       logger.error("Error stopping node: {}:{}", node.getType(), node.getId());
@@ -393,26 +394,51 @@ public class FlowImpl implements Flow {
   @Override
   public boolean handleStatus(final Node node, final JsonObject statusMessage, Node reportingNode,
       final boolean muteStatusEvent) {
+    logger.trace(">>> handleStatus: node={}, statusMessage={}, reportingNode={}, muteStatusEvent={}",
+        node, statusMessage, reportingNode, muteStatusEvent);
+    
     if (reportingNode == null) {
       reportingNode = node;
     }
     if (!muteStatusEvent) {
       MessageBus.sendMessage("node-status", new JsonObject()
-          .set("id", node.getId())
-          .set("stats", statusMessage));
+          .set("id", Optional.ofNullable(node.getAlias()).orElse(node.getId()))
+          .set("status", statusMessage));
     }
 
     boolean handled = false;
 
-    // final JsonArray users = node.get("users").asJsonArray(true);
     if ("global".equals(this.id)) {
       // This is a global config node
       // Delegate status to any nodes using this config node
 
-      // TODO
+      throw new UnsupportedOperationException("global");
+      
+    } else {
+      for (StatusNode targetStatusNode : statusNodes) {
+        //@formatter:off
+//        final Set<String> scope = targetStatusNode.getScope();
+//        if (scope != null && !scope.contains(reportingNode.getId())) {
+//          break;
+//        }
+        //@formatter:on
+        
+        final JsonObject message = new JsonObject()
+            .set("status", statusMessage.deepCopy());
+        
+        if (statusMessage.has("text")) {
+          message.getAsJsonObject("status").set("text", statusMessage.getAsString("text"));
+        }
 
-      handled = true;
-    } else {}
+        message.getAsJsonObject("status").set("source", new JsonObject()
+            .set("id", node.getAlias() != null ? node.getAlias() : node.getId())
+            .set("type", node.getType())
+            .set("name", node.getName()));
+        
+        targetStatusNode.receive(message);
+        handled = true;
+      }
+    }
 
     return handled;
   }
@@ -453,9 +479,6 @@ public class FlowImpl implements Flow {
 
       throw new UnsupportedOperationException("global");
 
-      // TODO
-
-      // handled = true;
     } else {
       boolean handledByUncaught = false;
 

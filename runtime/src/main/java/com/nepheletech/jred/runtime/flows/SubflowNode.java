@@ -23,8 +23,8 @@ final class SubflowNode extends AbstractNode {
   }
 
   @Override
-  public void close() {
-    super.close();
+  protected void onClosed(boolean removed) {
+    logger.trace(">>> onClosed");
 
     // TODO clear status
   }

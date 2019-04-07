@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.FlowsRuntime;
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
+import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
 import com.nepheletech.jred.runtime.events.RuntimeDeployEvent;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.json.JsonArray;
@@ -429,7 +430,8 @@ public final class FlowsManager {
       }
     }
 
-    // TODO events.emit("nodes-stopped");
+    // events.emit("nodes-stopped");
+    MessageBus.sendMessage(new NodesStoppedEvent(this));
   }
   
   // -----
