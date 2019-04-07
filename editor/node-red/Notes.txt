@@ -1,0 +1,21 @@
+Node-RED 0.20.x
+============================================================================
+
+
+WebSocket Subscriptions:
+============================================================================
+
+1. ui/deploy.js subscribes to:
+
+    a. "notification/runtime-deploy"
+
+2. red.js subscribes to:
+
+    a. "notification/#"
+    b. "status/#"
+    c. "notification/node/#"
+    d. "event-log/#"
+
+3. nodes/core/core/58-debug.html subscribes to:
+
+    a. "debug"

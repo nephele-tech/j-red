@@ -24,7 +24,7 @@
   limitations under the License.
 -->
 <head>
-<title>Node-RED</title>
+<title>${pageContext.request.contextPath}</title>
 <link rel="icon" type="image/png" href="favicon.ico">
 <link rel="mask-icon" href="red&#x2F;images&#x2F;node-red-icon-black.svg" color="#8f0000">
 <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -36,7 +36,7 @@
 </head>
 <body spellcheck="false">
 <div id="header">
-    <span class="logo"><img src="red&#x2F;images&#x2F;node-red.png"> <span>J-RED Editor</span></span>
+    <span class="logo"><img src="red&#x2F;images&#x2F;node-red.png"> <span>J-RED Editor: ${pageContext.request.contextPath}</span></span>
     <ul class="header-toolbar hide">
         <li><a id="btn-sidemenu" class="button" data-toggle="dropdown" href="#"><i class="fa fa-bars"></i></a></li>
     </ul>
@@ -92,3 +92,4 @@
 
 </body>
 </html>
+
