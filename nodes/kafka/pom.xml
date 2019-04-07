@@ -11,7 +11,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.nepheletech</groupId>
-			<artifactId>jred-camel-core</artifactId>
+			<artifactId>jred-camel-core-nodes</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

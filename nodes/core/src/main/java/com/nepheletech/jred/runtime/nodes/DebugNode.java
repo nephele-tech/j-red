@@ -170,9 +170,10 @@ public final class DebugNode extends AbstractNode {
         msg.set("msg", new JsonObject()
             .set("__enc__", true)
             .set("type", "array")
-            .set("data", new JsonArray(a.subList(0, debugLength))));
+            .set("data", new JsonArray(a.subList(0, debugLength)))
+            .set("length", debugLength).toString());
       } else {
-        // TODO
+        msg.set("msg", a.toString());
       }
     } else if (_msg.isJsonPrimitive()) {
       final JsonPrimitive p = _msg.asJsonPrimitive();

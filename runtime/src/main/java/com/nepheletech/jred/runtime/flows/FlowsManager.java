@@ -34,7 +34,6 @@ public final class FlowsManager {
   private boolean credentialsPendingReset = false;
 
   private final Map<String, String> activeNodesToFlow = new HashMap<>();
-  private final JsonObject subflowInstanceNodeMap = new JsonObject();
 
   private final Credentials credentials;
 
