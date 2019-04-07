@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nepheletech</groupId>
 	<artifactId>jred</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<packaging>pom</packaging>
 	<properties>
 		<java.version>8</java.version>
@@ -15,7 +15,7 @@
 		<slf4j.version>1.7.25</slf4j.version>
 		
 		<!-- Apache Camel -->
-		<apache.camel.version>3.0.0-M1</apache.camel.version>
+		<apache.camel.version>3.0.0-M2</apache.camel.version>
     <apache.commons-lang3.version>3.8.1</apache.commons-lang3.version>
 		
 		<!-- In sync with Apache Tomcat 9.0.14 -->

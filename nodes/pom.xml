@@ -3,12 +3,14 @@
   <parent>
     <groupId>com.nepheletech</groupId>
     <artifactId>jred</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2</version>
   </parent>
   <artifactId>jred-nodes</artifactId>
   <packaging>pom</packaging>
   <modules>
     <module>core</module>
     <module>sql</module>
+    <module>kafka</module>
+    <module>camel-core</module>
   </modules>
 </project>

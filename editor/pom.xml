@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.nepheletech</groupId>
 		<artifactId>jred</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.2</version>
 	</parent>
 	<artifactId>jred-editor</artifactId>
 	<packaging>war</packaging>
@@ -23,6 +23,11 @@
     <dependency>
       <groupId>com.nepheletech</groupId>
       <artifactId>jred-sql-nodes</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.nepheletech</groupId>
+      <artifactId>jred-kafka-nodes</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
