@@ -65,4 +65,11 @@ public interface Flow {
    */
   JsonObject getContext(String type);
 
+  /**
+   * 
+   * @param id
+   * @return
+   */
+  JsonObject getCredentials(String id);
+
 }

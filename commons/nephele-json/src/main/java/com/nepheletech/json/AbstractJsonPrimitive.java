@@ -260,7 +260,19 @@ public abstract class AbstractJsonPrimitive extends JsonElement {
         : isString() ? new java.sql.Timestamp(DatatypeConverter.parseDateTime(asString()).getTime().getTime())
             : new java.sql.Timestamp(asLong(0L));
   }
+  
+  /**
+   * Check whether this primitive contains a buffer (byte array).
+   *
+   * @return true if this primitive contains a buffer, false otherwise.
+   */
+  public boolean isBuffer() { return value instanceof byte[]; }
 
+  /**
+   * convenience method to get this element as a byte array.
+   *
+   * @return get this element as a primitive byte array.
+   */
   @Override
   public byte[] asBytes() {
     return value instanceof byte[] ? (byte[]) value : 

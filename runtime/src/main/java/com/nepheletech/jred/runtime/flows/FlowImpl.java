@@ -92,7 +92,7 @@ public class FlowImpl implements Flow {
    */
   @Override
   public void start(final JsonObject diff) {
-    logger.trace("------------------------------------------------------->>> start: id={}, diff={}", this.id, diff);
+    logger.trace(">>> start: id={}, diff={}", this.id, diff);
 
     Node newNode = null;
 
@@ -449,7 +449,7 @@ public class FlowImpl implements Flow {
    */
   @Override
   public boolean handleError(final Node node, final Throwable logMessage, final JsonObject msg, Node reportingNode) {
-    logger.trace("-------------------------------> handleError: {}", logMessage);
+    logger.trace(">>> handleError: {}", logMessage);
 
     if (reportingNode == null) {
       reportingNode = node;
@@ -534,5 +534,10 @@ public class FlowImpl implements Flow {
     } else {
       return parent.getContext(type);
     }
+  }
+  
+  @Override
+  public JsonObject getCredentials(String id) {
+    return parent.getCredentials(id);
   }
 }

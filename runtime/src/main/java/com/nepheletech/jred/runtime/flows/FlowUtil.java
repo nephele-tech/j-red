@@ -18,7 +18,9 @@ import org.slf4j.LoggerFactory;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonElement;
+import com.nepheletech.json.JsonNull;
 import com.nepheletech.json.JsonObject;
+import com.nepheletech.json.JsonPrimitive;
 import com.nepheletech.messagebus.MessageBus;
 
 public final class FlowUtil {
@@ -289,7 +291,7 @@ public final class FlowUtil {
               if ("subflow".equals(newNodeType)) {
                 changedSubflows.set(id, newNode);
               }
-              // Mark the container as changed 
+              // Mark the container as changed
               final String newNodeZ = newNode.getAsString("z", null);
               if (allNewNodes.has(newNodeZ)) {
                 final JsonObject container = allNewNodes.get(newNodeZ).asJsonObject();
@@ -486,6 +488,60 @@ public final class FlowUtil {
     return !Objects.equals(oldNode, newNode);
   }
 
+  private static void mapEnvVarProperties(JsonObject obj, String prop, Flow flow) {
+    final JsonElement v = obj.get(prop);
+    if (v.isJsonPrimitive()) {
+      final JsonPrimitive p = v.asJsonPrimitive();
+      if (p.isString()) {
+        final String value = p.asString();
+        if (value.startsWith("$") && value.matches("^\\$\\{(\\S+)\\}$")) {
+          final String envVar = value.substring(2, value.length() - 1);
+          final JsonElement r = flow.getSetting(envVar);
+          obj.set(prop, r != JsonNull.INSTANCE ? r : v);
+        }
+      }
+    } else if (v.isJsonArray()) {
+      final JsonArray a = v.asJsonArray();
+      for (int i = 0, iMax = a.size(); i < iMax; i++) {
+        mapEnvVarProperties(a, i, flow);
+      }
+    } else if (v.isJsonObject()) {
+      final JsonObject o = v.asJsonObject();
+      for (String p : o.keySet()) {
+        mapEnvVarProperties(o, p, flow);
+      }
+    } else {
+      return;
+    }
+  }
+
+  private static void mapEnvVarProperties(JsonArray arr, int index, Flow flow) {
+    final JsonElement v = arr.get(index);
+    if (v.isJsonPrimitive()) {
+      final JsonPrimitive p = v.asJsonPrimitive();
+      if (p.isString()) {
+        final String value = p.asString();
+        if (value.startsWith("$") && value.matches("^\\$\\{(\\S+)\\}$")) {
+          final String envVar = value.substring(2, value.length() - 1);
+          final JsonElement r = flow.getSetting(envVar);
+          arr.set(index, r != JsonNull.INSTANCE ? r : v);
+        }
+      }
+    } else if (v.isJsonArray()) {
+      final JsonArray a = v.asJsonArray();
+      for (int i = 0, iMax = a.size(); i < iMax; i++) {
+        mapEnvVarProperties(a, i, flow);
+      }
+    } else if (v.isJsonObject()) {
+      final JsonObject o = v.asJsonObject();
+      for (String p : o.keySet()) {
+        mapEnvVarProperties(o, p, flow);
+      }
+    } else {
+      return;
+    }
+  }
+
   // TODO should be moved to a JSON helper class.
   private static JsonArray stackTrace(Throwable t) {
     final JsonArray stackTrace = new JsonArray();
@@ -521,13 +577,13 @@ public final class FlowUtil {
     Node newNode = null;
 
     try {
-      final String type = config.get("type").asString();
+      final String type = config.getAsString("type");
       final Constructor<?> nodeTypeConstructor = getConstructor(type);
       if (nodeTypeConstructor != null) {
         final JsonObject conf = config.deepCopy();
         conf.remove("credentials");
         for (String p : conf.keySet()) {
-          // TODO mapEnvVarProperties(conf, p, flow);
+          mapEnvVarProperties(conf, p, flow);
         }
         newNode = (Node) nodeTypeConstructor.newInstance(flow, conf);
       } else {
@@ -535,7 +591,7 @@ public final class FlowUtil {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      
+
       Throwable rootCause = ExceptionUtils.getRootCause(e);
       if (rootCause == null) {
         rootCause = e;

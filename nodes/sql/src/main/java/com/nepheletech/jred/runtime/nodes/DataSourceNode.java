@@ -34,29 +34,15 @@ public class DataSourceNode extends AbstractConfigurationNode {
       this.driver = driverType;
     }
 
-    final String url = config.getAsString("url");
-    final String urlType = config.getAsString("url", "str");
+    this.url = config.getAsString("url");
 
-    if ("str".equals(urlType) || "env".equals(urlType)) {
-      this.url = JRedUtil.evaluateNodeProperty(url, urlType).asString();
-    } else {
-      this.url = url;
-    }
-
-    final JsonObject credentials = config.getAsJsonObject("credentials", false);
-
-    logger.debug("credentials: {}", credentials);
-
+    final JsonObject credentials = getFlow().getCredentials(getId());
     if (credentials != null) {
-      final String user = credentials.getAsString("user", null);
-      final String userType = credentials.getAsString("userType", "str");
-      this.user = JRedUtil.evaluateNodeProperty(user, userType).asString();
-      final String password = credentials.getAsString("password", null);
-      final String passwordType = credentials.getAsString("passwordType", null);
-      this.password = JRedUtil.evaluateNodeProperty(password, passwordType).asString();
+      this.user = credentials.getAsString("user", null);
+      this.password = credentials.getAsString("password", null);
     } else {
-      this.user = "p8p";
-      this.password = "p8p";
+      this.user = "";
+      this.password = "";
     }
 
     // ---
@@ -66,9 +52,6 @@ public class DataSourceNode extends AbstractConfigurationNode {
     properties.put("javax.persistence.jdbc.url", this.url);
     properties.put("javax.persistence.jdbc.user", this.user);
     properties.put("javax.persistence.jdbc.password", this.password);
-    
-    logger.debug("------------------------------------{}", properties);
-
     final NepheleDaoFactory factory = new NepheleDaoFactory(properties);
     this.dao = factory.create();
   }

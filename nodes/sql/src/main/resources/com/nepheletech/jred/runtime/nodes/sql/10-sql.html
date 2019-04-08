@@ -7,17 +7,14 @@
     <div class="form-row">
         <label for="node-config-input-url"><i class="fa fa-globe"></i> <span>Url</span></label>
         <input type="text" id="node-config-input-url" style="width:70%">
-        <input type="hidden" id="node-config-input-urlType">
     </div>
     <div class="form-row">
         <label for="node-config-input-user"><i class="fa fa-user"></i> <span data-i18n="common.label.username"></span></label>
         <input type="text" id="node-config-input-user" style="width:70%">
-        <input type="hidden" id="node-config-input-userType">
     </div>
     <div class="form-row">
         <label for="node-config-input-password"><i class="fa fa-lock"></i> <span data-i18n="common.label.password"></span></label>
         <input type="password" id="node-config-input-password" style="width:70%">
-        <input type="hidden" id="node-config-input-passwordType">
     </div>
     <div class="form-row">
         <label for="node-config-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
@@ -65,14 +62,11 @@
 				  name: {value: ""},
 				  driver: {value:""},
 				  driverType: {value:"str"},
-				  url: {value:"",required:true},
-				  urlType: {value:"str"}
+				  url: {value:"",required:true}
 			  },
 			  credentials: {
 				  user: {type: "text"},
-		      userType: {value:"str"},
-				  password: {type: "password"},
-		      passwordType: {value:"str"}
+				  password: {type: "password"}
 			  },
 			  label: function() {
 			    return this.name||this.url||"data source";
@@ -91,47 +85,6 @@
         		typeField: $("#node-config-input-driverType"),
         		types:driverTypes
         	});
-        	
-        	// ---
-        	
-        	if (this.urlType == null) {
-        		this.urlType = "str";
-        	}
-          $("#node-config-input-urlType").val(this.urlType);
-          
-          $("#node-config-input-url").typedInput({
-            default: 'str',
-            typeField: $("#node-config-input-urlType"),
-            types:["str", "env"]
-          });
-          
-          // ---
-          
-          if (this.userType == null) {
-            this.userType = "str";
-          }
-          $("#node-config-input-userType").val(this.userType);
-          
-          $("#node-config-input-user").typedInput({
-            default: 'str',
-            typeField: $("#node-config-input-userType"),
-            types:["str", "env"]
-          });
-          
-          // ---
-          
-          if (this.passwordType == null) {
-            this.passwordType = "str";
-          }
-          $("#node-config-input-passwordType").val(this.passwordType);
-          
-          $("#node-config-input-password").typedInput({
-            default: 'str',
-            typeField: $("#node-config-input-passwordType"),
-            types:["str", "env"]
-          });
-          
-          // ---
         	
         	$("#node-config-input-driver").on('change', function(event) {
         		var driver = $("#node-config-input-driver").typedInput('type');
@@ -155,7 +108,6 @@
        	  });
         	
         	$("#node-config-input-driver").typedInput('type',this.driverType);
-          $("#node-config-input-url").typedInput('type',this.urlType);
         }
 		});
 

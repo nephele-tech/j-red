@@ -487,5 +487,10 @@ public final class FlowsManager {
     public JsonObject getContext(String type) {
       return context; // global context
     }
+
+    @Override
+    public JsonObject getCredentials(String id) {
+      return credentials.get(id);
+    }
   };
 }
