@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -510,8 +510,6 @@ public final class FlowUtil {
       for (String p : o.keySet()) {
         mapEnvVarProperties(o, p, flow);
       }
-    } else {
-      return;
     }
   }
 
@@ -537,8 +535,6 @@ public final class FlowUtil {
       for (String p : o.keySet()) {
         mapEnvVarProperties(o, p, flow);
       }
-    } else {
-      return;
     }
   }
 
@@ -626,8 +622,8 @@ public final class FlowUtil {
     Constructor<? extends Node> constructor = constructors.get(type);
 
     if (constructor == null) {
-      @SuppressWarnings("deprecation")
-      final String cn = String.format("%s.%sNode", NODE_PKG_NAME, WordUtils.capitalizeFully(type).replaceAll(" ", ""));
+      final String cn = String.format("%s.%sNode", NODE_PKG_NAME, 
+          WordUtils.capitalize(WordUtils.capitalizeFully(type), '-').replaceAll("\\s+|\\-", ""));
       @SuppressWarnings("unchecked")
       final Class<? extends Node> nodeClass = (Class<? extends Node>) FlowUtil.class.getClassLoader().loadClass(cn);
       constructor = nodeClass.getConstructor(Flow.class, JsonObject.class);

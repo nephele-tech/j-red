@@ -14,6 +14,7 @@ import com.nepheletech.jred.runtime.FlowsRuntime;
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
 import com.nepheletech.jred.runtime.events.RuntimeDeployEvent;
+import com.nepheletech.jred.runtime.nodes.HasCredentials;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonElement;
@@ -234,6 +235,8 @@ public final class FlowsManager {
    * Start the current flow configuration.
    */
   public void startFlows() {
+    logger.trace(">>> startFlows:");
+    
     try {
       startFlows("full", null);
     } catch (RuntimeException e) {
@@ -432,12 +435,12 @@ public final class FlowsManager {
     // events.emit("nodes-stopped");
     MessageBus.sendMessage(new NodesStoppedEvent(this));
   }
-  
+
   // -----
 
   private Flow flowAPI = new Flow() {
     private final JsonObject context = new JsonObject();
-    
+
     @Override
     public Node getNode(String id) {
       return FlowsManager.this.getNode(id);
@@ -489,8 +492,10 @@ public final class FlowsManager {
     }
 
     @Override
-    public JsonObject getCredentials(String id) {
-      return credentials.get(id);
+    public void setup(Node node) {
+      if (node instanceof HasCredentials) {
+        ((HasCredentials) node).setCredentials(credentials.get(node.getId()));
+      }
     }
   };
 }

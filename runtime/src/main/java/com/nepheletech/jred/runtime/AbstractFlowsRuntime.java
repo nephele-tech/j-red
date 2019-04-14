@@ -22,7 +22,7 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
   public Storage getStorage() { return storage; }
 
   public String loadFlows() {
-    return loadFlows(true);
+    return loadFlows(false);
   }
 
   @Override

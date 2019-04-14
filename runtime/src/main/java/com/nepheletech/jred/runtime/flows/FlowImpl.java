@@ -537,7 +537,7 @@ public class FlowImpl implements Flow {
   }
   
   @Override
-  public JsonObject getCredentials(String id) {
-    return parent.getCredentials(id);
+  public void setup(Node node) {
+    parent.setup(node);
   }
 }
