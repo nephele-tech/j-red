@@ -67,9 +67,8 @@ public interface Flow {
 
   /**
    * 
-   * @param id
-   * @return
+   * @param node
    */
-  JsonObject getCredentials(String id);
+  void setup(Node node);
 
 }

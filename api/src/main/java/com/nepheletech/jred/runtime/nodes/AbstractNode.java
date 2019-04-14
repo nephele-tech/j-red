@@ -49,6 +49,8 @@ public abstract class AbstractNode implements Node {
     this.name = config.get("name").asString(null);
     this._alias = config.get("_alias").asString(null);
 
+    flow.setup(this);
+
     updateWires(config.getAsJsonArray("wires", true));
 
     if (this instanceof NodesStartedEventListener) {
@@ -95,6 +97,10 @@ public abstract class AbstractNode implements Node {
   public JsonObject getContext(String type) {
     return getFlow().getContext(type);
   }
+
+  public JsonObject getFlowContext() { return getFlow().getContext("flow"); }
+
+  public JsonObject getGlobalContext() { return getFlow().getContext("global"); }
 
   @Override
   public String getId() { return id; }
