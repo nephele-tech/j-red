@@ -3,25 +3,24 @@ package com.nepheletech.jred.runtime.nodes;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.nepheletech.dao.NepheleDao;
 import com.nepheletech.dao.NepheleDaoFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.json.JsonObject;
 
-public class DataSourceNode extends AbstractConfigurationNode {
-  private static final Logger logger = LoggerFactory.getLogger(DataSourceNode.class);
-
+public final class DataSourceNode extends AbstractConfigurationNode
+    implements HasCredentials {
+  
   private final String driver;
   private final String url;
-  private final String user;
-  private final String password;
+
+  private String user;
+  private String password;
 
   private final NepheleDao dao;
 
+  @SuppressWarnings("resource")
   public DataSourceNode(Flow flow, JsonObject config) {
     super(flow, config);
 
@@ -36,15 +35,6 @@ public class DataSourceNode extends AbstractConfigurationNode {
 
     this.url = config.getAsString("url");
 
-    final JsonObject credentials = getFlow().getCredentials(getId());
-    if (credentials != null) {
-      this.user = credentials.getAsString("user", null);
-      this.password = credentials.getAsString("password", null);
-    } else {
-      this.user = "";
-      this.password = "";
-    }
-
     // ---
 
     final Map<String, String> properties = new HashMap<>();
@@ -52,13 +42,24 @@ public class DataSourceNode extends AbstractConfigurationNode {
     properties.put("javax.persistence.jdbc.url", this.url);
     properties.put("javax.persistence.jdbc.user", this.user);
     properties.put("javax.persistence.jdbc.password", this.password);
-    final NepheleDaoFactory factory = new NepheleDaoFactory(properties);
-    this.dao = factory.create();
+    this.dao = new NepheleDaoFactory(properties).create();
+  }
+
+  @Override
+  public void setCredentials(JsonObject credentials) {
+    if (credentials != null) {
+      this.user = credentials.getAsString("user", null);
+      this.password = credentials.getAsString("password", null);
+    } else {
+      this.user = "";
+      this.password = "";
+    }
   }
 
   public NepheleDao getDao() { return dao; }
 
-  protected void onClosed() {
+  @Override
+  protected void onClosed(boolean removed) {
     if (dao != null) {
       dao.close();
     }

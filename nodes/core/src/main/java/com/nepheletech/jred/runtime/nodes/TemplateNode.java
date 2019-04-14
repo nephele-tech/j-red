@@ -21,6 +21,7 @@ public class TemplateNode extends AbstractNode {
   private final String fieldType;
   private final String outputFormat;
 
+  // Mustache
   private final MustacheFactory mf;
   private Mustache mustache;
 
@@ -56,13 +57,15 @@ public class TemplateNode extends AbstractNode {
   @Override
   protected void onMessage(JsonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
+    
+    try {
 
     // Allow template contents to be defined externally
     // through inbound `msg.template` if `this.template` empty.
     String template = this.template;
     if (msg.has("template")) {
       if (template == null || template.isEmpty()) {
-        template = msg.get("template").asString();
+        template = msg.getAsString("template");
       }
     }
 
@@ -77,17 +80,24 @@ public class TemplateNode extends AbstractNode {
       output(msg, template);
     }
 
+    } catch(RuntimeException e) {
+      e.printStackTrace();
+      throw e;
+    }
+    
     send(msg);
   }
 
   protected Object prepare(final JsonObject msg) {
-    // TODO
-
+    msg.set("_flow", getFlowContext());
+    msg.set("_global", getGlobalContext());
     return msg;
   }
 
   private void output(JsonObject msg, String _value) {
     JsonElement value;
+    
+    logger.debug("----------------------------------------------------------------------{}", _value);
 
     if ("json".equals(outputFormat)) {
       value = JsonParser.parse(_value);

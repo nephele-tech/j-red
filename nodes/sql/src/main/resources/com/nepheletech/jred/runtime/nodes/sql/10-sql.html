@@ -47,8 +47,9 @@
 (function(){
 
     var driverTypes = [
-      {value:"org.apache.derby.jdbc.ClientDriver",label:"JavaDB/Derby server",hasValue: false},
-      {value:"org.apache.derby.jdbc.EmbeddedDriver",label:"JavaDB/Derby embedded",hasValue: false},
+      {value:"org.apache.derby.jdbc.EmbeddedDriver",label:"Derby Embedded",hasValue: false},
+      {value:"org.apache.derby.jdbc.ClientDriver",label:"Derby Server",hasValue: false},
+      {value:"org.h2.Driver",label:"H2 Embedded",hasValue: false},
       {value:"org.mariadb.jdbc.Driver",label:"MariaDB",hasValue: false},
 			{value:"com.mysql.cj.jdbc.Driver",label:"MySQL",hasValue: false},
 			{value:"org.postgresql.Driver",label:"PostgreSQL",hasValue: false},
@@ -93,15 +94,15 @@
        	    } else if (driver === "com.mysql.cj.jdbc.Driver") {
        	      $("#node-config-input-driver-help").text("jdbc:mysql://<host>:3306/<database>");
        	    } else if (driver === "org.postgresql.Driver") {
-       	      $("#node-config-input-driver-help").text("jdbc:postgresql://host:port/<database>");
+       	      $("#node-config-input-driver-help").text("jdbc:postgresql://<host>:5432/<database>");
        	    } else if (driver === "net.sourceforge.jtds.jdbc.Driver") {
-       	      $("#node-config-input-driver-help").text("dbc:jtds:sqlserver://host:port/<database>;instance=<instance>");
+       	      $("#node-config-input-driver-help").text("dbc:jtds:sqlserver://<host>:1433/<database>;instance=<instance>");
        	    } else if (driver === "org.apache.derby.jdbc.ClientDriver") {
        	      $("#node-config-input-driver-help").text("jdbc:derby://<host>:1527/<database>");
             } else if (driver === "org.apache.derby.jdbc.EmbeddedDriver") {
-              $("#node-config-input-driver-help").text("jdbc:derby:<path to database directory>;create=true");
-       	    } else if (driver === "org.sqlite.JDBC") {
-       	      $("#node-config-input-driver-help").text("jdbc:sqlite:<full path to Database file> or jdbc:sqlite::memory for in memory database");
+              $("#node-config-input-driver-help").text("jdbc:derby:<path to database directory>;create=true or jdbc:derby:memory;create=true for in memory database.");
+            } else if (driver === "org.h2.Driver") {
+              $("#node-config-input-driver-help").text("jdbc:h2:[file:][<path>]<databaseName> or jdbc:h2:mem: (or jdbc:h2:mem:<databaseName>) for in memory database.");
        	    } else {
        	      $("#node-config-input-driver-help").text("jdbc:<vendor>://<host>:<port>/<database>");
        	    }
