@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.lang.reflect.Type;
+
+import com.nepheletech.jton.GsonBuilder;
+import com.nepheletech.jton.JsonDeserializationContext;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonParseException;
+import com.nepheletech.jton.TypeAdapter;
 
 /**
  * <p>Interface representing a custom deserializer for Json. You should write a custom
@@ -76,7 +82,7 @@ public interface JsonDeserializer<T> {
    * Gson invokes this call-back method during deserialization when it encounters a field of the
    * specified type.
    * <p>In the implementation of this call-back method, you should consider invoking
-   * {@link JsonDeserializationContext#deserialize(JsonElement, Type)} method to create objects
+   * {@link JsonDeserializationContext#deserialize(JtonElement, Type)} method to create objects
    * for any non-trivial field of the returned object. However, you should never invoke it on the
    * the same type passing {@code json} since that will cause an infinite loop (Gson will call your
    * call-back method again).
@@ -86,6 +92,6 @@ public interface JsonDeserializer<T> {
    * @return a deserialized object of the specified type typeOfT which is a subclass of {@code T}
    * @throws JsonParseException if json is not in the expected format of {@code typeofT}
    */
-  public T deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+  public T deserialize(JtonElement json, Type typeOfT, JsonDeserializationContext context)
       throws JsonParseException;
 }

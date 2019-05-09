@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -22,7 +22,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 
-import com.nepheletech.json.internal.$Gson$Preconditions;
+import com.nepheletech.jton.internal.$Gson$Preconditions;
 
 /**
  * A data object that stores attributes of a field.

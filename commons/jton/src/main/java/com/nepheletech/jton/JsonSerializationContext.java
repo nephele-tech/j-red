@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.lang.reflect.Type;
+
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonSerializationContext;
+import com.nepheletech.jton.JsonSerializer;
 
 /**
  * Context for serialization that is passed to a custom serializer during invocation of its
@@ -31,9 +35,9 @@ public interface JsonSerializationContext {
    * Invokes default serialization on the specified object.
    *
    * @param src the object that needs to be serialized.
-   * @return a tree of {@link JsonElement}s corresponding to the serialized form of {@code src}.
+   * @return a tree of {@link JtonElement}s corresponding to the serialized form of {@code src}.
    */
-  public JsonElement serialize(Object src);
+  public JtonElement serialize(Object src);
 
   /**
    * Invokes default serialization on the specified object passing the specific type information.
@@ -43,7 +47,7 @@ public interface JsonSerializationContext {
    *
    * @param src the object that needs to be serialized.
    * @param typeOfSrc the actual genericized type of src object.
-   * @return a tree of {@link JsonElement}s corresponding to the serialized form of {@code src}.
+   * @return a tree of {@link JtonElement}s corresponding to the serialized form of {@code src}.
    */
-  public JsonElement serialize(Object src, Type typeOfSrc);
+  public JtonElement serialize(Object src, Type typeOfSrc);
 }

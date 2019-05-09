@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-import com.nepheletech.json.internal.Streams;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
-import com.nepheletech.json.stream.MalformedJsonException;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonIOException;
+import com.nepheletech.jton.JsonParseException;
+import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.internal.Streams;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
+import com.nepheletech.jton.stream.MalformedJsonException;
 
 /**
- * A parser to parse Json into a parse tree of {@link JsonElement}s
+ * A parser to parse Json into a parse tree of {@link JtonElement}s
  *
  * @author Inderjeet Singh
  * @author Joel Leitch
@@ -37,11 +41,11 @@ public final class JsonParser {
    * Parses the specified JSON string into a parse tree
    *
    * @param json JSON text
-   * @return a parse tree of {@link JsonElement}s corresponding to the specified JSON
+   * @return a parse tree of {@link JtonElement}s corresponding to the specified JSON
    * @throws JsonParseException if the specified text is not valid JSON
    * @since 1.3
    */
-  public static JsonElement parse(String json) throws JsonSyntaxException {
+  public static JtonElement parse(String json) throws JsonSyntaxException {
     return parse(new StringReader(json));
   }
 
@@ -49,14 +53,14 @@ public final class JsonParser {
    * Parses the specified JSON string into a parse tree
    *
    * @param json JSON text
-   * @return a parse tree of {@link JsonElement}s corresponding to the specified JSON
+   * @return a parse tree of {@link JtonElement}s corresponding to the specified JSON
    * @throws JsonParseException if the specified text is not valid JSON
    * @since 1.3
    */
-  public static JsonElement parse(Reader json) throws JsonIOException, JsonSyntaxException {
+  public static JtonElement parse(Reader json) throws JsonIOException, JsonSyntaxException {
     try {
       JsonReader jsonReader = new JsonReader(json);
-      JsonElement element = parse(jsonReader);
+      JtonElement element = parse(jsonReader);
       if (!element.isJsonNull() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
         throw new JsonSyntaxException("Did not consume the entire document.");
       }
@@ -77,7 +81,7 @@ public final class JsonParser {
    *     text is not valid JSON
    * @since 1.6
    */
-  public static JsonElement parse(JsonReader json) throws JsonIOException, JsonSyntaxException {
+  public static JtonElement parse(JsonReader json) throws JsonIOException, JsonSyntaxException {
     boolean lenient = json.isLenient();
     json.setLenient(true);
     try {

@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.nepheletech.json.jsonpath;
+package com.nepheletech.jton.jsonpath;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,12 +27,12 @@ import java.util.Map;
 import com.jayway.jsonpath.InvalidJsonException;
 import com.jayway.jsonpath.JsonPathException;
 import com.jayway.jsonpath.spi.json.AbstractJsonProvider;
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParser;
-import com.nepheletech.json.JsonPrimitive;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonPrimitive;
 
 public class NepheleJsonProvider extends AbstractJsonProvider {
   private static final JsonParser PARSER = new JsonParser();
@@ -62,17 +62,17 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
       return null;
     }
 
-    if (!(o instanceof JsonElement)) {
+    if (!(o instanceof JtonElement)) {
       return o;
     }
 
-    JsonElement e = (JsonElement) o;
+    JtonElement e = (JtonElement) o;
 
     if (e.isJsonNull()) {
       return null;
     } else if (e.isJsonPrimitive()) {
 
-      JsonPrimitive p = e.asJsonPrimitive();
+      JtonPrimitive p = e.asJsonPrimitive();
       if (p.isString()) {
         return p.asString();
       } else if (p.isBoolean()) {
@@ -142,17 +142,17 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
 
   @Override
   public Object createArray() {
-    return new JsonArray();
+    return new JtonArray();
   }
 
   @Override
   public Object createMap() {
-    return new JsonObject();
+    return new JtonObject();
   }
 
   @Override
   public boolean isArray(final Object obj) {
-    return (obj instanceof JsonArray || obj instanceof List);
+    return (obj instanceof JtonArray || obj instanceof List);
   }
 
   @Override
@@ -165,7 +165,7 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
     if (!isArray(array)) {
       throw new UnsupportedOperationException();
     } else {
-      JsonArray arr = toJsonArray(array);
+      JtonArray arr = toJsonArray(array);
       if (index == arr.size()) {
         arr.push(createJsonElement(newValue));
       } else {
@@ -176,7 +176,7 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
 
   @Override
   public Object getMapValue(final Object obj, final String key) {
-    JsonObject jsonObject = toJsonObject(obj);
+    JtonObject jsonObject = toJsonObject(obj);
     Object o = jsonObject.get(key);
     if (!jsonObject.has(key)) {
       return UNDEFINED;
@@ -190,7 +190,7 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
     if (isMap(obj)) {
       toJsonObject(obj).set(key.toString(), createJsonElement(value));
     } else {
-      JsonArray array = toJsonArray(obj);
+      JtonArray array = toJsonArray(obj);
       int index;
       if (key != null) {
         index = key instanceof Integer ? (Integer) key : Integer.parseInt(key.toString());
@@ -210,7 +210,7 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
     if (isMap(obj)) {
       toJsonObject(obj).remove(key.toString());
     } else {
-      JsonArray array = toJsonArray(obj);
+      JtonArray array = toJsonArray(obj);
       int index = key instanceof Integer ? (Integer) key : Integer.parseInt(key.toString());
       array.remove(index);
     }
@@ -220,13 +220,13 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
   public boolean isMap(final Object obj) {
 
     // return (obj instanceof JsonObject || obj instanceof Map);
-    return (obj instanceof JsonObject);
+    return (obj instanceof JtonObject);
   }
 
   @Override
   public Collection<String> getPropertyKeys(final Object obj) {
     List<String> keys = new ArrayList<String>();
-    for (Map.Entry<String, JsonElement> entry : toJsonObject(obj).entrySet()) {
+    for (Map.Entry<String, JtonElement> entry : toJsonObject(obj).entrySet()) {
       keys.add(entry.getKey());
     }
 
@@ -240,8 +240,8 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
     } else if (isMap(obj)) {
       return toJsonObject(obj).entrySet().size();
     } else {
-      if (obj instanceof JsonElement) {
-        JsonElement element = toJsonElement(obj);
+      if (obj instanceof JtonElement) {
+        JtonElement element = toJsonElement(obj);
         if (element.isJsonPrimitive()) {
           return element.toString().length();
         }
@@ -254,7 +254,7 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
 
   @Override
   public Iterable<?> toIterable(final Object obj) {
-    JsonArray arr = toJsonArray(obj);
+    JtonArray arr = toJsonArray(obj);
     List<Object> values = new ArrayList<Object>(arr.size());
     for (Object o : arr) {
       values.add(unwrap(o));
@@ -263,19 +263,19 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
     return values;
   }
 
-  private JsonElement createJsonElement(final Object o) {
+  private JtonElement createJsonElement(final Object o) {
     return gson.toJsonTree(o);
   }
 
-  private JsonArray toJsonArray(final Object o) {
-    return (JsonArray) o;
+  private JtonArray toJsonArray(final Object o) {
+    return (JtonArray) o;
   }
 
-  private JsonObject toJsonObject(final Object o) {
-    return (JsonObject) o;
+  private JtonObject toJsonObject(final Object o) {
+    return (JtonObject) o;
   }
 
-  private JsonElement toJsonElement(final Object o) {
-    return (JsonElement) o;
+  private JtonElement toJsonElement(final Object o) {
+    return (JtonElement) o;
   }
 }

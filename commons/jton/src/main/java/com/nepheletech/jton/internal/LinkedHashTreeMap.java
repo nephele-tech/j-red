@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;

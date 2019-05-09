@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -35,28 +35,43 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import com.nepheletech.json.internal.ConstructorConstructor;
-import com.nepheletech.json.internal.Excluder;
-import com.nepheletech.json.internal.GsonBuildConfig;
-import com.nepheletech.json.internal.Primitives;
-import com.nepheletech.json.internal.Streams;
-import com.nepheletech.json.internal.bind.ArrayTypeAdapter;
-import com.nepheletech.json.internal.bind.CollectionTypeAdapterFactory;
-import com.nepheletech.json.internal.bind.DateTypeAdapter;
-import com.nepheletech.json.internal.bind.JsonAdapterAnnotationTypeAdapterFactory;
-import com.nepheletech.json.internal.bind.JsonTreeReader;
-import com.nepheletech.json.internal.bind.JsonTreeWriter;
-import com.nepheletech.json.internal.bind.MapTypeAdapterFactory;
-import com.nepheletech.json.internal.bind.ObjectTypeAdapter;
-import com.nepheletech.json.internal.bind.ReflectiveTypeAdapterFactory;
-import com.nepheletech.json.internal.bind.SqlDateTypeAdapter;
-import com.nepheletech.json.internal.bind.TimeTypeAdapter;
-import com.nepheletech.json.internal.bind.TypeAdapters;
-import com.nepheletech.json.reflect.TypeToken;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
-import com.nepheletech.json.stream.JsonWriter;
-import com.nepheletech.json.stream.MalformedJsonException;
+import com.nepheletech.jton.FieldNamingPolicy;
+import com.nepheletech.jton.FieldNamingStrategy;
+//import com.nepheletech.jton.FutureTypeAdapter;
+import com.nepheletech.jton.GsonBuilder;
+import com.nepheletech.jton.InstanceCreator;
+import com.nepheletech.jton.JsonDeserializer;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonIOException;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JsonParseException;
+import com.nepheletech.jton.JsonSerializer;
+import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.LongSerializationPolicy;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.internal.ConstructorConstructor;
+import com.nepheletech.jton.internal.Excluder;
+import com.nepheletech.jton.internal.GsonBuildConfig;
+import com.nepheletech.jton.internal.Primitives;
+import com.nepheletech.jton.internal.Streams;
+import com.nepheletech.jton.internal.bind.ArrayTypeAdapter;
+import com.nepheletech.jton.internal.bind.CollectionTypeAdapterFactory;
+import com.nepheletech.jton.internal.bind.DateTypeAdapter;
+import com.nepheletech.jton.internal.bind.JsonAdapterAnnotationTypeAdapterFactory;
+import com.nepheletech.jton.internal.bind.JsonTreeReader;
+import com.nepheletech.jton.internal.bind.JsonTreeWriter;
+import com.nepheletech.jton.internal.bind.MapTypeAdapterFactory;
+import com.nepheletech.jton.internal.bind.ObjectTypeAdapter;
+import com.nepheletech.jton.internal.bind.ReflectiveTypeAdapterFactory;
+import com.nepheletech.jton.internal.bind.SqlDateTypeAdapter;
+import com.nepheletech.jton.internal.bind.TimeTypeAdapter;
+import com.nepheletech.jton.internal.bind.TypeAdapters;
+import com.nepheletech.jton.reflect.TypeToken;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
+import com.nepheletech.jton.stream.JsonWriter;
+import com.nepheletech.jton.stream.MalformedJsonException;
 
 /**
  * This is the main class for using Gson. Gson is typically used by first constructing a
@@ -96,7 +111,7 @@ import com.nepheletech.json.stream.MalformedJsonException;
  * <p>See the <a href="https://sites.google.com/site/gson/gson-user-guide">Gson User Guide</a>
  * for a more complete set of examples.</p>
  *
- * @see com.nepheletech.json.reflect.TypeToken
+ * @see com.nepheletech.jton.reflect.TypeToken
  *
  * @author Inderjeet Singh
  * @author Joel Leitch
@@ -168,10 +183,10 @@ public final class Gson {
    *   ignores the millisecond portion of the date during serialization. You can change
    *   this by invoking {@link GsonBuilder#setDateFormat(int)} or
    *   {@link GsonBuilder#setDateFormat(String)}. </li>
-   *   <li>By default, Gson ignores the {@link com.nepheletech.json.annotations.Expose} annotation.
+   *   <li>By default, Gson ignores the {@link com.nepheletech.jton.annotations.Expose} annotation.
    *   You can enable Gson to serialize/deserialize only those fields marked with this annotation
    *   through {@link GsonBuilder#excludeFieldsWithoutExposeAnnotation()}. </li>
-   *   <li>By default, Gson ignores the {@link com.nepheletech.json.annotations.Since} annotation. You
+   *   <li>By default, Gson ignores the {@link com.nepheletech.jton.annotations.Since} annotation. You
    *   can enable Gson to use this annotation through {@link GsonBuilder#setVersion(double)}.</li>
    *   <li>The default field naming policy for the output Json is same as in Java. So, a Java class
    *   field <code>versionNumber</code> will be output as <code>&quot;versionNumber&quot;</code> in
@@ -558,7 +573,7 @@ public final class Gson {
 
   /**
    * This method serializes the specified object into its equivalent representation as a tree of
-   * {@link JsonElement}s. This method should be used when the specified object is not a generic
+   * {@link JtonElement}s. This method should be used when the specified object is not a generic
    * type. This method uses {@link Class#getClass()} to get the type for the specified object, but
    * the {@code getClass()} loses the generic type information because of the Type Erasure feature
    * of Java. Note that this method works fine if the any of the object fields are of generic type,
@@ -569,22 +584,22 @@ public final class Gson {
    * @return Json representation of {@code src}.
    * @since 1.4
    */
-  public JsonElement toJsonTree(Object src) {
+  public JtonElement toJsonTree(Object src) {
     if (src == null) {
-      return JsonNull.INSTANCE;
+      return JtonNull.INSTANCE;
     }
     return toJsonTree(src, src.getClass());
   }
 
   /**
    * This method serializes the specified object, including those of generic types, into its
-   * equivalent representation as a tree of {@link JsonElement}s. This method must be used if the
+   * equivalent representation as a tree of {@link JtonElement}s. This method must be used if the
    * specified object is a generic type. For non-generic objects, use {@link #toJsonTree(Object)}
    * instead.
    *
    * @param src the object for which JSON representation is to be created
    * @param typeOfSrc The specific genericized type of src. You can obtain
-   * this type by using the {@link com.nepheletech.json.reflect.TypeToken} class. For example,
+   * this type by using the {@link com.nepheletech.jton.reflect.TypeToken} class. For example,
    * to get the type for {@code Collection<Foo>}, you should use:
    * <pre>
    * Type typeOfSrc = new TypeToken&lt;Collection&lt;Foo&gt;&gt;(){}.getType();
@@ -592,7 +607,7 @@ public final class Gson {
    * @return Json representation of {@code src}
    * @since 1.4
    */
-  public JsonElement toJsonTree(Object src, Type typeOfSrc) {
+  public JtonElement toJsonTree(Object src, Type typeOfSrc) {
     JsonTreeWriter writer = new JsonTreeWriter();
     toJson(src, typeOfSrc, writer);
     return writer.get();
@@ -613,7 +628,7 @@ public final class Gson {
    */
   public String toJson(Object src) {
     if (src == null) {
-      return toJson(JsonNull.INSTANCE);
+      return toJson(JtonNull.INSTANCE);
     }
     return toJson(src, src.getClass());
   }
@@ -626,7 +641,7 @@ public final class Gson {
    *
    * @param src the object for which JSON representation is to be created
    * @param typeOfSrc The specific genericized type of src. You can obtain
-   * this type by using the {@link com.nepheletech.json.reflect.TypeToken} class. For example,
+   * this type by using the {@link com.nepheletech.jton.reflect.TypeToken} class. For example,
    * to get the type for {@code Collection<Foo>}, you should use:
    * <pre>
    * Type typeOfSrc = new TypeToken&lt;Collection&lt;Foo&gt;&gt;(){}.getType();
@@ -657,7 +672,7 @@ public final class Gson {
     if (src != null) {
       toJson(src, src.getClass(), writer);
     } else {
-      toJson(JsonNull.INSTANCE, writer);
+      toJson(JtonNull.INSTANCE, writer);
     }
   }
 
@@ -668,7 +683,7 @@ public final class Gson {
    *
    * @param src the object for which JSON representation is to be created
    * @param typeOfSrc The specific genericized type of src. You can obtain
-   * this type by using the {@link com.nepheletech.json.reflect.TypeToken} class. For example,
+   * this type by using the {@link com.nepheletech.jton.reflect.TypeToken} class. For example,
    * to get the type for {@code Collection<Foo>}, you should use:
    * <pre>
    * Type typeOfSrc = new TypeToken&lt;Collection&lt;Foo&gt;&gt;(){}.getType();
@@ -714,27 +729,27 @@ public final class Gson {
   }
 
   /**
-   * Converts a tree of {@link JsonElement}s into its equivalent JSON representation.
+   * Converts a tree of {@link JtonElement}s into its equivalent JSON representation.
    *
-   * @param jsonElement root of a tree of {@link JsonElement}s
+   * @param jsonElement root of a tree of {@link JtonElement}s
    * @return JSON String representation of the tree
    * @since 1.4
    */
-  public String toJson(JsonElement jsonElement) {
+  public String toJson(JtonElement jsonElement) {
     StringWriter writer = new StringWriter();
     toJson(jsonElement, writer);
     return writer.toString();
   }
 
   /**
-   * Writes out the equivalent JSON for a tree of {@link JsonElement}s.
+   * Writes out the equivalent JSON for a tree of {@link JtonElement}s.
    *
-   * @param jsonElement root of a tree of {@link JsonElement}s
+   * @param jsonElement root of a tree of {@link JtonElement}s
    * @param writer Writer to which the Json representation needs to be written
    * @throws JsonIOException if there was a problem writing to the writer
    * @since 1.4
    */
-  public void toJson(JsonElement jsonElement, Appendable writer) throws JsonIOException {
+  public void toJson(JtonElement jsonElement, Appendable writer) throws JsonIOException {
     try {
       JsonWriter jsonWriter = newJsonWriter(Streams.writerForAppendable(writer));
       toJson(jsonElement, jsonWriter);
@@ -771,7 +786,7 @@ public final class Gson {
    * Writes the JSON for {@code jsonElement} to {@code writer}.
    * @throws JsonIOException if there was a problem writing to the writer
    */
-  public void toJson(JsonElement jsonElement, JsonWriter writer) throws JsonIOException {
+  public void toJson(JtonElement jsonElement, JsonWriter writer) throws JsonIOException {
     boolean oldLenient = writer.isLenient();
     writer.setLenient(true);
     boolean oldHtmlSafe = writer.isHtmlSafe();
@@ -823,7 +838,7 @@ public final class Gson {
    * @param <T> the type of the desired object
    * @param json the string from which the object is to be deserialized
    * @param typeOfT The specific genericized type of src. You can obtain this type by using the
-   * {@link com.nepheletech.json.reflect.TypeToken} class. For example, to get the type for
+   * {@link com.nepheletech.jton.reflect.TypeToken} class. For example, to get the type for
    * {@code Collection<Foo>}, you should use:
    * <pre>
    * Type typeOfT = new TypeToken&lt;Collection&lt;Foo&gt;&gt;(){}.getType();
@@ -876,7 +891,7 @@ public final class Gson {
    * @param <T> the type of the desired object
    * @param json the reader producing Json from which the object is to be deserialized
    * @param typeOfT The specific genericized type of src. You can obtain this type by using the
-   * {@link com.nepheletech.json.reflect.TypeToken} class. For example, to get the type for
+   * {@link com.nepheletech.jton.reflect.TypeToken} class. For example, to get the type for
    * {@code Collection<Foo>}, you should use:
    * <pre>
    * Type typeOfT = new TypeToken&lt;Collection&lt;Foo&gt;&gt;(){}.getType();
@@ -954,16 +969,16 @@ public final class Gson {
    * Therefore, this method should not be used if the desired type is a generic type. Note that
    * this method works fine if the any of the fields of the specified object are generics, just the
    * object itself should not be a generic type. For the cases when the object is of generic type,
-   * invoke {@link #fromJson(JsonElement, Type)}.
+   * invoke {@link #fromJson(JtonElement, Type)}.
    * @param <T> the type of the desired object
-   * @param json the root of the parse tree of {@link JsonElement}s from which the object is to
+   * @param json the root of the parse tree of {@link JtonElement}s from which the object is to
    * be deserialized
    * @param classOfT The class of T
    * @return an object of type T from the json. Returns {@code null} if {@code json} is {@code null}.
    * @throws JsonSyntaxException if json is not a valid representation for an object of type typeOfT
    * @since 1.3
    */
-  public <T> T fromJson(JsonElement json, Class<T> classOfT) throws JsonSyntaxException {
+  public <T> T fromJson(JtonElement json, Class<T> classOfT) throws JsonSyntaxException {
     Object object = fromJson(json, (Type) classOfT);
     return Primitives.wrap(classOfT).cast(object);
   }
@@ -971,13 +986,13 @@ public final class Gson {
   /**
    * This method deserializes the Json read from the specified parse tree into an object of the
    * specified type. This method is useful if the specified object is a generic type. For
-   * non-generic objects, use {@link #fromJson(JsonElement, Class)} instead.
+   * non-generic objects, use {@link #fromJson(JtonElement, Class)} instead.
    *
    * @param <T> the type of the desired object
-   * @param json the root of the parse tree of {@link JsonElement}s from which the object is to
+   * @param json the root of the parse tree of {@link JtonElement}s from which the object is to
    * be deserialized
    * @param typeOfT The specific genericized type of src. You can obtain this type by using the
-   * {@link com.nepheletech.json.reflect.TypeToken} class. For example, to get the type for
+   * {@link com.nepheletech.jton.reflect.TypeToken} class. For example, to get the type for
    * {@code Collection<Foo>}, you should use:
    * <pre>
    * Type typeOfT = new TypeToken&lt;Collection&lt;Foo&gt;&gt;(){}.getType();
@@ -987,7 +1002,7 @@ public final class Gson {
    * @since 1.3
    */
   @SuppressWarnings("unchecked")
-  public <T> T fromJson(JsonElement json, Type typeOfT) throws JsonSyntaxException {
+  public <T> T fromJson(JtonElement json, Type typeOfT) throws JsonSyntaxException {
     if (json == null) {
       return null;
     }

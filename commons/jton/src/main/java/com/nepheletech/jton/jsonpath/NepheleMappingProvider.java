@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.nepheletech.json.jsonpath;
+package com.nepheletech.jton.jsonpath;
 
 import java.util.concurrent.Callable;
 
@@ -24,9 +24,10 @@ import com.jayway.jsonpath.JsonPathException;
 import com.jayway.jsonpath.TypeRef;
 import com.jayway.jsonpath.spi.mapper.MappingException;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.reflect.TypeToken;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.jsonpath.NepheleMappingProvider;
+import com.nepheletech.jton.reflect.TypeToken;
 
 public class NepheleMappingProvider implements MappingProvider {
 
@@ -69,7 +70,7 @@ public class NepheleMappingProvider implements MappingProvider {
       return null;
     }
     try {
-      return factory.call().getAdapter(targetType).fromJsonTree((JsonElement) source);
+      return factory.call().getAdapter(targetType).fromJsonTree((JtonElement) source);
     } catch (Exception e) {
       throw new MappingException(e);
     }
@@ -82,7 +83,7 @@ public class NepheleMappingProvider implements MappingProvider {
       return null;
     }
     try {
-      return (T) factory.call().getAdapter(TypeToken.get(targetType.getType())).fromJsonTree((JsonElement) source);
+      return (T) factory.call().getAdapter(TypeToken.get(targetType.getType())).fromJsonTree((JtonElement) source);
     } catch (Exception e) {
       throw new MappingException(e);
     }

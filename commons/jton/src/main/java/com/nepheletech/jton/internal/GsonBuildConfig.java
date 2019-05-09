@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;
 
 /**
  * Build configuration for Gson. This file is automatically populated by

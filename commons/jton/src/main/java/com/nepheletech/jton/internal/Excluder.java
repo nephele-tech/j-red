@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -23,17 +23,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.nepheletech.json.ExclusionStrategy;
-import com.nepheletech.json.FieldAttributes;
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.TypeAdapter;
-import com.nepheletech.json.TypeAdapterFactory;
-import com.nepheletech.json.annotations.Expose;
-import com.nepheletech.json.annotations.Since;
-import com.nepheletech.json.annotations.Until;
-import com.nepheletech.json.reflect.TypeToken;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.ExclusionStrategy;
+import com.nepheletech.jton.FieldAttributes;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.annotations.Expose;
+import com.nepheletech.jton.annotations.Since;
+import com.nepheletech.jton.annotations.Until;
+import com.nepheletech.jton.reflect.TypeToken;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * This class selects which fields and types to omit. It is configurable,

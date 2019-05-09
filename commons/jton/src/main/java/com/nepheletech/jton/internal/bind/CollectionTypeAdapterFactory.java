@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal.bind;
+package com.nepheletech.jton.internal.bind;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collection;
 
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.TypeAdapter;
-import com.nepheletech.json.TypeAdapterFactory;
-import com.nepheletech.json.internal.$Gson$Types;
-import com.nepheletech.json.internal.ConstructorConstructor;
-import com.nepheletech.json.internal.ObjectConstructor;
-import com.nepheletech.json.reflect.TypeToken;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.internal.$Gson$Types;
+import com.nepheletech.jton.internal.ConstructorConstructor;
+import com.nepheletech.jton.internal.ObjectConstructor;
+import com.nepheletech.jton.reflect.TypeToken;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * Adapt a homogeneous collection of objects.

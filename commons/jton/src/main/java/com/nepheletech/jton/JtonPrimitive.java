@@ -1,14 +1,17 @@
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.util.Date;
+
+import com.nepheletech.jton.AbstractJsonPrimitive;
+import com.nepheletech.jton.JtonPrimitive;
 
 /**
  * 
  */
-public final class JsonPrimitive extends AbstractJsonPrimitive {
+public final class JtonPrimitive extends AbstractJsonPrimitive {
   
-  public static JsonPrimitive create(Object value) {
-    return new JsonPrimitive(value);
+  public static JtonPrimitive create(Object value) {
+    return new JtonPrimitive(value);
   }
 
   /**
@@ -16,7 +19,7 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
    *
    * @param bool the value to create the primitive with.
    */
-  public JsonPrimitive(Boolean bool) {
+  public JtonPrimitive(Boolean bool) {
     setValue(bool);
   }
 
@@ -25,7 +28,7 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
    *
    * @param number the value to create the primitive with.
    */
-  public JsonPrimitive(Number number) {
+  public JtonPrimitive(Number number) {
     setValue(number);
   }
 
@@ -34,7 +37,7 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
    *
    * @param string the value to create the primitive with.
    */
-  public JsonPrimitive(String string) {
+  public JtonPrimitive(String string) {
     setValue(string);
   }
 
@@ -44,7 +47,7 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
    *
    * @param c the value to create the primitive with.
    */
-  public JsonPrimitive(Character c) {
+  public JtonPrimitive(Character c) {
     setValue(c);
   }
 
@@ -53,7 +56,7 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
    * 
    * @param date the value to create the primitive with.
    */
-  public JsonPrimitive(Date date) {
+  public JtonPrimitive(Date date) {
     setValue(date);
   }
 
@@ -62,7 +65,7 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
    * 
    * @param bytes the value to create the primitive with.
    */
-  public JsonPrimitive(byte[] bytes) {
+  public JtonPrimitive(byte[] bytes) {
     setValue(bytes);
   }
 
@@ -72,7 +75,7 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
    *
    * @param primitive the value to create the primitive with.
    */
-  JsonPrimitive(Object primitive) {
+  JtonPrimitive(Object primitive) {
     setValue(primitive, false);
   }
 
@@ -82,7 +85,7 @@ public final class JsonPrimitive extends AbstractJsonPrimitive {
    * @since 2.8.2
    */
   @Override
-  public JsonPrimitive deepCopy() {
+  public JtonPrimitive deepCopy() {
     return this;
   }
 }

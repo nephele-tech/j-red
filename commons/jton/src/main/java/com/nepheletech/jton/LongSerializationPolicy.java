@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
+
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonPrimitive;
 
 /**
  * Defines the expected format for a {@code long} or {@code Long} type when its serialized.
@@ -32,8 +35,8 @@ public enum LongSerializationPolicy {
    * {@code {"f":123}}.
    */
   DEFAULT() {
-    @Override public JsonElement serialize(Long value) {
-      return new JsonPrimitive(value);
+    @Override public JtonElement serialize(Long value) {
+      return new JtonPrimitive(value);
     }
   },
   
@@ -43,16 +46,16 @@ public enum LongSerializationPolicy {
    * {@code {"f":"123"}}.
    */
   STRING() {
-    @Override public JsonElement serialize(Long value) {
-      return new JsonPrimitive(String.valueOf(value));
+    @Override public JtonElement serialize(Long value) {
+      return new JtonPrimitive(String.valueOf(value));
     }
   };
   
   /**
    * Serialize this {@code value} using this serialization policy.
    *
-   * @param value the long value to be serialized into a {@link JsonElement}
+   * @param value the long value to be serialized into a {@link JtonElement}
    * @return the serialized version of {@code value}
    */
-  public abstract JsonElement serialize(Long value);
+  public abstract JtonElement serialize(Long value);
 }

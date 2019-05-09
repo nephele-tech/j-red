@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;
 
-import static com.nepheletech.json.internal.$Gson$Preconditions.checkArgument;
-import static com.nepheletech.json.internal.$Gson$Preconditions.checkNotNull;
+import static com.nepheletech.jton.internal.$Gson$Preconditions.checkArgument;
+import static com.nepheletech.jton.internal.$Gson$Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;

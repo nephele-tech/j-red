@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal.bind;
+package com.nepheletech.jton.internal.bind;
 
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.JsonDeserializer;
-import com.nepheletech.json.JsonSerializer;
-import com.nepheletech.json.TypeAdapter;
-import com.nepheletech.json.TypeAdapterFactory;
-import com.nepheletech.json.annotations.JsonAdapter;
-import com.nepheletech.json.internal.ConstructorConstructor;
-import com.nepheletech.json.reflect.TypeToken;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.JsonDeserializer;
+import com.nepheletech.jton.JsonSerializer;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.annotations.JsonAdapter;
+import com.nepheletech.jton.internal.ConstructorConstructor;
+import com.nepheletech.jton.reflect.TypeToken;
 
 /**
  * Given a type T, looks for the annotation {@link JsonAdapter} and uses an instance of the

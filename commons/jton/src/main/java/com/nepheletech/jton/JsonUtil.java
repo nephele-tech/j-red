@@ -1,7 +1,12 @@
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
 
 public final class JsonUtil {
 
@@ -12,14 +17,14 @@ public final class JsonUtil {
    * @param expr the property expression
    * @return the object property, or undefined if it does not exist
    */
-  public static JsonElement getProperty(JsonObject msg, String expr) {
+  public static JtonElement getProperty(JtonObject msg, String expr) {
     if (msg == null) { throw new IllegalArgumentException("'root' is null"); }
     if (expr == null) { throw new IllegalArgumentException("'expr' is null"); }
     return getProperty(msg, parsePath(expr));
   }
 
-  public static JsonElement getProperty(JsonObject root, List<String> path) {
-    JsonElement e = root;
+  public static JtonElement getProperty(JtonObject root, List<String> path) {
+    JtonElement e = root;
 
     for (int i = 0, n = path.size(); i < n; i++) {
       String prop = path.get(i);
@@ -30,10 +35,10 @@ public final class JsonUtil {
         try {
           e = e.asJsonArray().get(Integer.parseInt(prop.substring(1).trim()));
         } catch (IndexOutOfBoundsException ex) {
-          return JsonNull.INSTANCE;
+          return JtonNull.INSTANCE;
         }
       } else {
-        return JsonNull.INSTANCE;
+        return JtonNull.INSTANCE;
       }
     }
 
@@ -48,21 +53,21 @@ public final class JsonUtil {
    * @param value         the value to set
    * @param createMissing whether to create parent properties
    */
-  public static void setProperty(final JsonObject msg, String prop, JsonElement value, boolean createMissing) {
+  public static void setProperty(final JtonObject msg, String prop, JtonElement value, boolean createMissing) {
     if (msg == null) { throw new IllegalArgumentException("'msg' is null"); }
     if (prop == null) { throw new IllegalArgumentException("'prop' is null"); }
     setObjectProperty(msg, parsePath(prop), value, createMissing);
   }
 
-  public static void setObjectProperty(JsonObject msg, List<String> path, JsonElement value, boolean createMissing) {
-    JsonElement e = msg;
+  public static void setObjectProperty(JtonObject msg, List<String> path, JtonElement value, boolean createMissing) {
+    JtonElement e = msg;
 
     final String lastPath = path.get(path.size() - 1);
 
     for (int i = 0, n = path.size() - 1; i < n; i++) {
       String prop = path.get(i);
 
-      JsonElement parent = e;
+      JtonElement parent = e;
 
       if (e.isJsonObject()) {
         e = e.asJsonObject().get(prop);
@@ -79,16 +84,16 @@ public final class JsonUtil {
         final String nextProp = path.get(i + 1);
         if (parent.isJsonObject()) {
           if (nextProp.startsWith("[")) {
-            parent.asJsonObject().set(prop, e = new JsonArray());
+            parent.asJsonObject().set(prop, e = new JtonArray());
           } else {
-            parent.asJsonObject().set(prop, e = new JsonObject());
+            parent.asJsonObject().set(prop, e = new JtonObject());
           }
         } else if (parent.isJsonArray()) {
           int index = Integer.parseInt(prop.substring(1).trim());
           if (nextProp.startsWith("[")) {
-            parent.asJsonArray().set(index, e = new JsonArray());
+            parent.asJsonArray().set(index, e = new JtonArray());
           } else {
-            parent.asJsonArray().set(index, e = new JsonObject());
+            parent.asJsonArray().set(index, e = new JtonObject());
           }
         }
       }
@@ -98,11 +103,11 @@ public final class JsonUtil {
       e.asJsonObject().set(lastPath, value);
     } else if (e.isJsonArray()) {
       if (lastPath.startsWith("[")) {
-        final JsonArray array = e.asJsonArray();
+        final JtonArray array = e.asJsonArray();
         final int index = Integer.parseInt(lastPath.substring(1).trim());
 
         for (int idx = array.size() - 1; idx < index; idx++) {
-          array.push(JsonNull.INSTANCE);
+          array.push(JtonNull.INSTANCE);
         }
         
         e.asJsonArray().set(index, value);

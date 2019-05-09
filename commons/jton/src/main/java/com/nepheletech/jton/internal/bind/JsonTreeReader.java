@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal.bind;
+package com.nepheletech.jton.internal.bind;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonPrimitive;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
 
 /**
  * This reader walks the elements of a JsonElement as if it was coming from a
@@ -63,14 +63,14 @@ public final class JsonTreeReader extends JsonReader {
   private String[] pathNames = new String[32];
   private int[] pathIndices = new int[32];
 
-  public JsonTreeReader(JsonElement element) {
+  public JsonTreeReader(JtonElement element) {
     super(UNREADABLE_READER);
     push(element);
   }
 
   @Override public void beginArray() throws IOException {
     expect(JsonToken.BEGIN_ARRAY);
-    JsonArray array = (JsonArray) peekStack();
+    JtonArray array = (JtonArray) peekStack();
     push(array.iterator());
     pathIndices[stackSize - 1] = 0;
   }
@@ -86,7 +86,7 @@ public final class JsonTreeReader extends JsonReader {
 
   @Override public void beginObject() throws IOException {
     expect(JsonToken.BEGIN_OBJECT);
-    JsonObject object = (JsonObject) peekStack();
+    JtonObject object = (JtonObject) peekStack();
     push(object.entrySet().iterator());
   }
 
@@ -111,7 +111,7 @@ public final class JsonTreeReader extends JsonReader {
 
     Object o = peekStack();
     if (o instanceof Iterator) {
-      boolean isObject = stack[stackSize - 2] instanceof JsonObject;
+      boolean isObject = stack[stackSize - 2] instanceof JtonObject;
       Iterator<?> iterator = (Iterator<?>) o;
       if (iterator.hasNext()) {
         if (isObject) {
@@ -123,12 +123,12 @@ public final class JsonTreeReader extends JsonReader {
       } else {
         return isObject ? JsonToken.END_OBJECT : JsonToken.END_ARRAY;
       }
-    } else if (o instanceof JsonObject) {
+    } else if (o instanceof JtonObject) {
       return JsonToken.BEGIN_OBJECT;
-    } else if (o instanceof JsonArray) {
+    } else if (o instanceof JtonArray) {
       return JsonToken.BEGIN_ARRAY;
-    } else if (o instanceof JsonPrimitive) {
-      JsonPrimitive primitive = (JsonPrimitive) o;
+    } else if (o instanceof JtonPrimitive) {
+      JtonPrimitive primitive = (JtonPrimitive) o;
       if (primitive.isString()) {
         return JsonToken.STRING;
       } else if (primitive.isBoolean()) {
@@ -138,7 +138,7 @@ public final class JsonTreeReader extends JsonReader {
       } else {
         throw new AssertionError();
       }
-    } else if (o instanceof JsonNull) {
+    } else if (o instanceof JtonNull) {
       return JsonToken.NULL;
     } else if (o == SENTINEL_CLOSED) {
       throw new IllegalStateException("JsonReader is closed");
@@ -180,7 +180,7 @@ public final class JsonTreeReader extends JsonReader {
       throw new IllegalStateException(
           "Expected " + JsonToken.STRING + " but was " + token + locationString());
     }
-    String result = ((JsonPrimitive) popStack()).asString();
+    String result = ((JtonPrimitive) popStack()).asString();
     if (stackSize > 0) {
       pathIndices[stackSize - 1]++;
     }
@@ -189,7 +189,7 @@ public final class JsonTreeReader extends JsonReader {
 
   @Override public boolean nextBoolean() throws IOException {
     expect(JsonToken.BOOLEAN);
-    boolean result = ((JsonPrimitive) popStack()).asBoolean();
+    boolean result = ((JtonPrimitive) popStack()).asBoolean();
     if (stackSize > 0) {
       pathIndices[stackSize - 1]++;
     }
@@ -210,7 +210,7 @@ public final class JsonTreeReader extends JsonReader {
       throw new IllegalStateException(
           "Expected " + JsonToken.NUMBER + " but was " + token + locationString());
     }
-    double result = ((JsonPrimitive) peekStack()).asDouble();
+    double result = ((JtonPrimitive) peekStack()).asDouble();
     if (!isLenient() && (Double.isNaN(result) || Double.isInfinite(result))) {
       throw new NumberFormatException("JSON forbids NaN and infinities: " + result);
     }
@@ -227,7 +227,7 @@ public final class JsonTreeReader extends JsonReader {
       throw new IllegalStateException(
           "Expected " + JsonToken.NUMBER + " but was " + token + locationString());
     }
-    long result = ((JsonPrimitive) peekStack()).asLong();
+    long result = ((JtonPrimitive) peekStack()).asLong();
     popStack();
     if (stackSize > 0) {
       pathIndices[stackSize - 1]++;
@@ -241,7 +241,7 @@ public final class JsonTreeReader extends JsonReader {
       throw new IllegalStateException(
           "Expected " + JsonToken.NUMBER + " but was " + token + locationString());
     }
-    int result = ((JsonPrimitive) peekStack()).asInt();
+    int result = ((JtonPrimitive) peekStack()).asInt();
     popStack();
     if (stackSize > 0) {
       pathIndices[stackSize - 1]++;
@@ -278,7 +278,7 @@ public final class JsonTreeReader extends JsonReader {
     Iterator<?> i = (Iterator<?>) peekStack();
     Map.Entry<?, ?> entry = (Map.Entry<?, ?>) i.next();
     push(entry.getValue());
-    push(new JsonPrimitive((String) entry.getKey()));
+    push(new JtonPrimitive((String) entry.getKey()));
   }
 
   private void push(Object newTop) {
@@ -299,11 +299,11 @@ public final class JsonTreeReader extends JsonReader {
   @Override public String getPath() {
     StringBuilder result = new StringBuilder().append('$');
     for (int i = 0; i < stackSize; i++) {
-      if (stack[i] instanceof JsonArray) {
+      if (stack[i] instanceof JtonArray) {
         if (stack[++i] instanceof Iterator) {
           result.append('[').append(pathIndices[i]).append(']');
         }
-      } else if (stack[i] instanceof JsonObject) {
+      } else if (stack[i] instanceof JtonObject) {
         if (stack[++i] instanceof Iterator) {
           result.append('.');
           if (pathNames[i] != null) {

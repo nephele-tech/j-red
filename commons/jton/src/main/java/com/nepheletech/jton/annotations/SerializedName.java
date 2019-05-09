@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.annotations;
+package com.nepheletech.jton.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -26,10 +26,10 @@ import java.lang.annotation.Target;
  * An annotation that indicates this member should be serialized to JSON with
  * the provided name value as its field name.
  *
- * <p>This annotation will override any {@link com.nepheletech.json.FieldNamingPolicy}, including
- * the default field naming policy, that may have been set on the {@link com.nepheletech.json.Gson}
+ * <p>This annotation will override any {@link com.nepheletech.jton.FieldNamingPolicy}, including
+ * the default field naming policy, that may have been set on the {@link com.nepheletech.jton.Gson}
  * instance.  A different naming policy can set using the {@code GsonBuilder} class.  See
- * {@link com.nepheletech.json.GsonBuilder#setFieldNamingPolicy(com.nepheletech.json.FieldNamingPolicy)}
+ * {@link com.nepheletech.jton.GsonBuilder#setFieldNamingPolicy(com.nepheletech.jton.FieldNamingPolicy)}
  * for more information.</p>
  *
  * <p>Here is an example of how this annotation is meant to be used:</p>
@@ -72,7 +72,7 @@ import java.lang.annotation.Target;
  * </pre>
  * Note that MyClass.b is now deserialized from either name1, name2 or name3.
  *
- * @see com.nepheletech.json.FieldNamingPolicy
+ * @see com.nepheletech.jton.FieldNamingPolicy
  *
  * @author Inderjeet Singh
  * @author Joel Leitch

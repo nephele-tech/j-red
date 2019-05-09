@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;

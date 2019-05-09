@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -38,10 +38,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import com.nepheletech.json.InstanceCreator;
-import com.nepheletech.json.JsonIOException;
-import com.nepheletech.json.internal.reflect.ReflectionAccessor;
-import com.nepheletech.json.reflect.TypeToken;
+import com.nepheletech.jton.InstanceCreator;
+import com.nepheletech.jton.JsonIOException;
+import com.nepheletech.jton.internal.reflect.ReflectionAccessor;
+import com.nepheletech.jton.reflect.TypeToken;
 
 /**
  * Returns a function that can construct an instance of a requested type.

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.nepheletech.json.internal.reflect;
+package com.nepheletech.jton.internal.reflect;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import com.nepheletech.json.JsonIOException;
+import com.nepheletech.jton.JsonIOException;
 
 /**
  * An implementation of {@link ReflectionAccessor} based on {@link Unsafe}.

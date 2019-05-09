@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.nepheletech.json;
+package com.nepheletech.jton;
+
+import com.nepheletech.jton.JsonParseException;
 
 /**
  * This exception is raised when Gson attempts to read (or write) a malformed

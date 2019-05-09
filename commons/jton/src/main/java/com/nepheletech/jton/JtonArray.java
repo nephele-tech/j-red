@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -25,31 +25,37 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
+
 /**
  * A class representing an array type in Json. An array is a list of
- * {@link JsonElement}s each of which can be of a different type. This is an
+ * {@link JtonElement}s each of which can be of a different type. This is an
  * ordered list, meaning that the order in which elements are added is
  * preserved.
  *
  * @author Inderjeet Singh
  * @author Joel Leitch
  */
-public final class JsonArray extends JsonElement implements List<JsonElement> {
-  private final List<JsonElement> elements;
+public final class JtonArray extends JtonElement implements List<JtonElement> {
+  private final List<JtonElement> elements;
 
   /**
    * Creates an empty JsonArray.
    */
-  public JsonArray() {
-    elements = new ArrayList<JsonElement>();
+  public JtonArray() {
+    elements = new ArrayList<JtonElement>();
   }
 
-  public JsonArray(int capacity) {
-    elements = new ArrayList<JsonElement>(capacity);
+  public JtonArray(int capacity) {
+    elements = new ArrayList<JtonElement>(capacity);
   }
 
-  public JsonArray(Collection<? extends JsonElement> c) {
-    elements = new ArrayList<JsonElement>();
+  public JtonArray(Collection<? extends JtonElement> c) {
+    elements = new ArrayList<JtonElement>();
     addAll(c);
   }
 
@@ -59,15 +65,15 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    * @since 2.8.2
    */
   @Override
-  public JsonArray deepCopy() {
+  public JtonArray deepCopy() {
     if (!elements.isEmpty()) {
-      JsonArray result = new JsonArray(elements.size());
-      for (JsonElement element : elements) {
+      JtonArray result = new JtonArray(elements.size());
+      for (JtonElement element : elements) {
         result.add(element.deepCopy());
       }
       return result;
     }
-    return new JsonArray();
+    return new JtonArray();
   }
 
   /**
@@ -75,8 +81,8 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @param bool the boolean that needs to be added to the array.
    */
-  public JsonArray push(Boolean bool) {
-    elements.add(bool == null ? JsonNull.INSTANCE : new JsonPrimitive(bool));
+  public JtonArray push(Boolean bool) {
+    elements.add(bool == null ? JtonNull.INSTANCE : new JtonPrimitive(bool));
     return this;
   }
 
@@ -85,8 +91,8 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @param character the character that needs to be added to the array.
    */
-  public JsonArray push(Character character) {
-    elements.add(character == null ? JsonNull.INSTANCE : new JsonPrimitive(character));
+  public JtonArray push(Character character) {
+    elements.add(character == null ? JtonNull.INSTANCE : new JtonPrimitive(character));
     return this;
   }
 
@@ -95,8 +101,8 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @param number the number that needs to be added to the array.
    */
-  public JsonArray push(Number number) {
-    elements.add(number == null ? JsonNull.INSTANCE : new JsonPrimitive(number));
+  public JtonArray push(Number number) {
+    elements.add(number == null ? JtonNull.INSTANCE : new JtonPrimitive(number));
     return this;
   }
 
@@ -105,8 +111,8 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @param string the string that needs to be added to the array.
    */
-  public JsonArray push(String string) {
-    elements.add(string == null ? JsonNull.INSTANCE : new JsonPrimitive(string));
+  public JtonArray push(String string) {
+    elements.add(string == null ? JtonNull.INSTANCE : new JtonPrimitive(string));
     return this;
   }
 
@@ -115,9 +121,9 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @param element the element that needs to be added to the array.
    */
-  public JsonArray push(JsonElement element) {
+  public JtonArray push(JtonElement element) {
     if (element == null) {
-      element = JsonNull.INSTANCE;
+      element = JtonNull.INSTANCE;
     }
     elements.add(element);
     return this;
@@ -128,7 +134,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @param array the array whose elements need to be added to the array.
    */
-  public void addAll(JsonArray array) {
+  public void addAll(JtonArray array) {
     elements.addAll(array.elements);
   }
 
@@ -142,13 +148,13 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    * @throws IndexOutOfBoundsException if the specified index is outside the array
    *                                   bounds
    */
-  public JsonElement set(int index, JsonElement element) {
+  public JtonElement set(int index, JtonElement element) {
     if (elements.size() < index) {
       for (int i = elements.size(); i < index; i++) {
-        elements.add(JsonNull.INSTANCE);
+        elements.add(JtonNull.INSTANCE);
       }
       elements.add(element);
-      return JsonNull.INSTANCE;
+      return JtonNull.INSTANCE;
     } else {
       return elements.set(index, element);
     }
@@ -162,7 +168,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    * @return true if this array contained the specified element, false otherwise
    * @since 2.3
    */
-  public boolean remove(JsonElement element) {
+  public boolean remove(JtonElement element) {
     return elements.remove(element);
   }
 
@@ -177,7 +183,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *                                   bounds
    * @since 2.3
    */
-  public JsonElement remove(int index) {
+  public JtonElement remove(int index) {
     return elements.remove(index);
   }
 
@@ -188,7 +194,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    * @param element whose presence in this array is to be tested
    * @since 2.3
    */
-  public boolean contains(JsonElement element) {
+  public boolean contains(JtonElement element) {
     return elements.contains(element);
   }
 
@@ -208,7 +214,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @return an iterator to navigate the elements of the array.
    */
-  public Iterator<JsonElement> iterator() {
+  public Iterator<JtonElement> iterator() {
     return elements.iterator();
   }
 
@@ -220,26 +226,26 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    * @throws IndexOutOfBoundsException if i is negative or greater than or equal
    *                                   to the {@link #size()} of the array.
    */
-  public JsonElement get(int i) {
+  public JtonElement get(int i) {
     if (elements.size() < i) {
-      return JsonNull.INSTANCE;
+      return JtonNull.INSTANCE;
     } else {
-      final JsonElement e = elements.get(i);
-      return e != null ? e : JsonNull.INSTANCE;
+      final JtonElement e = elements.get(i);
+      return e != null ? e : JtonNull.INSTANCE;
     }
   }
   
   // ---
 
-  public JsonObject getAsJsonObject(int i) {
+  public JtonObject getAsJsonObject(int i) {
     return get(i).asJsonObject();
   }
   
-  public JsonObject getAsJsonObject(int i, JsonObject defaultValue) {
+  public JtonObject getAsJsonObject(int i, JtonObject defaultValue) {
     return get(i).asJsonObject(defaultValue);
   }
   
-  public JsonObject getAsJsonObject(int i, boolean create) {
+  public JtonObject getAsJsonObject(int i, boolean create) {
     return get(i).asJsonObject(create);
   }
   
@@ -247,15 +253,15 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
     return get(i).isJsonObject();
   }
 
-  public JsonArray getAsJsonArray(int i) {
+  public JtonArray getAsJsonArray(int i) {
     return get(i).asJsonArray();
   }
 
-  public JsonArray getAsJsonArray(int i, JsonArray defaultValue) {
+  public JtonArray getAsJsonArray(int i, JtonArray defaultValue) {
     return get(i).asJsonArray(defaultValue);
   }
 
-  public JsonArray getAsJsonArray(int i, boolean create) {
+  public JtonArray getAsJsonArray(int i, boolean create) {
     return get(i).asJsonArray(create);
   }
 
@@ -283,7 +289,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @return get this element as a number if it is single element array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive} and is not a valid
+   *                               {@link JtonPrimitive} and is not a valid
    *                               Number.
    * @throws IllegalStateException if the array has more than one element.
    */
@@ -299,7 +305,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @return get this element as a String if it is single element array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive} and is not a valid
+   *                               {@link JtonPrimitive} and is not a valid
    *                               String.
    * @throws IllegalStateException if the array has more than one element.
    */
@@ -315,7 +321,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @return get this element as a double if it is single element array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive} and is not a valid
+   *                               {@link JtonPrimitive} and is not a valid
    *                               double.
    * @throws IllegalStateException if the array has more than one element.
    */
@@ -332,7 +338,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    * @return get this element as a {@link BigDecimal} if it is single element
    *         array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive}.
+   *                               {@link JtonPrimitive}.
    * @throws NumberFormatException if the element at index 0 is not a valid
    *                               {@link BigDecimal}.
    * @throws IllegalStateException if the array has more than one element.
@@ -351,7 +357,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    * @return get this element as a {@link BigInteger} if it is single element
    *         array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive}.
+   *                               {@link JtonPrimitive}.
    * @throws NumberFormatException if the element at index 0 is not a valid
    *                               {@link BigInteger}.
    * @throws IllegalStateException if the array has more than one element.
@@ -369,7 +375,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @return get this element as a float if it is single element array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive} and is not a valid float.
+   *                               {@link JtonPrimitive} and is not a valid float.
    * @throws IllegalStateException if the array has more than one element.
    */
   @Override
@@ -384,7 +390,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @return get this element as a long if it is single element array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive} and is not a valid long.
+   *                               {@link JtonPrimitive} and is not a valid long.
    * @throws IllegalStateException if the array has more than one element.
    */
   @Override
@@ -399,7 +405,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @return get this element as an integer if it is single element array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive} and is not a valid
+   *                               {@link JtonPrimitive} and is not a valid
    *                               integer.
    * @throws IllegalStateException if the array has more than one element.
    */
@@ -427,7 +433,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @return get this element as a primitive short if it is single element array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive} and is not a valid short.
+   *                               {@link JtonPrimitive} and is not a valid short.
    * @throws IllegalStateException if the array has more than one element.
    */
   @Override
@@ -442,7 +448,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    *
    * @return get this element as a boolean if it is single element array.
    * @throws ClassCastException    if the element in the array is of not a
-   *                               {@link JsonPrimitive} and is not a valid
+   *                               {@link JtonPrimitive} and is not a valid
    *                               boolean.
    * @throws IllegalStateException if the array has more than one element.
    */
@@ -474,7 +480,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
 
   @Override
   public boolean equals(Object o) {
-    return (o == this) || (o instanceof JsonArray && ((JsonArray) o).elements.equals(elements));
+    return (o == this) || (o instanceof JtonArray && ((JtonArray) o).elements.equals(elements));
   }
 
   @Override
@@ -505,9 +511,9 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
 
   @Deprecated
   @Override
-  public boolean add(JsonElement e) {
+  public boolean add(JtonElement e) {
     if (e == null) {
-      e = JsonNull.INSTANCE;
+      e = JtonNull.INSTANCE;
     }
     return elements.add(e);
   }
@@ -524,12 +530,12 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
   }
 
   @Override
-  public boolean addAll(Collection<? extends JsonElement> c) {
+  public boolean addAll(Collection<? extends JtonElement> c) {
     return elements.addAll(c);
   }
 
   @Override
-  public boolean addAll(int index, Collection<? extends JsonElement> c) {
+  public boolean addAll(int index, Collection<? extends JtonElement> c) {
     return elements.addAll(index, c);
   }
 
@@ -549,10 +555,10 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
   }
 
   @Override
-  public void add(int index, JsonElement element) {
+  public void add(int index, JtonElement element) {
     if (elements.size() < index) {
       for (int i = elements.size(); i < index; i++) {
-        elements.add(JsonNull.INSTANCE);
+        elements.add(JtonNull.INSTANCE);
       }
       elements.add(element);
     } else {
@@ -566,7 +572,7 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
     return elements.indexOf(o);
   }
 
-  public int indexOf(JsonElement e) {
+  public int indexOf(JtonElement e) {
     return elements.indexOf(e);
   }
 
@@ -576,28 +582,28 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
     return elements.lastIndexOf(o);
   }
 
-  public int lastIndexOf(JsonElement e) {
+  public int lastIndexOf(JtonElement e) {
     return elements.lastIndexOf(e);
   }
 
   @Override
-  public ListIterator<JsonElement> listIterator() {
+  public ListIterator<JtonElement> listIterator() {
     return elements.listIterator();
   }
 
   @Override
-  public ListIterator<JsonElement> listIterator(int index) {
+  public ListIterator<JtonElement> listIterator(int index) {
     return elements.listIterator(index);
   }
 
   @Override
-  public List<JsonElement> subList(int fromIndex, int toIndex) {
+  public List<JtonElement> subList(int fromIndex, int toIndex) {
     return elements.subList(fromIndex, toIndex);
   }
 
   // ---
 
-  public JsonArray concat(JsonElement element) {
+  public JtonArray concat(JtonElement element) {
     return concat(this, element);
   }
 
@@ -607,9 +613,9 @@ public final class JsonArray extends JsonElement implements List<JsonElement> {
    * @param elements Arrays and/or values to concatenate into a new array.
    * @return A new array instance.
    */
-  public static JsonArray concat(JsonElement... elements) {
-    final JsonArray concat = new JsonArray();
-    for (JsonElement e : elements) {
+  public static JtonArray concat(JtonElement... elements) {
+    final JtonArray concat = new JtonArray();
+    for (JtonElement e : elements) {
       if (e.isJsonArray()) {
         concat.addAll(e.asJsonArray());
       } else {

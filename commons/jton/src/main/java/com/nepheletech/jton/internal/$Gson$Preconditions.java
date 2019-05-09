@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;
 
 /**
  * A simple utility class used to check method Preconditions.

@@ -1,4 +1,4 @@
-package com.nepheletech.json.internal.bind.util;
+package com.nepheletech.jton.internal.bind.util;
 
 import java.text.ParseException;
 import java.text.ParsePosition;

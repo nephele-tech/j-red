@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.reflect;
+package com.nepheletech.jton.reflect;
 
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
@@ -23,8 +23,8 @@ import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.nepheletech.json.internal.$Gson$Preconditions;
-import com.nepheletech.json.internal.$Gson$Types;
+import com.nepheletech.jton.internal.$Gson$Preconditions;
+import com.nepheletech.jton.internal.$Gson$Types;
 
 /**
  * Represents a generic type {@code T}. Java doesn't yet provide a way to

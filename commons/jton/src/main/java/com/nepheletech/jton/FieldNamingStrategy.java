@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.lang.reflect.Field;
 

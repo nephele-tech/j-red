@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal.bind;
+package com.nepheletech.jton.internal.bind;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -25,23 +25,23 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.nepheletech.json.FieldNamingStrategy;
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.JsonSyntaxException;
-import com.nepheletech.json.TypeAdapter;
-import com.nepheletech.json.TypeAdapterFactory;
-import com.nepheletech.json.annotations.JsonAdapter;
-import com.nepheletech.json.annotations.SerializedName;
-import com.nepheletech.json.internal.$Gson$Types;
-import com.nepheletech.json.internal.ConstructorConstructor;
-import com.nepheletech.json.internal.Excluder;
-import com.nepheletech.json.internal.ObjectConstructor;
-import com.nepheletech.json.internal.Primitives;
-import com.nepheletech.json.internal.reflect.ReflectionAccessor;
-import com.nepheletech.json.reflect.TypeToken;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.FieldNamingStrategy;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.annotations.JsonAdapter;
+import com.nepheletech.jton.annotations.SerializedName;
+import com.nepheletech.jton.internal.$Gson$Types;
+import com.nepheletech.jton.internal.ConstructorConstructor;
+import com.nepheletech.jton.internal.Excluder;
+import com.nepheletech.jton.internal.ObjectConstructor;
+import com.nepheletech.jton.internal.Primitives;
+import com.nepheletech.jton.internal.reflect.ReflectionAccessor;
+import com.nepheletech.jton.reflect.TypeToken;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * Type adapter that reflects over the fields and methods of a class.

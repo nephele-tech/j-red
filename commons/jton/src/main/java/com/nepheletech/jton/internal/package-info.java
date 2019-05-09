@@ -4,4 +4,4 @@
  *
  * @author Inderjeet Singh, Joel Leitch, Jesse Wilson
  */
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;

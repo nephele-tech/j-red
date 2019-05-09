@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal.bind;
+package com.nepheletech.jton.internal.bind;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -22,21 +22,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonPrimitive;
-import com.nepheletech.json.JsonSyntaxException;
-import com.nepheletech.json.TypeAdapter;
-import com.nepheletech.json.TypeAdapterFactory;
-import com.nepheletech.json.internal.$Gson$Types;
-import com.nepheletech.json.internal.ConstructorConstructor;
-import com.nepheletech.json.internal.JsonReaderInternalAccess;
-import com.nepheletech.json.internal.ObjectConstructor;
-import com.nepheletech.json.internal.Streams;
-import com.nepheletech.json.reflect.TypeToken;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.internal.$Gson$Types;
+import com.nepheletech.jton.internal.ConstructorConstructor;
+import com.nepheletech.jton.internal.JsonReaderInternalAccess;
+import com.nepheletech.jton.internal.ObjectConstructor;
+import com.nepheletech.jton.internal.Streams;
+import com.nepheletech.jton.reflect.TypeToken;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * Adapts maps to either JSON objects or JSON arrays.
@@ -213,11 +213,11 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
       }
 
       boolean hasComplexKeys = false;
-      List<JsonElement> keys = new ArrayList<JsonElement>(map.size());
+      List<JtonElement> keys = new ArrayList<JtonElement>(map.size());
 
       List<V> values = new ArrayList<V>(map.size());
       for (Map.Entry<K, V> entry : map.entrySet()) {
-        JsonElement keyElement = keyTypeAdapter.toJsonTree(entry.getKey());
+        JtonElement keyElement = keyTypeAdapter.toJsonTree(entry.getKey());
         keys.add(keyElement);
         values.add(entry.getValue());
         hasComplexKeys |= keyElement.isJsonArray() || keyElement.isJsonObject();
@@ -235,7 +235,7 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
       } else {
         out.beginObject();
         for (int i = 0, size = keys.size(); i < size; i++) {
-          JsonElement keyElement = keys.get(i);
+          JtonElement keyElement = keys.get(i);
           out.name(keyToString(keyElement));
           valueTypeAdapter.write(out, values.get(i));
         }
@@ -243,9 +243,9 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
       }
     }
 
-    private String keyToString(JsonElement keyElement) {
+    private String keyToString(JtonElement keyElement) {
       if (keyElement.isJsonPrimitive()) {
-        JsonPrimitive primitive = keyElement.asJsonPrimitive();
+        JtonPrimitive primitive = keyElement.asJsonPrimitive();
         if (primitive.isNumber()) {
           return String.valueOf(primitive.asNumber());
         } else if (primitive.isBoolean()) {

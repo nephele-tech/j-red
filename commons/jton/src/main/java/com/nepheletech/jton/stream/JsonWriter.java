@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.stream;
+package com.nepheletech.jton.stream;
 
-import static com.nepheletech.json.stream.JsonScope.DANGLING_NAME;
-import static com.nepheletech.json.stream.JsonScope.EMPTY_ARRAY;
-import static com.nepheletech.json.stream.JsonScope.EMPTY_DOCUMENT;
-import static com.nepheletech.json.stream.JsonScope.EMPTY_OBJECT;
-import static com.nepheletech.json.stream.JsonScope.NONEMPTY_ARRAY;
-import static com.nepheletech.json.stream.JsonScope.NONEMPTY_DOCUMENT;
-import static com.nepheletech.json.stream.JsonScope.NONEMPTY_OBJECT;
+import static com.nepheletech.jton.stream.JsonScope.DANGLING_NAME;
+import static com.nepheletech.jton.stream.JsonScope.EMPTY_ARRAY;
+import static com.nepheletech.jton.stream.JsonScope.EMPTY_DOCUMENT;
+import static com.nepheletech.jton.stream.JsonScope.EMPTY_OBJECT;
+import static com.nepheletech.jton.stream.JsonScope.NONEMPTY_ARRAY;
+import static com.nepheletech.jton.stream.JsonScope.NONEMPTY_DOCUMENT;
+import static com.nepheletech.jton.stream.JsonScope.NONEMPTY_OBJECT;
 
 import java.io.Closeable;
 import java.io.Flushable;

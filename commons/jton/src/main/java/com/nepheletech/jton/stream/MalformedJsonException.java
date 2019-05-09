@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.stream;
+package com.nepheletech.jton.stream;
 
 import java.io.IOException;
 

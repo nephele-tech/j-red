@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
-import com.nepheletech.json.reflect.TypeToken;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.reflect.TypeToken;
 
 /**
  * Creates type adapters for set of related types. Type adapter factories are
@@ -80,7 +82,7 @@ import com.nepheletech.json.reflect.TypeToken;
  * mapping from lowercase name to enum value is computed eagerly.
  *
  * <p>As with type adapters, factories must be <i>registered</i> with a {@link
- * com.nepheletech.json.GsonBuilder} for them to take effect: <pre>   {@code
+ * com.nepheletech.jton.GsonBuilder} for them to take effect: <pre>   {@code
  *
  *  GsonBuilder builder = new GsonBuilder();
  *  builder.registerTypeAdapterFactory(new LowercaseEnumTypeAdapterFactory());

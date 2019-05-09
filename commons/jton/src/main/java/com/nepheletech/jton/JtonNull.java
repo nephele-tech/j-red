@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
+
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
 
 /**
  * A class representing a Json {@code null} value.
@@ -23,20 +26,20 @@ package com.nepheletech.json;
  * @author Joel Leitch
  * @since 1.2
  */
-public final class JsonNull extends JsonElement {
+public final class JtonNull extends JtonElement {
   /**
    * singleton for JsonNull
    *
    * @since 1.8
    */
-  public static final JsonNull INSTANCE = new JsonNull();
+  public static final JtonNull INSTANCE = new JtonNull();
 
   /**
    * Creates a new JsonNull object.
    * Deprecated since Gson version 1.8. Use {@link #INSTANCE} instead
    */
   @Deprecated
-  public JsonNull() {
+  public JtonNull() {
     // Do nothing
   }
 
@@ -45,7 +48,7 @@ public final class JsonNull extends JsonElement {
    * @since 2.8.2
    */
   @Override
-  public JsonNull deepCopy() {
+  public JtonNull deepCopy() {
     return INSTANCE;
   }
 
@@ -54,7 +57,7 @@ public final class JsonNull extends JsonElement {
    */
   @Override
   public int hashCode() {
-    return JsonNull.class.hashCode();
+    return JtonNull.class.hashCode();
   }
 
   /**
@@ -62,6 +65,6 @@ public final class JsonNull extends JsonElement {
    */
   @Override
   public boolean equals(Object other) {
-    return this == other || other instanceof JsonNull;
+    return this == other || other instanceof JtonNull;
   }
 }

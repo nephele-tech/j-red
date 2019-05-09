@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.stream;
+package com.nepheletech.jton.stream;
 
 /**
  * A structure, name or value type in a JSON-encoded string.

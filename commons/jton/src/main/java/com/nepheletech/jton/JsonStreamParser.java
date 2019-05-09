@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -22,13 +22,17 @@ import java.io.StringReader;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import com.nepheletech.json.internal.Streams;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
-import com.nepheletech.json.stream.MalformedJsonException;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonIOException;
+import com.nepheletech.jton.JsonParseException;
+import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.internal.Streams;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
+import com.nepheletech.jton.stream.MalformedJsonException;
 
 /**
- * A streaming parser that allows reading of multiple {@link JsonElement}s from the specified reader
+ * A streaming parser that allows reading of multiple {@link JtonElement}s from the specified reader
  * asynchronously.
  * 
  * <p>This class is conditionally thread-safe (see Item 70, Effective Java second edition). To
@@ -49,7 +53,7 @@ import com.nepheletech.json.stream.MalformedJsonException;
  * @author Joel Leitch
  * @since 1.4
  */
-public final class JsonStreamParser implements Iterator<JsonElement> {
+public final class JsonStreamParser implements Iterator<JtonElement> {
   private final JsonReader parser;
   private final Object lock;
 
@@ -72,13 +76,13 @@ public final class JsonStreamParser implements Iterator<JsonElement> {
   }
   
   /**
-   * Returns the next available {@link JsonElement} on the reader. Null if none available.
+   * Returns the next available {@link JtonElement} on the reader. Null if none available.
    * 
-   * @return the next available {@link JsonElement} on the reader. Null if none available.
+   * @return the next available {@link JtonElement} on the reader. Null if none available.
    * @throws JsonParseException if the incoming stream is malformed JSON.
    * @since 1.4
    */
-  public JsonElement next() throws JsonParseException {
+  public JtonElement next() throws JsonParseException {
     if (!hasNext()) {
       throw new NoSuchElementException();
     }
@@ -95,8 +99,8 @@ public final class JsonStreamParser implements Iterator<JsonElement> {
   }
 
   /**
-   * Returns true if a {@link JsonElement} is available on the input for consumption
-   * @return true if a {@link JsonElement} is available on the input, false otherwise
+   * Returns true if a {@link JtonElement} is available on the input for consumption
+   * @return true if a {@link JtonElement} is available on the input, false otherwise
    * @since 1.4
    */
   public boolean hasNext() {

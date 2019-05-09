@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal.bind;
+package com.nepheletech.jton.internal.bind;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.JsonDeserializationContext;
-import com.nepheletech.json.JsonDeserializer;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonParseException;
-import com.nepheletech.json.JsonSerializationContext;
-import com.nepheletech.json.JsonSerializer;
-import com.nepheletech.json.TypeAdapter;
-import com.nepheletech.json.TypeAdapterFactory;
-import com.nepheletech.json.internal.$Gson$Preconditions;
-import com.nepheletech.json.internal.Streams;
-import com.nepheletech.json.reflect.TypeToken;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.JsonDeserializationContext;
+import com.nepheletech.jton.JsonDeserializer;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonParseException;
+import com.nepheletech.jton.JsonSerializationContext;
+import com.nepheletech.jton.JsonSerializer;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.internal.$Gson$Preconditions;
+import com.nepheletech.jton.internal.Streams;
+import com.nepheletech.jton.reflect.TypeToken;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * Adapts a Gson 1.x tree-style adapter as a streaming TypeAdapter. Since the
@@ -63,7 +63,7 @@ public final class TreeTypeAdapter<T> extends TypeAdapter<T> {
     if (deserializer == null) {
       return delegate().read(in);
     }
-    JsonElement value = Streams.parse(in);
+    JtonElement value = Streams.parse(in);
     if (value.isJsonNull()) {
       return null;
     }
@@ -79,7 +79,7 @@ public final class TreeTypeAdapter<T> extends TypeAdapter<T> {
       out.nullValue();
       return;
     }
-    JsonElement tree = serializer.serialize(value, typeToken.getType(), context);
+    JtonElement tree = serializer.serialize(value, typeToken.getType(), context);
     Streams.write(tree, out);
   }
 
@@ -152,14 +152,14 @@ public final class TreeTypeAdapter<T> extends TypeAdapter<T> {
   }
 
   private final class GsonContextImpl implements JsonSerializationContext, JsonDeserializationContext {
-    @Override public JsonElement serialize(Object src) {
+    @Override public JtonElement serialize(Object src) {
       return gson.toJsonTree(src);
     }
-    @Override public JsonElement serialize(Object src, Type typeOfSrc) {
+    @Override public JtonElement serialize(Object src, Type typeOfSrc) {
       return gson.toJsonTree(src, typeOfSrc);
     }
     @SuppressWarnings("unchecked")
-    @Override public <R> R deserialize(JsonElement json, Type typeOfT) throws JsonParseException {
+    @Override public <R> R deserialize(JtonElement json, Type typeOfT) throws JsonParseException {
       return (R) gson.fromJson(json, typeOfT);
     }
   };

@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.lang.reflect.Type;
+
+import com.nepheletech.jton.GsonBuilder;
 
 /**
  * This interface is implemented to create instances of a class that does not define a no-args

@@ -3,4 +3,4 @@
  *
  * @author Inderjeet Singh, Joel Leitch
  */
-package com.nepheletech.json.reflect;
+package com.nepheletech.jton.reflect;

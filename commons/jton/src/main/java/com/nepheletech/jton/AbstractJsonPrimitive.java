@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -25,8 +25,11 @@ import java.util.TimeZone;
 
 import javax.xml.bind.DatatypeConverter;
 
-import com.nepheletech.json.internal.$Gson$Preconditions;
-import com.nepheletech.json.internal.LazilyParsedNumber;
+import com.nepheletech.jton.AbstractJsonPrimitive;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.internal.$Gson$Preconditions;
+import com.nepheletech.jton.internal.LazilyParsedNumber;
 
 /**
  * A class representing a Json primitive value. A primitive value is either a
@@ -35,7 +38,7 @@ import com.nepheletech.json.internal.LazilyParsedNumber;
  * @author Inderjeet Singh
  * @author Joel Leitch
  */
-public abstract class AbstractJsonPrimitive extends JsonElement {
+public abstract class AbstractJsonPrimitive extends JtonElement {
 
   private static final Class<?>[] PRIMITIVE_TYPES = { int.class, long.class, short.class,
       float.class, double.class, byte.class, byte[].class, boolean.class, char.class, Integer.class, Long.class,
@@ -308,7 +311,7 @@ public abstract class AbstractJsonPrimitive extends JsonElement {
   public boolean equals(Object obj) {
     if (this == obj) { return true; }
     if (obj == null || getClass() != obj.getClass()) { return false; }
-    AbstractJsonPrimitive other = (JsonPrimitive) obj;
+    AbstractJsonPrimitive other = (JtonPrimitive) obj;
     if (value == null) { return other.value == null; }
     if (isIntegral(this) && isIntegral(other)) { return asNumber().longValue() == other.asNumber().longValue(); }
     if (value instanceof Number && other.value instanceof Number) {

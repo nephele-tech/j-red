@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -22,44 +22,51 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
-import com.nepheletech.json.internal.Streams;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.AbstractJsonPrimitive;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.JtonTransient;
+import com.nepheletech.jton.internal.Streams;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * A class representing an element of Json. It could either be a
- * {@link JsonObject}, a {@link JsonArray}, a {@link JsonPrimitive} or a
- * {@link JsonNull}.
+ * {@link JtonObject}, a {@link JtonArray}, a {@link JtonPrimitive} or a
+ * {@link JtonNull}.
  *
  * @author Inderjeet Singh
  * @author Joel Leitch
  */
-public abstract class JsonElement {
+public abstract class JtonElement {
   /**
    * Returns a deep copy of this element. Immutable elements like primitives and
    * nulls are not copied.
    * 
    * @since 2.8.2
    */
-  public abstract JsonElement deepCopy();
+  public abstract JtonElement deepCopy();
 
   /**
    * provides check for verifying if this element is an array or not.
    *
-   * @return true if this element is of type {@link JsonArray}, false otherwise.
+   * @return true if this element is of type {@link JtonArray}, false otherwise.
    */
-  public boolean isJsonArray() { return this instanceof JsonArray; }
+  public boolean isJsonArray() { return this instanceof JtonArray; }
 
   /**
    * provides check for verifying if this element is a Json object or not.
    *
-   * @return true if this element is of type {@link JsonObject}, false otherwise.
+   * @return true if this element is of type {@link JtonObject}, false otherwise.
    */
-  public boolean isJsonObject() { return this instanceof JsonObject; }
+  public boolean isJsonObject() { return this instanceof JtonObject; }
 
   /**
    * provides check for verifying if this element is a primitive or not.
    *
-   * @return true if this element is of type {@link JsonPrimitive}, false
+   * @return true if this element is of type {@link JtonPrimitive}, false
    *         otherwise.
    */
   public boolean isJsonPrimitive() { return this instanceof AbstractJsonPrimitive; }
@@ -67,119 +74,119 @@ public abstract class JsonElement {
   /**
    * provides check for verifying if this element is a transient or not.
    *
-   * @return true if this element is of type {@link JsonTransient}, false
+   * @return true if this element is of type {@link JtonTransient}, false
    *         otherwise.
    */
-  public boolean isJsonTransient() { return this instanceof JsonTransient; }
+  public boolean isJsonTransient() { return this instanceof JtonTransient; }
 
   /**
    * provides check for verifying if this element represents a null value or not.
    *
-   * @return true if this element is of type {@link JsonNull}, false otherwise.
+   * @return true if this element is of type {@link JtonNull}, false otherwise.
    * @since 1.2
    */
-  public boolean isJsonNull() { return this instanceof JsonNull; }
+  public boolean isJsonNull() { return this instanceof JtonNull; }
 
   /**
-   * convenience method to get this element as a {@link JsonObject}. If the
+   * convenience method to get this element as a {@link JtonObject}. If the
    * element is of some other type, a {@link IllegalStateException} will result.
    * Hence it is best to use this method after ensuring that this element is of
    * the desired type by calling {@link #isJsonObject()} first.
    *
-   * @return get this element as a {@link JsonObject}.
+   * @return get this element as a {@link JtonObject}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JsonObject asJsonObject() {
-    if (isJsonObject()) { return (JsonObject) this; }
+  public JtonObject asJsonObject() {
+    if (isJsonObject()) { return (JtonObject) this; }
     throw new IllegalStateException("Not a JSON Object: " + this);
   }
 
-  public JsonObject asJsonObject(final JsonObject defaultValue) {
+  public JtonObject asJsonObject(final JtonObject defaultValue) {
     return isJsonObject() ? asJsonObject() : defaultValue;
   }
 
-  public JsonObject asJsonObject(final boolean create) {
-    return isJsonObject() ? asJsonObject() : create ? new JsonObject() : null;
+  public JtonObject asJsonObject(final boolean create) {
+    return isJsonObject() ? asJsonObject() : create ? new JtonObject() : null;
   }
 
   /**
-   * convenience method to get this element as a {@link JsonArray}. If the element
+   * convenience method to get this element as a {@link JtonArray}. If the element
    * is of some other type, a {@link IllegalStateException} will result. Hence it
    * is best to use this method after ensuring that this element is of the desired
    * type by calling {@link #isJsonArray()} first.
    *
-   * @return get this element as a {@link JsonArray}.
+   * @return get this element as a {@link JtonArray}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JsonArray asJsonArray() {
-    if (isJsonArray()) { return (JsonArray) this; }
+  public JtonArray asJsonArray() {
+    if (isJsonArray()) { return (JtonArray) this; }
     throw new IllegalStateException("Not a JSON Array: " + this);
   }
 
-  public JsonArray asJsonArray(final JsonArray defaultValue) {
+  public JtonArray asJsonArray(final JtonArray defaultValue) {
     return isJsonArray() ? asJsonArray() : defaultValue;
   }
 
-  public JsonArray asJsonArray(final boolean create) {
-    return isJsonArray() ? asJsonArray() : create ? new JsonArray() : null;
+  public JtonArray asJsonArray(final boolean create) {
+    return isJsonArray() ? asJsonArray() : create ? new JtonArray() : null;
   }
 
   /**
-   * convenience method to get this element as a {@link JsonPrimitive}. If the
+   * convenience method to get this element as a {@link JtonPrimitive}. If the
    * element is of some other type, a {@link IllegalStateException} will result.
    * Hence it is best to use this method after ensuring that this element is of
    * the desired type by calling {@link #isJsonPrimitive()} first.
    *
-   * @return get this element as a {@link JsonPrimitive}.
+   * @return get this element as a {@link JtonPrimitive}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JsonPrimitive asJsonPrimitive() {
-    if (isJsonPrimitive()) { return (JsonPrimitive) this; }
+  public JtonPrimitive asJsonPrimitive() {
+    if (isJsonPrimitive()) { return (JtonPrimitive) this; }
     throw new IllegalStateException("Not a JSON Primitive: " + this);
   }
 
-  public JsonPrimitive asJsonPrimitive(final JsonPrimitive defaultValue) {
+  public JtonPrimitive asJsonPrimitive(final JtonPrimitive defaultValue) {
     return isJsonPrimitive() ? asJsonPrimitive() : defaultValue;
   }
 
-  public JsonPrimitive asJsonPrimitive(final Object value) {
-    return isJsonPrimitive() ? asJsonPrimitive() : value != null ? new JsonPrimitive(value) : null;
+  public JtonPrimitive asJsonPrimitive(final Object value) {
+    return isJsonPrimitive() ? asJsonPrimitive() : value != null ? new JtonPrimitive(value) : null;
   }
 
   /**
-   * convenience method to get this element as a {@link JsonTransient}. If the
+   * convenience method to get this element as a {@link JtonTransient}. If the
    * element is of some other type, a {@link IllegalStateException} will result.
    * Hence it is best to use this method after ensuring that this element is of
    * the desired type by calling {@link #isJsonTransient()} first.
    *
-   * @return get this element as a {@link JsonTransient}.
+   * @return get this element as a {@link JtonTransient}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JsonTransient asJsonTransient() {
-    if (isJsonTransient()) { return (JsonTransient) this; }
+  public JtonTransient asJsonTransient() {
+    if (isJsonTransient()) { return (JtonTransient) this; }
     throw new IllegalStateException("Not a JSON Transient: " + this);
   }
 
-  public JsonTransient asJsonTransient(final JsonTransient defaultValue) {
+  public JtonTransient asJsonTransient(final JtonTransient defaultValue) {
     return isJsonTransient() ? asJsonTransient() : defaultValue;
   }
 
-  public JsonTransient asJsonTransient(final Object value) {
-    return isJsonTransient() ? asJsonTransient() : value != null ? new JsonTransient(value) : null;
+  public JtonTransient asJsonTransient(final Object value) {
+    return isJsonTransient() ? asJsonTransient() : value != null ? new JtonTransient(value) : null;
   }
 
   /**
-   * convenience method to get this element as a {@link JsonNull}. If the element
+   * convenience method to get this element as a {@link JtonNull}. If the element
    * is of some other type, a {@link IllegalStateException} will result. Hence it
    * is best to use this method after ensuring that this element is of the desired
    * type by calling {@link #isJsonNull()} first.
    *
-   * @return get this element as a {@link JsonNull}.
+   * @return get this element as a {@link JtonNull}.
    * @throws IllegalStateException if the element is of another type.
    * @since 1.2
    */
-  public JsonNull asJsonNull() {
-    if (isJsonNull()) { return (JsonNull) this; }
+  public JtonNull asJsonNull() {
+    if (isJsonNull()) { return (JtonNull) this; }
     throw new IllegalStateException("Not a JSON Null: " + this);
   }
 
@@ -188,9 +195,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a primitive boolean value.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid
+   *                               {@link JtonPrimitive} and is not a valid
    *                               boolean value.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    */
   public boolean asBoolean() {
@@ -218,9 +225,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a {@link Number}.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid
+   *                               {@link JtonPrimitive} and is not a valid
    *                               number.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    */
   public Number asNumber() {
@@ -232,9 +239,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a string value.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid string
+   *                               {@link JtonPrimitive} and is not a valid string
    *                               value.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    */
   public String asString() {
@@ -255,9 +262,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a primitive double value.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid double
+   *                               {@link JtonPrimitive} and is not a valid double
    *                               value.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    */
   public double asDouble() {
@@ -285,9 +292,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a primitive float value.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid float
+   *                               {@link JtonPrimitive} and is not a valid float
    *                               value.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    */
   public float asFloat() {
@@ -315,9 +322,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a primitive long value.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid long
+   *                               {@link JtonPrimitive} and is not a valid long
    *                               value.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    */
   public long asLong() {
@@ -345,9 +352,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a primitive integer value.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid
+   *                               {@link JtonPrimitive} and is not a valid
    *                               integer value.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    */
   public int asInt() {
@@ -375,9 +382,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a primitive byte value.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid byte
+   *                               {@link JtonPrimitive} and is not a valid byte
    *                               value.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    * @since 1.3
    */
@@ -406,9 +413,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a primitive char value.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid char
+   *                               {@link JtonPrimitive} and is not a valid char
    *                               value.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    * @since 1.3
    */
@@ -437,10 +444,10 @@ public abstract class JsonElement {
    *
    * @return get this element as a {@link BigDecimal}.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive}. * @throws
+   *                               {@link JtonPrimitive}. * @throws
    *                               NumberFormatException if the element is not a
    *                               valid {@link BigDecimal}.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    * @since 1.2
    */
@@ -461,10 +468,10 @@ public abstract class JsonElement {
    *
    * @return get this element as a {@link BigInteger}.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive}.
+   *                               {@link JtonPrimitive}.
    * @throws NumberFormatException if the element is not a valid
    *                               {@link BigInteger}.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    * @since 1.2
    */
@@ -485,9 +492,9 @@ public abstract class JsonElement {
    *
    * @return get this element as a primitive short value.
    * @throws ClassCastException    if the element is of not a
-   *                               {@link JsonPrimitive} and is not a valid short
+   *                               {@link JtonPrimitive} and is not a valid short
    *                               value.
-   * @throws IllegalStateException if the element is of the type {@link JsonArray}
+   * @throws IllegalStateException if the element is of the type {@link JtonArray}
    *                               but contains more than a single element.
    */
   public short asShort() {

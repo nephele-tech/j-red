@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal.bind;
+package com.nepheletech.jton.internal.bind;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -25,17 +25,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.JsonSyntaxException;
-import com.nepheletech.json.TypeAdapter;
-import com.nepheletech.json.TypeAdapterFactory;
-import com.nepheletech.json.internal.JavaVersion;
-import com.nepheletech.json.internal.PreJava9DateFormatProvider;
-import com.nepheletech.json.internal.bind.util.ISO8601Utils;
-import com.nepheletech.json.reflect.TypeToken;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.internal.JavaVersion;
+import com.nepheletech.jton.internal.PreJava9DateFormatProvider;
+import com.nepheletech.jton.internal.bind.util.ISO8601Utils;
+import com.nepheletech.jton.reflect.TypeToken;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * Adapter for Date. Although this class appears stateless, it is not.

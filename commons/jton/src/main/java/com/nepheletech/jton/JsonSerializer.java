@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.lang.reflect.Type;
+
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonSerializationContext;
+import com.nepheletech.jton.TypeAdapter;
 
 /**
  * Interface representing a custom serializer for Json. You should write a custom serializer, if
  * you are not happy with the default serialization done by Gson. You will also need to register
- * this serializer through {@link com.nepheletech.json.GsonBuilder#registerTypeAdapter(Type, Object)}.
+ * this serializer through {@link com.nepheletech.jton.GsonBuilder#registerTypeAdapter(Type, Object)}.
  *
  * <p>Let us look at example where defining a serializer will be useful. The {@code Id} class
  * defined below has two fields: {@code clazz} and {@code value}.</p>
@@ -85,5 +89,5 @@ public interface JsonSerializer<T> {
    * @param typeOfSrc the actual type (fully genericized version) of the source object.
    * @return a JsonElement corresponding to the specified object.
    */
-  public JsonElement serialize(T src, Type typeOfSrc, JsonSerializationContext context);
+  public JtonElement serialize(T src, Type typeOfSrc, JsonSerializationContext context);
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -23,19 +23,25 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import com.nepheletech.json.internal.LinkedTreeMap;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.JtonTransient;
+import com.nepheletech.jton.internal.LinkedTreeMap;
 
 /**
  * A class representing an object type in Json. An object consists of name-value
  * pairs where names are strings, and values are any other type of
- * {@link JsonElement}. This allows for a creating a tree of JsonElements. The
+ * {@link JtonElement}. This allows for a creating a tree of JsonElements. The
  * member elements of this object are maintained in order they were added.
  *
  * @author Inderjeet Singh
  * @author Joel Leitch
  */
-public final class JsonObject extends JsonElement implements Map<String, JsonElement> {
-  private final LinkedTreeMap<String, JsonElement> members = new LinkedTreeMap<String, JsonElement>();
+public final class JtonObject extends JtonElement implements Map<String, JtonElement> {
+  private final LinkedTreeMap<String, JtonElement> members = new LinkedTreeMap<String, JtonElement>();
 
   /**
    * Creates a deep copy of this element and all its children
@@ -43,9 +49,9 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @since 2.8.2
    */
   @Override
-  public JsonObject deepCopy() {
-    JsonObject result = new JsonObject();
-    for (Map.Entry<String, JsonElement> entry : members.entrySet()) {
+  public JtonObject deepCopy() {
+    JtonObject result = new JtonObject();
+    for (Map.Entry<String, JtonElement> entry : members.entrySet()) {
       result.set(entry.getKey(), entry.getValue().deepCopy());
     }
     return result;
@@ -59,24 +65,24 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param property name of the member.
    * @param value    the member object.
    */
-  public JsonObject set(String property, JsonElement value) {
+  public JtonObject set(String property, JtonElement value) {
     if (value == null) {
-      value = JsonNull.INSTANCE;
+      value = JtonNull.INSTANCE;
     }
     members.put(property, value);
     return this;
   }
 
   /**
-   * Removes the {@code property} from this {@link JsonObject}.
+   * Removes the {@code property} from this {@link JtonObject}.
    *
    * @param property name of the member that should be removed.
-   * @return the {@link JsonElement} object that is being removed.
+   * @return the {@link JtonElement} object that is being removed.
    * @since 1.3
    */
-  public JsonElement remove(String property) {
-    final JsonElement member = members.remove(property);
-    return member != null ? member : JsonNull.INSTANCE;
+  public JtonElement remove(String property) {
+    final JtonElement member = members.remove(property);
+    return member != null ? member : JtonNull.INSTANCE;
   }
 
   /**
@@ -86,7 +92,7 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param property name of the member.
    * @param value    the string value associated with the member.
    */
-  public JsonObject set(String property, String value) {
+  public JtonObject set(String property, String value) {
     set(property, createJsonElement(value));
     return this;
   }
@@ -98,7 +104,7 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param property name of the member.
    * @param value    the number value associated with the member.
    */
-  public JsonObject set(String property, Number value) {
+  public JtonObject set(String property, Number value) {
     set(property, createJsonElement(value));
     return this;
   }
@@ -110,7 +116,7 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param property name of the member.
    * @param value    the number value associated with the member.
    */
-  public JsonObject set(String property, Boolean value) {
+  public JtonObject set(String property, Boolean value) {
     set(property, createJsonElement(value));
     return this;
   }
@@ -122,41 +128,41 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param property name of the member.
    * @param value    the number value associated with the member.
    */
-  public JsonObject set(String property, Character value) {
+  public JtonObject set(String property, Character value) {
     set(property, createJsonElement(value));
     return this;
   }
 
-  public JsonObject set(String property, Date value) {
+  public JtonObject set(String property, Date value) {
     set(property, createJsonElement(value));
     return this;
   }
 
-  public JsonObject set(String property, byte[] value) {
+  public JtonObject set(String property, byte[] value) {
     set(property, createJsonElement(value));
     return this;
   }
 
-  public JsonObject set(String property, Object value, boolean jsonTransient) {
-    final JsonElement e = value instanceof JsonElement 
-        ? (JsonElement) value : createJsonElement(value, jsonTransient);
+  public JtonObject set(String property, Object value, boolean jsonTransient) {
+    final JtonElement e = value instanceof JtonElement 
+        ? (JtonElement) value : createJsonElement(value, jsonTransient);
     return set(property, e);
   }
 
   /**
-   * Creates the proper {@link JsonElement} object from the given {@code value}
+   * Creates the proper {@link JtonElement} object from the given {@code value}
    * object.
    *
-   * @param value the object to generate the {@link JsonElement} for
-   * @return a {@link JsonPrimitive} if the {@code value} is not null, otherwise a
-   *         {@link JsonNull}
+   * @param value the object to generate the {@link JtonElement} for
+   * @return a {@link JtonPrimitive} if the {@code value} is not null, otherwise a
+   *         {@link JtonNull}
    */
-  private JsonElement createJsonElement(Object value) {
+  private JtonElement createJsonElement(Object value) {
     return createJsonElement(value, false);
   }
 
-  private JsonElement createJsonElement(Object value, boolean jsonTransient) {
-    return value == null ? JsonNull.INSTANCE : jsonTransient ? new JsonTransient(value) : new JsonPrimitive(value);
+  private JtonElement createJsonElement(Object value, boolean jsonTransient) {
+    return value == null ? JtonNull.INSTANCE : jsonTransient ? new JtonTransient(value) : new JtonPrimitive(value);
   }
 
   /**
@@ -166,7 +172,7 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @return a set of members of this object.
    */
   @Override
-  public Set<Map.Entry<String, JsonElement>> entrySet() {
+  public Set<Map.Entry<String, JtonElement>> entrySet() {
     return members.entrySet();
   }
 
@@ -206,12 +212,12 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * Returns the member with the specified name.
    *
    * @param memberName name of the member that is being requested.
-   * @return the member matching the name. {@link JsonNull} if no such member
+   * @return the member matching the name. {@link JtonNull} if no such member
    *         exists.
    */
-  public JsonElement get(String memberName) {
-    final JsonElement member = members.get(memberName);
-    return member != null ? member : JsonNull.INSTANCE;
+  public JtonElement get(String memberName) {
+    final JtonElement member = members.get(memberName);
+    return member != null ? member : JtonNull.INSTANCE;
   }
 
   /**
@@ -220,15 +226,15 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param memberName name of the member being requested.
    * @return the JsonPrimitive corresponding to the specified member.
    */
-  public JsonPrimitive getAsJsonPrimitive(String memberName) {
+  public JtonPrimitive getAsJsonPrimitive(String memberName) {
     return get(memberName).asJsonPrimitive();
   }
 
-  public JsonPrimitive getAsJsonPrimitive(String memberName, JsonPrimitive defaultValue) {
+  public JtonPrimitive getAsJsonPrimitive(String memberName, JtonPrimitive defaultValue) {
     return get(memberName).asJsonPrimitive(defaultValue);
   }
 
-  public JsonPrimitive getAsJsonPrimitive(String memberName, Object value) {
+  public JtonPrimitive getAsJsonPrimitive(String memberName, Object value) {
     return get(memberName).asJsonPrimitive(value);
   }
 
@@ -242,15 +248,15 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param memberName name of the member being requested.
    * @return the JsonTransient corresponding to the specified member.
    */
-  public JsonTransient getAsJsonTransient(String memberName) {
+  public JtonTransient getAsJsonTransient(String memberName) {
     return get(memberName).asJsonTransient();
   }
 
-  public JsonTransient getAsJsonTransient(String memberName, JsonTransient defaultValue) {
+  public JtonTransient getAsJsonTransient(String memberName, JtonTransient defaultValue) {
     return get(memberName).asJsonTransient(defaultValue);
   }
 
-  public JsonTransient getAsJsonTransient(String memberName, Object value) {
+  public JtonTransient getAsJsonTransient(String memberName, Object value) {
     return get(memberName).asJsonTransient(value);
   }
 
@@ -390,15 +396,15 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param memberName name of the member being requested.
    * @return the JsonArray corresponding to the specified member.
    */
-  public JsonArray getAsJsonArray(String memberName) {
+  public JtonArray getAsJsonArray(String memberName) {
     return get(memberName).asJsonArray();
   }
 
-  public JsonArray getAsJsonArray(String memberName, boolean create) {
+  public JtonArray getAsJsonArray(String memberName, boolean create) {
     return get(memberName).asJsonArray(create);
   }
 
-  public JsonArray getAsJsonArray(String memberName, JsonArray defaultValue) {
+  public JtonArray getAsJsonArray(String memberName, JtonArray defaultValue) {
     return get(memberName).asJsonArray(defaultValue);
   }
 
@@ -412,15 +418,15 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
    * @param memberName name of the member being requested.
    * @return the JsonObject corresponding to the specified member.
    */
-  public JsonObject getAsJsonObject(String memberName) {
+  public JtonObject getAsJsonObject(String memberName) {
     return get(memberName).asJsonObject();
   }
 
-  public JsonObject getAsJsonObject(String memberName, boolean create) {
+  public JtonObject getAsJsonObject(String memberName, boolean create) {
     return get(memberName).asJsonObject(create);
   }
 
-  public JsonObject getAsJsonObject(String memberName, JsonObject defaultValue) {
+  public JtonObject getAsJsonObject(String memberName, JtonObject defaultValue) {
     return get(memberName).asJsonObject(defaultValue);
   }
 
@@ -430,8 +436,8 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
 
   @Override
   public boolean equals(Object o) {
-    return (o == this) || (o instanceof JsonObject
-        && ((JsonObject) o).members.equals(members));
+    return (o == this) || (o instanceof JtonObject
+        && ((JtonObject) o).members.equals(members));
   }
 
   @Override
@@ -460,27 +466,27 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
 
   @Deprecated
   @Override
-  public JsonElement get(Object key) {
+  public JtonElement get(Object key) {
     return get((String) key);
   }
 
   @Deprecated
   @Override
-  public JsonElement put(String key, JsonElement value) {
+  public JtonElement put(String key, JtonElement value) {
     if (value == null) {
-      value = JsonNull.INSTANCE;
+      value = JtonNull.INSTANCE;
     }
     return members.put(key, value);
   }
 
   @Deprecated
   @Override
-  public JsonElement remove(Object key) {
+  public JtonElement remove(Object key) {
     return remove(key);
   }
 
   @Override
-  public void putAll(Map<? extends String, ? extends JsonElement> m) {
+  public void putAll(Map<? extends String, ? extends JtonElement> m) {
     members.putAll(m);
   }
 
@@ -490,18 +496,18 @@ public final class JsonObject extends JsonElement implements Map<String, JsonEle
   }
 
   @Override
-  public Collection<JsonElement> values() {
+  public Collection<JtonElement> values() {
     return members.values();
   }
 
   // ---
 
-  public JsonArray keys() {
+  public JtonArray keys() {
     return keys(this);
   }
 
-  public static JsonArray keys(Map<String, ?> map) {
-    final JsonArray keys = new JsonArray();
+  public static JtonArray keys(Map<String, ?> map) {
+    final JtonArray keys = new JtonArray();
     map.keySet().forEach(keys::push);
     return keys;
   }

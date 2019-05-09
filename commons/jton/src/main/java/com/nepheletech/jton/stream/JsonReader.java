@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.stream;
+package com.nepheletech.jton.stream;
 
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.Reader;
 
-import com.nepheletech.json.internal.JsonReaderInternalAccess;
-import com.nepheletech.json.internal.bind.JsonTreeReader;
+import com.nepheletech.jton.internal.JsonReaderInternalAccess;
+import com.nepheletech.jton.internal.bind.JsonTreeReader;
 
 /**
  * Reads a JSON (<a href="http://www.ietf.org/rfc/rfc7159.txt">RFC 7159</a>)
@@ -768,7 +768,7 @@ public class JsonReader implements Closeable {
   }
 
   /**
-   * Returns the next token, a {@link com.nepheletech.json.stream.JsonToken#NAME property name}, and
+   * Returns the next token, a {@link com.nepheletech.jton.stream.JsonToken#NAME property name}, and
    * consumes it.
    *
    * @throws java.io.IOException if the next token in the stream is not a property
@@ -795,7 +795,7 @@ public class JsonReader implements Closeable {
   }
 
   /**
-   * Returns the {@link com.nepheletech.json.stream.JsonToken#STRING string} value of the next token,
+   * Returns the {@link com.nepheletech.jton.stream.JsonToken#STRING string} value of the next token,
    * consuming it. If the next token is a number, this method will return its
    * string form.
    *
@@ -831,7 +831,7 @@ public class JsonReader implements Closeable {
   }
 
   /**
-   * Returns the {@link com.nepheletech.json.stream.JsonToken#BOOLEAN boolean} value of the next token,
+   * Returns the {@link com.nepheletech.jton.stream.JsonToken#BOOLEAN boolean} value of the next token,
    * consuming it.
    *
    * @throws IllegalStateException if the next token is not a boolean or if
@@ -875,7 +875,7 @@ public class JsonReader implements Closeable {
   }
 
   /**
-   * Returns the {@link com.nepheletech.json.stream.JsonToken#NUMBER double} value of the next token,
+   * Returns the {@link com.nepheletech.jton.stream.JsonToken#NUMBER double} value of the next token,
    * consuming it. If the next token is a string, this method will attempt to
    * parse it as a double using {@link Double#parseDouble(String)}.
    *
@@ -919,7 +919,7 @@ public class JsonReader implements Closeable {
   }
 
   /**
-   * Returns the {@link com.nepheletech.json.stream.JsonToken#NUMBER long} value of the next token,
+   * Returns the {@link com.nepheletech.jton.stream.JsonToken#NUMBER long} value of the next token,
    * consuming it. If the next token is a string, this method will attempt to
    * parse it as a long. If the next token's numeric value cannot be exactly
    * represented by a Java {@code long}, this method throws.
@@ -1151,7 +1151,7 @@ public class JsonReader implements Closeable {
   }
 
   /**
-   * Returns the {@link com.nepheletech.json.stream.JsonToken#NUMBER int} value of the next token,
+   * Returns the {@link com.nepheletech.jton.stream.JsonToken#NUMBER int} value of the next token,
    * consuming it. If the next token is a string, this method will attempt to
    * parse it as an int. If the next token's numeric value cannot be exactly
    * represented by a Java {@code int}, this method throws.

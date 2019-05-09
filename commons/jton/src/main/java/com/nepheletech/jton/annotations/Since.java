@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.annotations;
+package com.nepheletech.jton.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -27,9 +27,9 @@ import java.lang.annotation.Target;
  * This annotation is useful to manage versioning of your Json classes for a web-service.
  *
  * <p>
- * This annotation has no effect unless you build {@link com.nepheletech.json.Gson} with a
- * {@link com.nepheletech.json.GsonBuilder} and invoke
- * {@link com.nepheletech.json.GsonBuilder#setVersion(double)} method.
+ * This annotation has no effect unless you build {@link com.nepheletech.jton.Gson} with a
+ * {@link com.nepheletech.jton.GsonBuilder} and invoke
+ * {@link com.nepheletech.jton.GsonBuilder#setVersion(double)} method.
  *
  * <p>Here is an example of how this annotation is meant to be used:</p>
  * <pre>

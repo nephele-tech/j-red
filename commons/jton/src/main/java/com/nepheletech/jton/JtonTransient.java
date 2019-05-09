@@ -1,9 +1,12 @@
-package com.nepheletech.json;
+package com.nepheletech.jton;
+
+import com.nepheletech.jton.AbstractJsonPrimitive;
+import com.nepheletech.jton.JtonTransient;
 
 /**
  * 
  */
-public class JsonTransient extends AbstractJsonPrimitive {
+public class JtonTransient extends AbstractJsonPrimitive {
 
   /**
    * Create a primitive using the specified Object. It must be an instance of
@@ -11,7 +14,7 @@ public class JsonTransient extends AbstractJsonPrimitive {
    *
    * @param primitive the value to create the primitive with.
    */
-  public JsonTransient(Object primitive) {
+  public JtonTransient(Object primitive) {
     setValue(primitive, true);
   }
 
@@ -21,7 +24,7 @@ public class JsonTransient extends AbstractJsonPrimitive {
    * @since 2.8.2
    */
   @Override
-  public JsonTransient deepCopy() {
+  public JtonTransient deepCopy() {
     return this;
   }
   

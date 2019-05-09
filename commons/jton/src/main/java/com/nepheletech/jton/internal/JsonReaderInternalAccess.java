@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;
 
 import java.io.IOException;
 
-import com.nepheletech.json.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonReader;
 
 /**
  * Internal-only APIs of JsonReader available only to other classes in Gson.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal.bind;
+package com.nepheletech.jton.internal.bind;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -40,22 +40,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-import com.nepheletech.json.Gson;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonIOException;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonPrimitive;
-import com.nepheletech.json.JsonSyntaxException;
-import com.nepheletech.json.TypeAdapter;
-import com.nepheletech.json.TypeAdapterFactory;
-import com.nepheletech.json.annotations.SerializedName;
-import com.nepheletech.json.internal.LazilyParsedNumber;
-import com.nepheletech.json.reflect.TypeToken;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonIOException;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.annotations.SerializedName;
+import com.nepheletech.jton.internal.LazilyParsedNumber;
+import com.nepheletech.jton.reflect.TypeToken;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * Type adapters for basic types.
@@ -695,21 +695,21 @@ public final class TypeAdapters {
 
   public static final TypeAdapterFactory LOCALE_FACTORY = newFactory(Locale.class, LOCALE);
 
-  public static final TypeAdapter<JsonElement> JSON_ELEMENT = new TypeAdapter<JsonElement>() {
-    @Override public JsonElement read(JsonReader in) throws IOException {
+  public static final TypeAdapter<JtonElement> JSON_ELEMENT = new TypeAdapter<JtonElement>() {
+    @Override public JtonElement read(JsonReader in) throws IOException {
       switch (in.peek()) {
       case STRING:
-        return new JsonPrimitive(in.nextString());
+        return new JtonPrimitive(in.nextString());
       case NUMBER:
         String number = in.nextString();
-        return new JsonPrimitive(new LazilyParsedNumber(number));
+        return new JtonPrimitive(new LazilyParsedNumber(number));
       case BOOLEAN:
-        return new JsonPrimitive(in.nextBoolean());
+        return new JtonPrimitive(in.nextBoolean());
       case NULL:
         in.nextNull();
-        return JsonNull.INSTANCE;
+        return JtonNull.INSTANCE;
       case BEGIN_ARRAY:
-        JsonArray array = new JsonArray();
+        JtonArray array = new JtonArray();
         in.beginArray();
         while (in.hasNext()) {
           array.push(read(in));
@@ -717,7 +717,7 @@ public final class TypeAdapters {
         in.endArray();
         return array;
       case BEGIN_OBJECT:
-        JsonObject object = new JsonObject();
+        JtonObject object = new JtonObject();
         in.beginObject();
         while (in.hasNext()) {
           object.set(in.nextName(), read(in));
@@ -733,11 +733,11 @@ public final class TypeAdapters {
       }
     }
 
-    @Override public void write(JsonWriter out, JsonElement value) throws IOException {
+    @Override public void write(JsonWriter out, JtonElement value) throws IOException {
       if (value == null || value.isJsonNull()) {
         out.nullValue();
       } else if (value.isJsonPrimitive()) {
-        JsonPrimitive primitive = value.asJsonPrimitive();
+        JtonPrimitive primitive = value.asJsonPrimitive();
         if (primitive.isNumber()) {
           out.value(primitive.asNumber());
         } else if (primitive.isBoolean()) {
@@ -748,14 +748,14 @@ public final class TypeAdapters {
 
       } else if (value.isJsonArray()) {
         out.beginArray();
-        for (JsonElement e : value.asJsonArray()) {
+        for (JtonElement e : value.asJsonArray()) {
           write(out, e);
         }
         out.endArray();
 
       } else if (value.isJsonObject()) {
         out.beginObject();
-        for (Map.Entry<String, JsonElement> e : value.asJsonObject().entrySet()) {
+        for (Map.Entry<String, JtonElement> e : value.asJsonObject().entrySet()) {
           if (!e.getValue().isJsonTransient()) { // ggeorg
             out.name(e.getKey());
             write(out, e.getValue());
@@ -770,7 +770,7 @@ public final class TypeAdapters {
   };
 
   public static final TypeAdapterFactory JSON_ELEMENT_FACTORY
-      = newTypeHierarchyFactory(JsonElement.class, JSON_ELEMENT);
+      = newTypeHierarchyFactory(JtonElement.class, JSON_ELEMENT);
 
   private static final class EnumTypeAdapter<T extends Enum<T>> extends TypeAdapter<T> {
     private final Map<String, T> nameToConstant = new HashMap<String, T>();

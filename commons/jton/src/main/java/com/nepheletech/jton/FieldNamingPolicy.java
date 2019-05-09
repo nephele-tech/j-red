@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.lang.reflect.Field;
 import java.util.Locale;
 
+import com.nepheletech.jton.FieldNamingStrategy;
+
 /**
  * An enumeration that defines a few standard naming conventions for JSON field names.
- * This enumeration should be used in conjunction with {@link com.nepheletech.json.GsonBuilder}
- * to configure a {@link com.nepheletech.json.Gson} instance to properly translate Java field
+ * This enumeration should be used in conjunction with {@link com.nepheletech.jton.GsonBuilder}
+ * to configure a {@link com.nepheletech.jton.Gson} instance to properly translate Java field
  * names into the desired JSON field names.
  *
  * @author Inderjeet Singh

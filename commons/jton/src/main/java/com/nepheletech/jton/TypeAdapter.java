@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -22,11 +22,17 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import com.nepheletech.json.internal.bind.JsonTreeReader;
-import com.nepheletech.json.internal.bind.JsonTreeWriter;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonToken;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.GsonBuilder;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonIOException;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.internal.bind.JsonTreeReader;
+import com.nepheletech.jton.internal.bind.JsonTreeWriter;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonToken;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * Converts Java objects to and from JSON.
@@ -129,10 +135,10 @@ public abstract class TypeAdapter<T> {
 
   /**
    * Converts {@code value} to a JSON document and writes it to {@code out}.
-   * Unlike Gson's similar {@link Gson#toJson(JsonElement, Appendable) toJson}
+   * Unlike Gson's similar {@link Gson#toJson(JtonElement, Appendable) toJson}
    * method, this write is strict. Create a {@link
    * JsonWriter#setLenient(boolean) lenient} {@code JsonWriter} and call
-   * {@link #write(com.nepheletech.json.stream.JsonWriter, Object)} for lenient
+   * {@link #write(com.nepheletech.jton.stream.JsonWriter, Object)} for lenient
    * writing.
    *
    * @param value the Java object to convert. May be null.
@@ -206,7 +212,7 @@ public abstract class TypeAdapter<T> {
    * Converts {@code value} to a JSON document. Unlike Gson's similar {@link
    * Gson#toJson(Object) toJson} method, this write is strict. Create a {@link
    * JsonWriter#setLenient(boolean) lenient} {@code JsonWriter} and call
-   * {@link #write(com.nepheletech.json.stream.JsonWriter, Object)} for lenient
+   * {@link #write(com.nepheletech.jton.stream.JsonWriter, Object)} for lenient
    * writing.
    *
    * @param value the Java object to convert. May be null.
@@ -226,10 +232,10 @@ public abstract class TypeAdapter<T> {
    * Converts {@code value} to a JSON tree.
    *
    * @param value the Java object to convert. May be null.
-   * @return the converted JSON tree. May be {@link JsonNull}.
+   * @return the converted JSON tree. May be {@link JtonNull}.
    * @since 2.2
    */
-  public final JsonElement toJsonTree(T value) {
+  public final JtonElement toJsonTree(T value) {
     try {
       JsonTreeWriter jsonWriter = new JsonTreeWriter();
       write(jsonWriter, value);
@@ -277,10 +283,10 @@ public abstract class TypeAdapter<T> {
   /**
    * Converts {@code jsonTree} to a Java object.
    *
-   * @param jsonTree the Java object to convert. May be {@link JsonNull}.
+   * @param jsonTree the Java object to convert. May be {@link JtonNull}.
    * @since 2.2
    */
-  public final T fromJsonTree(JsonElement jsonTree) {
+  public final T fromJsonTree(JtonElement jsonTree) {
     try {
       JsonReader jsonReader = new JsonTreeReader(jsonTree);
       return read(jsonReader);

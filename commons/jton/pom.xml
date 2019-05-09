@@ -7,7 +7,7 @@
 		<artifactId>jred-commons</artifactId>
 		<version>0.0.2</version>
 	</parent>
-	<artifactId>nephele-json</artifactId>
+	<artifactId>jton</artifactId>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>

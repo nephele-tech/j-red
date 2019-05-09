@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.stream;
+package com.nepheletech.jton.stream;
 
 /**
  * Lexical scoping elements within a JSON reader or writer.

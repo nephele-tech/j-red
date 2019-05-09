@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.annotations;
+package com.nepheletech.jton.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.nepheletech.json.JsonDeserializer;
-import com.nepheletech.json.JsonSerializer;
-import com.nepheletech.json.TypeAdapter;
-import com.nepheletech.json.TypeAdapterFactory;
+import com.nepheletech.jton.JsonDeserializer;
+import com.nepheletech.jton.JsonSerializer;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
 
 /**
  * An annotation that indicates the Gson {@link TypeAdapter} to use with a class
@@ -75,7 +75,7 @@ import com.nepheletech.json.TypeAdapterFactory;
  * </pre>
  *
  * It's possible to specify different type adapters on a field, that
- * field's type, and in the {@link com.nepheletech.json.GsonBuilder}. Field
+ * field's type, and in the {@link com.nepheletech.jton.GsonBuilder}. Field
  * annotations take precedence over {@code GsonBuilder}-registered type
  * adapters, which in turn take precedence over annotated types.
  *

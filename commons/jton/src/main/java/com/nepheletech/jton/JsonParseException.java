@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
+
+import com.nepheletech.jton.JsonParseException;
 
 /**
  * This exception is raised if there is a serious issue that occurs during parsing of a Json

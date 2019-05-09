@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal;
+package com.nepheletech.jton.internal;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.Writer;
 
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonIOException;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonParseException;
-import com.nepheletech.json.JsonSyntaxException;
-import com.nepheletech.json.internal.bind.TypeAdapters;
-import com.nepheletech.json.stream.JsonReader;
-import com.nepheletech.json.stream.JsonWriter;
-import com.nepheletech.json.stream.MalformedJsonException;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JsonIOException;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JsonParseException;
+import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.internal.bind.TypeAdapters;
+import com.nepheletech.jton.stream.JsonReader;
+import com.nepheletech.jton.stream.JsonWriter;
+import com.nepheletech.jton.stream.MalformedJsonException;
 
 /**
  * Reads and writes GSON parse trees over streams.
@@ -41,7 +41,7 @@ public final class Streams {
   /**
    * Takes a reader in any state and returns the next value as a JsonElement.
    */
-  public static JsonElement parse(JsonReader reader) throws JsonParseException {
+  public static JtonElement parse(JsonReader reader) throws JsonParseException {
     boolean isEmpty = true;
     try {
       reader.peek();
@@ -53,7 +53,7 @@ public final class Streams {
        * empty documents instead of throwing.
        */
       if (isEmpty) {
-        return JsonNull.INSTANCE;
+        return JtonNull.INSTANCE;
       }
       // The stream ended prematurely so it is likely a syntax error.
       throw new JsonSyntaxException(e);
@@ -69,7 +69,7 @@ public final class Streams {
   /**
    * Writes the JSON element to the writer, recursively.
    */
-  public static void write(JsonElement element, JsonWriter writer) throws IOException {
+  public static void write(JtonElement element, JsonWriter writer) throws IOException {
     TypeAdapters.JSON_ELEMENT.write(writer, element);
   }
 

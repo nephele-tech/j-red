@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
+
+import com.nepheletech.jton.ExclusionStrategy;
+import com.nepheletech.jton.FieldAttributes;
+import com.nepheletech.jton.GsonBuilder;
 
 /**
  * A strategy (or policy) definition that is used to decide whether or not a field or top-level

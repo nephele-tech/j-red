@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json;
+package com.nepheletech.jton;
 
-import static com.nepheletech.json.Gson.DEFAULT_COMPLEX_MAP_KEYS;
-import static com.nepheletech.json.Gson.DEFAULT_ESCAPE_HTML;
-import static com.nepheletech.json.Gson.DEFAULT_JSON_NON_EXECUTABLE;
-import static com.nepheletech.json.Gson.DEFAULT_LENIENT;
-import static com.nepheletech.json.Gson.DEFAULT_PRETTY_PRINT;
-import static com.nepheletech.json.Gson.DEFAULT_SERIALIZE_NULLS;
-import static com.nepheletech.json.Gson.DEFAULT_SPECIALIZE_FLOAT_VALUES;
+import static com.nepheletech.jton.Gson.DEFAULT_COMPLEX_MAP_KEYS;
+import static com.nepheletech.jton.Gson.DEFAULT_ESCAPE_HTML;
+import static com.nepheletech.jton.Gson.DEFAULT_JSON_NON_EXECUTABLE;
+import static com.nepheletech.jton.Gson.DEFAULT_LENIENT;
+import static com.nepheletech.jton.Gson.DEFAULT_PRETTY_PRINT;
+import static com.nepheletech.jton.Gson.DEFAULT_SERIALIZE_NULLS;
+import static com.nepheletech.jton.Gson.DEFAULT_SPECIALIZE_FLOAT_VALUES;
 
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
@@ -34,12 +34,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.nepheletech.json.internal.$Gson$Preconditions;
-import com.nepheletech.json.internal.Excluder;
-import com.nepheletech.json.internal.bind.TreeTypeAdapter;
-import com.nepheletech.json.internal.bind.TypeAdapters;
-import com.nepheletech.json.reflect.TypeToken;
-import com.nepheletech.json.stream.JsonReader;
+import com.nepheletech.jton.DefaultDateTypeAdapter;
+import com.nepheletech.jton.ExclusionStrategy;
+import com.nepheletech.jton.FieldNamingPolicy;
+import com.nepheletech.jton.FieldNamingStrategy;
+import com.nepheletech.jton.Gson;
+import com.nepheletech.jton.GsonBuilder;
+import com.nepheletech.jton.InstanceCreator;
+import com.nepheletech.jton.JsonDeserializer;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonSerializer;
+import com.nepheletech.jton.LongSerializationPolicy;
+import com.nepheletech.jton.TypeAdapter;
+import com.nepheletech.jton.TypeAdapterFactory;
+import com.nepheletech.jton.internal.$Gson$Preconditions;
+import com.nepheletech.jton.internal.Excluder;
+import com.nepheletech.jton.internal.bind.TreeTypeAdapter;
+import com.nepheletech.jton.internal.bind.TypeAdapters;
+import com.nepheletech.jton.reflect.TypeToken;
+import com.nepheletech.jton.stream.JsonReader;
 
 /**
  * <p>Use this builder to construct a {@link Gson} instance when you need to set configuration
@@ -173,7 +186,7 @@ public final class GsonBuilder {
 
   /**
    * Configures Gson to exclude all fields from consideration for serialization or deserialization
-   * that do not have the {@link com.nepheletech.json.annotations.Expose} annotation.
+   * that do not have the {@link com.nepheletech.jton.annotations.Expose} annotation.
    *
    * @return a reference to this {@code GsonBuilder} object to fulfill the "Builder" pattern
    */
@@ -205,7 +218,7 @@ public final class GsonBuilder {
    * For this case, assume that a type adapter is registered to serialize and
    * deserialize some {@code Point} class, which contains an x and y coordinate,
    * to/from the JSON Primitive string value {@code "(x,y)"}. The Java map would
-   * then be serialized as a {@link JsonObject}.
+   * then be serialized as a {@link JtonObject}.
    *
    * <p>Below is an example:
    * <pre>  {@code

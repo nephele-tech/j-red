@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.nepheletech.json.internal.bind;
+package com.nepheletech.jton.internal.bind;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonPrimitive;
-import com.nepheletech.json.stream.JsonWriter;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * This writer creates a JsonElement.
@@ -44,16 +44,16 @@ public final class JsonTreeWriter extends JsonWriter {
     }
   };
   /** Added to the top of the stack when this writer is closed to cause following ops to fail. */
-  private static final JsonPrimitive SENTINEL_CLOSED = new JsonPrimitive("closed");
+  private static final JtonPrimitive SENTINEL_CLOSED = new JtonPrimitive("closed");
 
   /** The JsonElements and JsonArrays under modification, outermost to innermost. */
-  private final List<JsonElement> stack = new ArrayList<JsonElement>();
+  private final List<JtonElement> stack = new ArrayList<JtonElement>();
 
   /** The name for the next JSON object value. If non-null, the top of the stack is a JsonObject. */
   private String pendingName;
 
   /** the JSON element constructed by this writer. */
-  private JsonElement product = JsonNull.INSTANCE; // TODO: is this really what we want?;
+  private JtonElement product = JtonNull.INSTANCE; // TODO: is this really what we want?;
 
   public JsonTreeWriter() {
     super(UNWRITABLE_WRITER);
@@ -62,30 +62,30 @@ public final class JsonTreeWriter extends JsonWriter {
   /**
    * Returns the top level object produced by this writer.
    */
-  public JsonElement get() {
+  public JtonElement get() {
     if (!stack.isEmpty()) {
       throw new IllegalStateException("Expected one JSON element but was " + stack);
     }
     return product;
   }
 
-  private JsonElement peek() {
+  private JtonElement peek() {
     return stack.get(stack.size() - 1);
   }
 
-  private void put(JsonElement value) {
+  private void put(JtonElement value) {
     if (pendingName != null) {
       if (!value.isJsonNull() || getSerializeNulls()) {
-        JsonObject object = (JsonObject) peek();
+        JtonObject object = (JtonObject) peek();
         object.set(pendingName, value);
       }
       pendingName = null;
     } else if (stack.isEmpty()) {
       product = value;
     } else {
-      JsonElement element = peek();
-      if (element instanceof JsonArray) {
-        ((JsonArray) element).push(value);
+      JtonElement element = peek();
+      if (element instanceof JtonArray) {
+        ((JtonArray) element).push(value);
       } else {
         throw new IllegalStateException();
       }
@@ -93,7 +93,7 @@ public final class JsonTreeWriter extends JsonWriter {
   }
 
   @Override public JsonWriter beginArray() throws IOException {
-    JsonArray array = new JsonArray();
+    JtonArray array = new JtonArray();
     put(array);
     stack.add(array);
     return this;
@@ -103,8 +103,8 @@ public final class JsonTreeWriter extends JsonWriter {
     if (stack.isEmpty() || pendingName != null) {
       throw new IllegalStateException();
     }
-    JsonElement element = peek();
-    if (element instanceof JsonArray) {
+    JtonElement element = peek();
+    if (element instanceof JtonArray) {
       stack.remove(stack.size() - 1);
       return this;
     }
@@ -112,7 +112,7 @@ public final class JsonTreeWriter extends JsonWriter {
   }
 
   @Override public JsonWriter beginObject() throws IOException {
-    JsonObject object = new JsonObject();
+    JtonObject object = new JtonObject();
     put(object);
     stack.add(object);
     return this;
@@ -122,8 +122,8 @@ public final class JsonTreeWriter extends JsonWriter {
     if (stack.isEmpty() || pendingName != null) {
       throw new IllegalStateException();
     }
-    JsonElement element = peek();
-    if (element instanceof JsonObject) {
+    JtonElement element = peek();
+    if (element instanceof JtonObject) {
       stack.remove(stack.size() - 1);
       return this;
     }
@@ -134,8 +134,8 @@ public final class JsonTreeWriter extends JsonWriter {
     if (stack.isEmpty() || pendingName != null) {
       throw new IllegalStateException();
     }
-    JsonElement element = peek();
-    if (element instanceof JsonObject) {
+    JtonElement element = peek();
+    if (element instanceof JtonObject) {
       pendingName = name;
       return this;
     }
@@ -146,17 +146,17 @@ public final class JsonTreeWriter extends JsonWriter {
     if (value == null) {
       return nullValue();
     }
-    put(new JsonPrimitive(value));
+    put(new JtonPrimitive(value));
     return this;
   }
 
   @Override public JsonWriter nullValue() throws IOException {
-    put(JsonNull.INSTANCE);
+    put(JtonNull.INSTANCE);
     return this;
   }
 
   @Override public JsonWriter value(boolean value) throws IOException {
-    put(new JsonPrimitive(value));
+    put(new JtonPrimitive(value));
     return this;
   }
 
@@ -164,7 +164,7 @@ public final class JsonTreeWriter extends JsonWriter {
     if (value == null) {
       return nullValue();
     }
-    put(new JsonPrimitive(value));
+    put(new JtonPrimitive(value));
     return this;
   }
 
@@ -172,12 +172,12 @@ public final class JsonTreeWriter extends JsonWriter {
     if (!isLenient() && (Double.isNaN(value) || Double.isInfinite(value))) {
       throw new IllegalArgumentException("JSON forbids NaN and infinities: " + value);
     }
-    put(new JsonPrimitive(value));
+    put(new JtonPrimitive(value));
     return this;
   }
 
   @Override public JsonWriter value(long value) throws IOException {
-    put(new JsonPrimitive(value));
+    put(new JtonPrimitive(value));
     return this;
   }
 
@@ -193,7 +193,7 @@ public final class JsonTreeWriter extends JsonWriter {
       }
     }
 
-    put(new JsonPrimitive(value));
+    put(new JtonPrimitive(value));
     return this;
   }
 
