@@ -1,8 +1,7 @@
 package com.nepheletech.jred.editor.api.websocket;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.websocket.EndpointConfig;
@@ -26,6 +25,7 @@ import com.nepheletech.json.JsonObject;
 import com.nepheletech.json.JsonParser;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
+import com.nepheletech.messagebus.Subscription;
 
 @ServerEndpoint(value = "/comms", configurator = CommsEndpoint.CommsEndpointConfigurator.class)
 public class CommsEndpoint implements MessageBusListener<JsonObject> {
@@ -46,7 +46,7 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
     @Override
     public void messageSent(String topic, JsonObject message) {
       logger.trace(">>> handleStatusEvent: topic={}, message={}", topic, message);
-      
+
       final String id = message.getAsString("id", null);
       if (id != null) {
         final JsonObject status = message.getAsJsonObject("status", false);
@@ -59,8 +59,7 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
 
   // ---
 
-  // ConcurrentHashSet derived from ConcurrentHashMap (Java 8 or newer)
-  private final Set<String> subscriptions = ConcurrentHashMap.newKeySet();
+  private Map<String, Subscription> mbSubscriptions = new ConcurrentHashMap<>();
 
   private Session session;
 
@@ -77,28 +76,25 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
     on("node-status", handleStatusEvent);
   }
 
+  private Subscription mbSubscription = null;
+
   private void on(String topic, MessageBusListener<JsonObject> messageListener) {
-    try {
-      MessageBus.unsubscribe(topic, messageListener);
-    } catch (IllegalArgumentException e) {
-      // ignore
-    } finally {
-      MessageBus.subscribe(topic, messageListener);
+    if (mbSubscription != null) {
+      mbSubscription.unsubscribe();
+      mbSubscription = null;
     }
+
+    mbSubscription = MessageBus.subscribe(topic, messageListener);
   }
 
   @OnClose
   public void onClose() {
     logger.trace(">>> onClose: id={}", session.getId());
 
-    for (Iterator<String> i = subscriptions.iterator(); i.hasNext();) {
-      try {
-        MessageBus.unsubscribe(i.next(), this);
-      } catch (Exception e) {
-        // ignore
-      } finally {
-        i.remove();
-      }
+    try {
+      mbSubscriptions.values().forEach(Subscription::unsubscribe);
+    } finally {
+      mbSubscriptions.clear();
     }
   }
 
@@ -115,11 +111,8 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
 
           logger.debug("Subscribe to: {}", topic);
 
-          if (!subscriptions.contains(topic)) {
-            subscriptions.add(topic);
-
-            MessageBus.subscribe(topic, this);
-
+          if (!mbSubscriptions.containsKey(topic)) {
+            mbSubscriptions.put(topic, MessageBus.subscribe(topic, this));
             return;
           }
 
