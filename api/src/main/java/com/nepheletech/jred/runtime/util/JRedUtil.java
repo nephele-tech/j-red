@@ -18,7 +18,7 @@ public final class JRedUtil {
   private static final Logger logger = LoggerFactory.getLogger(JRedUtil.class);
 
   private JRedUtil() {}
-  
+
   /**
    * 
    * @param value
@@ -72,6 +72,30 @@ public final class JRedUtil {
       }
     } else {
       return msg.get(value);
+    }
+  }
+
+  /**
+   * 
+   * @param prop
+   * @param type
+   * @param node
+   * @param msg
+   * @param value
+   */
+  public static void setNodeProperty(String prop, String type, Node node, JsonObject msg, Object value) {
+    JsonElement _value = value instanceof JsonElement
+        ? (JsonElement) value
+        : value == null
+            ? JsonNull.INSTANCE
+            : JsonPrimitive.create(value);
+
+    if ("msg".equals(type)) {
+      setMessageproperty(msg, prop, _value, true);
+    } else if ("flow".equals(type)) {
+      setObjectProperty(node.getFlowContext(), prop, _value, true);
+    } else if ("global".equals(type)) {
+      setObjectProperty(node.getGlobalContext(), prop, _value, true);
     }
   }
 
@@ -157,7 +181,7 @@ public final class JRedUtil {
   public static JsonElement evaluateJSONataExpression(JsonObject msg, String expr) {
     return JsonPath.read(msg, expr);
   }
-  
+
   /**
    * 
    * @param byteArray
@@ -170,7 +194,7 @@ public final class JRedUtil {
     }
     return buffer;
   }
-  
+
   /**
    * 
    * @param buffer
@@ -200,13 +224,13 @@ public final class JRedUtil {
     }
     return stackTrace;
   }
-  
+
   public static void publish(String localTopic, String topic, JsonObject data) {
     MessageBus.sendMessage(localTopic, new JsonObject()
         .set("topic", topic)
         .set("data", data));
   }
-  
+
   public static void publish(String localTopic, String topic, JsonObject data, boolean retain) { // TODO retain
     MessageBus.sendMessage(localTopic, new JsonObject()
         .set("topic", topic)

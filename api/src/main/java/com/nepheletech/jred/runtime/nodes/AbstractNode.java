@@ -19,6 +19,7 @@ import com.nepheletech.json.JsonElement;
 import com.nepheletech.json.JsonObject;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
+import com.nepheletech.messagebus.Subscription;
 
 public abstract class AbstractNode implements Node {
   protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -26,6 +27,9 @@ public abstract class AbstractNode implements Node {
   private final String id;
   private final String type;
   private final String z;
+
+  private final String topicPrefix;
+  private boolean hasSubscribers;
   // TODO _closeCallbacks
 
   private final String name;
@@ -38,23 +42,26 @@ public abstract class AbstractNode implements Node {
   protected final Flow flow;
 
   // Event listeners...
-  private final MessageBusListener<NodesStartedEvent> nodesStartedEventListener;
-  private final MessageBusListener<NodesStoppedEvent> nodesStoppedEventListener;
+  private final Subscription nodesStartedSubscription;
+  private final Subscription nodesStoppedSubscription;
 
   public AbstractNode(final Flow flow, final JsonObject config) {
     this.flow = flow;
-    this.id = config.get("id").asString();
-    this.type = config.get("type").asString();
-    this.z = config.get("z").asString();
-    this.name = config.get("name").asString(null);
-    this._alias = config.get("_alias").asString(null);
+    this.id = config.getAsString("id");
+    this.type = config.getAsString("type");
+    this.z = config.getAsString("z");
+    this.name = config.getAsString("name", null);
+    this._alias = config.getAsString("_alias", null);
+
+    this.topicPrefix = this.type.concat(this.id);
 
     flow.setup(this);
 
     updateWires(config.getAsJsonArray("wires", true));
 
     if (this instanceof NodesStartedEventListener) {
-      nodesStartedEventListener = new MessageBusListener<NodesStartedEvent>() {
+      nodesStartedSubscription = MessageBus
+          .subscribe(NodesStartedEvent.class, new MessageBusListener<NodesStartedEvent>() {
         @Override
         public void messageSent(String topic, NodesStartedEvent message) {
           try {
@@ -64,15 +71,14 @@ public abstract class AbstractNode implements Node {
             logger.debug(e.getMessage(), e);
           }
         }
-      };
-
-      MessageBus.subscribe(NodesStartedEvent.class, nodesStartedEventListener);
+      });
     } else {
-      nodesStartedEventListener = null;
+      nodesStartedSubscription = null;
     }
 
     if (this instanceof NodesStoppedEventListener) {
-      nodesStoppedEventListener = new MessageBusListener<NodesStoppedEvent>() {
+      nodesStoppedSubscription = MessageBus
+          .subscribe(NodesStoppedEvent.class, new MessageBusListener<NodesStoppedEvent>() {
         @Override
         public void messageSent(String topic, NodesStoppedEvent message) {
           try {
@@ -82,25 +88,14 @@ public abstract class AbstractNode implements Node {
             logger.debug(e.getMessage(), e);
           }
         }
-      };
-
-      MessageBus.subscribe(NodesStoppedEvent.class, nodesStoppedEventListener);
+      });
     } else {
-      nodesStoppedEventListener = null;
+      nodesStoppedSubscription = null;
     }
   }
 
   @Override
   public Flow getFlow() { return flow; }
-
-  @Override
-  public JsonObject getContext(String type) {
-    return getFlow().getContext(type);
-  }
-
-  public JsonObject getFlowContext() { return getFlow().getContext("flow"); }
-
-  public JsonObject getGlobalContext() { return getFlow().getContext("global"); }
 
   @Override
   public String getId() { return id; }
@@ -144,20 +139,12 @@ public abstract class AbstractNode implements Node {
   public final void close(boolean removed) {
     logger.trace(">>> close: type={}, id={}, removed={}", type, id, removed);
 
-    if (nodesStartedEventListener != null) {
-      try {
-        MessageBus.unsubscribe(NodesStartedEvent.class, nodesStartedEventListener);
-      } catch (IllegalArgumentException e) {
-        // ignore...
-      }
+    if (nodesStartedSubscription != null) {
+      nodesStartedSubscription.unsubscribe();
     }
 
-    if (nodesStoppedEventListener != null) {
-      try {
-        MessageBus.unsubscribe(NodesStoppedEvent.class, nodesStoppedEventListener);
-      } catch (IllegalArgumentException e) {
-        // ignore...
-      }
+    if (nodesStoppedSubscription != null) {
+      nodesStoppedSubscription.unsubscribe();
 
       if (this instanceof NodesStoppedEventListener) {
         try {
@@ -175,9 +162,22 @@ public abstract class AbstractNode implements Node {
   protected void onClosed(boolean removed) {}
 
   @Override
+  public <T> Subscription on(String event, MessageBusListener<T> messageListener) {
+    if (!this.hasSubscribers) {
+      this.hasSubscribers = true;
+    }
+
+    return MessageBus.subscribe(this.topicPrefix.concat(event), messageListener);
+  }
+
+  @Override
   public final void send(JsonElement _msg) {
     logger.trace(">>> send: _msg={}", _msg);
     logger.trace(">>> send: wires={}", wires);
+
+    if (this.hasSubscribers) {
+      MessageBus.sendMessage(topicPrefix.concat("#send"), _msg);
+    }
 
     if (this._wireCount == 0) {
       // With nothing wired to the node, no-op send
@@ -301,62 +301,31 @@ public abstract class AbstractNode implements Node {
 
   protected abstract void onMessage(JsonObject msg);
 
-  private void log_helper(int level, Object msg) {
-    logger.trace(">>> log_helper: level={}, msg={}", level, msg);
-
-    final JsonObject o = new JsonObject()
-        .set("id", getAlias() != null ? getAlias() : getId())
-        .set("type", getType())
-        .set("msg", msg, false);
-
-    final String _alias = getAlias();
-    if (_alias != null) {
-      o.set("_alias", _alias);
-    }
-
-    final String z = getZ();
-    if (z != null) {
-      o.set("z", z);
-    }
-
-    final String name = getName();
-    if (name != null) {
-      o.set("name", name);
-    }
-
-    switch (level) {
-    case FATAL:
-      LoggerFactory.getLogger(getClass()).error(o.toString());
-      break;
-    case ERROR:
-      LoggerFactory.getLogger(getClass()).error(o.toString());
-      break;
-    case WARN:
-      LoggerFactory.getLogger(getClass()).warn(o.toString());
-      break;
-    case INFO:
-      LoggerFactory.getLogger(getClass()).info(o.toString());
-      break;
-    case DEBUG:
-      LoggerFactory.getLogger(getClass()).debug(o.toString());
-      break;
-    case TRACE:
-      LoggerFactory.getLogger(getClass()).trace(o.toString());
-      break;
-    case AUDIT:
-      LoggerFactory.getLogger(getClass()).trace(o.toString());
-      break;
-    case METRIC:
-      LoggerFactory.getLogger(getClass()).trace(o.toString());
-      break;
-    }
-
-    if (level > OFF) {
-      o.set("level", level);
-    }
-
-    JRedUtil.publish("debug", "debug", o);
+  protected void metric() {
+    throw new UnsupportedOperationException();
   }
+
+  @Override
+  public void status(JsonObject status) {
+    logger.trace(">>> status: {}", status);
+
+    flow.handleStatus(this, status, null, false);
+  }
+
+  @Override
+  public void status(String text) {
+    status(new JsonObject().set("text", text));
+  }
+
+  private static final int OFF = 1;
+  private static final int FATAL = 10;
+  private static final int ERROR = 20;
+  private static final int WARN = 30;
+  private static final int INFO = 40;
+  private static final int DEBUG = 50;
+  private static final int TRACE = 60;
+  private static final int AUDIT = 98;
+  private static final int METRIC = 99;
 
   protected void log(JsonObject msg) {
     log_helper(INFO, msg);
@@ -423,29 +392,62 @@ public abstract class AbstractNode implements Node {
   protected void trace(JsonObject msg) {
     log_helper(TRACE, msg);
   }
+  
+  private void log_helper(int level, Object msg) {
+    logger.trace(">>> log_helper: level={}, msg={}", level, msg);
 
-  protected void metric() {
-    throw new UnsupportedOperationException();
+    final JsonObject o = new JsonObject()
+        .set("id", getAlias() != null ? getAlias() : getId())
+        .set("type", getType())
+        .set("msg", msg, false);
+
+    final String _alias = getAlias();
+    if (_alias != null) {
+      o.set("_alias", _alias);
+    }
+
+    final String z = getZ();
+    if (z != null) {
+      o.set("z", z);
+    }
+
+    final String name = getName();
+    if (name != null) {
+      o.set("name", name);
+    }
+
+    switch (level) {
+    case FATAL:
+      LoggerFactory.getLogger(getClass()).error(o.toString());
+      break;
+    case ERROR:
+      LoggerFactory.getLogger(getClass()).error(o.toString());
+      break;
+    case WARN:
+      LoggerFactory.getLogger(getClass()).warn(o.toString());
+      break;
+    case INFO:
+      LoggerFactory.getLogger(getClass()).info(o.toString());
+      break;
+    case DEBUG:
+      LoggerFactory.getLogger(getClass()).debug(o.toString());
+      break;
+    case TRACE:
+      LoggerFactory.getLogger(getClass()).trace(o.toString());
+      break;
+    case AUDIT:
+      LoggerFactory.getLogger(getClass()).trace(o.toString());
+      break;
+    case METRIC:
+      LoggerFactory.getLogger(getClass()).trace(o.toString());
+      break;
+    }
+
+    if (level > OFF) {
+      o.set("level", level);
+    }
+
+    JRedUtil.publish("debug", "debug", o);
   }
-
-  /**
-   * 
-   * @param status <code>{ fill:"red|green", shape:"dot|ring", text:"blah" }</code>
-   */
-  protected void status(JsonObject status) {
-    logger.trace(">>> status: {}", status);
-    
-    flow.handleStatus(this, status, null, false);
-  }
-
-  private static final int OFF = 1;
-  private static final int FATAL = 10;
-  private static final int ERROR = 20;
-  private static final int WARN = 30;
-  private static final int INFO = 40;
-  private static final int DEBUG = 50;
-  private static final int TRACE = 60;
-  private static final int AUDIT = 98;
-  private static final int METRIC = 99;
 
 }

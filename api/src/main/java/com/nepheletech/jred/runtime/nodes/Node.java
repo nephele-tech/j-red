@@ -4,6 +4,8 @@ import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonElement;
 import com.nepheletech.json.JsonObject;
+import com.nepheletech.messagebus.MessageBusListener;
+import com.nepheletech.messagebus.Subscription;
 
 public interface Node {
 
@@ -27,5 +29,35 @@ public interface Node {
 
   Flow getFlow();
 
-  JsonObject getContext(String type);
+  default JsonObject getContext(String type) {
+    return getFlow().getContext(type);
+  }
+
+  default JsonObject getFlowContext() { return getFlow().getContext("flow"); }
+
+  default JsonObject getGlobalContext() { return getFlow().getContext("global"); }
+
+  /**
+   * 
+   * @param text simple text status
+   */
+  default void status(String text) {
+    status(new JsonObject().set("text", text));
+  }
+
+  /**
+   * 
+   * @param status <code>{ fill:"red|green", shape:"dot|ring", text:"blah" }</code>
+   */
+  void status(JsonObject status);
+
+  /**
+   * Subscribe to node events.
+   * 
+   * @param <T>
+   * @param event
+   * @param messageListener
+   * @return
+   */
+  <T> Subscription on(String event, MessageBusListener<T> messageListener);
 }
