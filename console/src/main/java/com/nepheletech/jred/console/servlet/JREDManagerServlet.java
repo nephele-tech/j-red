@@ -1,20 +1,48 @@
 package com.nepheletech.jred.console.servlet;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.DistributedManager;
 import org.apache.catalina.Manager;
 import org.apache.catalina.manager.ManagerServlet;
+import org.apache.catalina.util.ContextName;
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationRequest;
+import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.Invoker;
+import org.apache.maven.shared.invoker.MavenInvocationException;
+import org.apache.tomcat.util.res.StringManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nepheletech.jred.console.Constants;
+import com.nepheletech.jred.console.util.AntExecutor;
 import com.nepheletech.json.JsonArray;
 import com.nepheletech.json.JsonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
@@ -34,24 +62,276 @@ public class JREDManagerServlet extends ManagerServlet {
     if (command == null || command.isEmpty() || command.startsWith("/list")) {
       list(req, res);
     } else {
-      // send not found
+      doPost(req, res);
     }
   }
 
+  @Override
+  public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    logger.trace(">>> doPost: queryString={}, pathInfo={}", req.getQueryString(), req.getPathInfo());
+
+    final String command = req.getPathInfo();
+
+    final String path = req.getParameter("path");
+    final ContextName cn = (path != null)
+        ? new ContextName(path, req.getParameter("version"))
+        : null;
+
+    String message = null;
+
+    StringManager smClient = StringManager.getManager(org.apache.catalina.manager.Constants.Package, req.getLocales());
+
+    if (command == null || command.isEmpty() || command.startsWith("/list")) {
+      list(req, res);
+    } else if ("/start".equals(command)) {
+      message = start(cn, smClient);
+    } else if ("/stop".equals(command)) {
+      message = stop(cn, smClient);
+    } else if ("/reload".equals(command)) {
+      message = reload(cn, smClient);
+    } else if ("/clone".equals(command)) {
+      String workspace = req.getParameter("workspace");
+      if (workspace == null || !workspace.matches("^/[a-zA-Z0-9_]+$")) {
+        message = "FAIL - Invalid workspace name";
+      } else {
+        message = clone(cn, workspace, smClient);
+      }
+    } else if ("/deploy".equals(command)) {
+      String workspace = req.getParameter("workspace");
+      if (workspace == null || !workspace.matches("^/[a-zA-Z0-9_]+$")) {
+        message = "FAIL - Invalid workspace name";
+      } else {
+        message = deploy(workspace, smClient);
+      }
+    } else if ("/undeploy".equals(command)) {
+      message = undeploy(cn, smClient);
+    } else if ("/export".equals(command)) {
+      export(req, res, cn, smClient);
+      return;
+    } else {
+      list(req, res);
+      return;
+    }
+
+    HttpServletUtil.sendJSON(res, new JsonObject()
+        .set("message", message)
+        .set("items", list()));
+  }
+
+  protected String start(ContextName cn, StringManager smClient) {
+    logger.trace(">>> start: {}", cn);
+
+    final StringWriter stringWriter = new StringWriter();
+    final PrintWriter printWriter = new PrintWriter(stringWriter);
+
+    super.start(printWriter, cn, smClient);
+
+    return stringWriter.toString();
+  }
+
+  protected String stop(ContextName cn, StringManager smClient) {
+    logger.trace(">>> stop: {}", cn);
+
+    final StringWriter stringWriter = new StringWriter();
+    final PrintWriter printWriter = new PrintWriter(stringWriter);
+
+    super.stop(printWriter, cn, smClient);
+
+    return stringWriter.toString();
+  }
+
+  protected String reload(ContextName cn, StringManager smClient) {
+    logger.trace(">>> reload: {}", cn);
+
+    final StringWriter stringWriter = new StringWriter();
+    final PrintWriter printWriter = new PrintWriter(stringWriter);
+
+    super.reload(printWriter, cn, smClient);
+
+    return stringWriter.toString();
+  }
+
+  protected String clone(ContextName cn, String workspace, StringManager smClient) {
+    logger.trace(">>> clone: {}", workspace);
+
+    String name = workspace.startsWith("/")
+        ? workspace.substring(1)
+        : workspace;
+
+    try {
+      name = URLEncoder.encode(name, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+    name += ".war";
+
+    File buildFile = new File(getServletContext().getRealPath(Constants.CLONE_WORKSPACE_BUILD_FILE));
+    File buildDir = new File(ServletContext.TEMPDIR, UUID.randomUUID().toString());
+    File webappsDir = new File(System.getProperty("user.dir"), "webapps");
+
+    Map<String, String> props = new HashMap<>();
+    props.put("build.dir", buildDir.getAbsolutePath());
+    props.put("webapps.dir", webappsDir.getAbsolutePath());
+    props.put("context.name", cn.getName());
+    props.put("war.name", name);
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    PrintStream outputStream = new PrintStream(baos);
+
+    try {
+      AntExecutor.executeAntTask(buildFile, "clone", props,
+          AntExecutor.createBuildLogger(outputStream, outputStream));
+    } catch (Exception e) {
+      logger.error("ANT failure", e);
+    } finally {
+      try {
+        FileUtils.deleteDirectory(buildDir);
+      } catch (IOException e) {
+        logger.warn("Cleanup error.", e);
+      }
+    }
+
+    return baos.toString();
+  }
+
+  protected String deploy(String workspace, StringManager smClient) {
+    logger.trace(">>> deploy: {}", workspace);
+
+    final String mavenHome = getServletContext().getRealPath("/WEB-INF/template");
+
+    final String pomFile = getServletContext().getRealPath("/WEB-INF/template/pom.xml");
+    logger.debug("POM FILE: {}", pomFile);
+
+    InvocationRequest request = new DefaultInvocationRequest();
+    request.setPomFile(new File(pomFile));
+    request.setGoals(Arrays.asList("clean", "package", "install"));
+
+    Invoker invoker = new DefaultInvoker();
+    invoker.setMavenExecutable(new File("/Users/ggeorg/Applications/apache-maven-3.6.0/bin/mvn"));
+    invoker.setMavenHome(new File(mavenHome));
+
+    try {
+      InvocationResult result = invoker.execute(request);
+
+      String name = workspace.startsWith("/")
+          ? workspace.substring(1)
+          : workspace;
+      name = URLEncoder.encode(name, "UTF-8");
+
+      logger.info("----------------------------- name={}", name);
+
+      // Identify the appBase of the owning Host of this Context (if any)
+      File file = new File(host.getAppBase(), name + ".war");
+      logger.info("----------------------------- name={}", file);
+      if (file.exists()) { return smClient.getString("htmlManagerServlet.deployUploadWarExists", workspace); }
+
+      if (host.findChild(name) != null && !isDeployed(name)) {
+        return smClient.getString("htmlManagerServlet.deployUploadInServerXml", workspace);
+      }
+
+      if (isServiced(name)) {
+        return smClient.getString("managerServlet.inService", name);
+      } else {
+        addServiced(name);
+        try {
+          String template = "/WEB-INF/template/target/jred-editor-template.war";
+          Path source = Paths.get(getServletContext().getRealPath(template));
+          Files.copy(source, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          // Perform new deployment
+          check(name);
+        } finally {
+          removeServiced(name);
+        }
+      }
+
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+
+      return smClient.getString("htmlManagerServlet.deployUploadFail", e.getMessage());
+    }
+
+    return "OK";
+  }
+
+  protected String undeploy(ContextName cn, StringManager smClient) {
+    logger.trace(">>> undeploy: {}", cn);
+
+    final StringWriter stringWriter = new StringWriter();
+    final PrintWriter printWriter = new PrintWriter(stringWriter);
+
+    super.undeploy(printWriter, cn, smClient);
+
+    return stringWriter.toString();
+  }
+
+  protected void export(HttpServletRequest req, HttpServletResponse res,
+      ContextName cn, StringManager smClient) throws ServletException, IOException {
+    logger.trace(">>> export:");
+
+    String userDir = System.getProperty("user.dir");
+
+    File buildFile = new File(getServletContext().getRealPath(Constants.EXPORT_WORKSPACE_BUILD_FILE));
+    File buildDir = new File(ServletContext.TEMPDIR, UUID.randomUUID().toString());
+    File webappsDir = new File(userDir, "webapps");
+
+    Map<String, String> props = new HashMap<>();
+    props.put("build.dir", buildDir.getAbsolutePath());
+    props.put("webapps.dir", webappsDir.getAbsolutePath());
+    props.put("context.name", cn.getName());
+    props.put("context.extension", ".zip");
+
+    byte[] data = null;
+
+    try {
+      AntExecutor.executeAntTask(buildFile, "export", props);
+      data = Files.readAllBytes(new File(buildDir, cn.getName() + ".zip").toPath());
+    } catch (Exception e) {
+      logger.error("Export to flows failed", e);
+    } finally {
+//      try {
+//        FileUtils.deleteDirectory(buildDir);
+//      } catch (IOException e) {
+//        logger.warn("Cleanup error.", e);
+//      }
+    }
+
+    // ---
+    res.setContentType(HttpServletUtil.APPLICATION_OCTET_STREAM);
+    res.setHeader("Content-Disposition",
+        String.format("attachment; filename=\"%s%s\"", cn.getBaseName(), ".zip"));
+    res.setHeader("Content-Length", Integer.toString(data.length));
+    res.getOutputStream().write(data);
+    res.getOutputStream().flush();
+    // ---
+    return;
+  }
+
   protected void list(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-    logger.trace(">>> doList");
+    logger.trace(">>> list:");
+
+    final JsonArray workspaces = list();
+
+    HttpServletUtil.sendJSON(res, workspaces);
+  }
+
+  protected JsonArray list() throws UnsupportedEncodingException {
+    logger.trace(">>> list:");
 
     final JsonArray workspaces = new JsonArray();
 
-    Arrays.asList(host.findChildren()).forEach(child -> {
+    for (Container child : host.findChildren()) {
       final String name = child.getName();
-      final Context context = (Context) host.findChild(child.getName());
+      final Context context = (Context) host.findChild(name);
+
       if (context != null) {
         final String displayName = context.getDisplayName();
         if (displayName == null || !displayName.startsWith("J-RED Editor")) {
-          return;
+          continue;
         }
-        
+
         final JsonObject workspace = new JsonObject();
         String displayPath = context.getPath();
         if ("".equals(displayPath)) {
@@ -64,8 +344,18 @@ public class JREDManagerServlet extends ManagerServlet {
 
         // TODO see parallel deployements...
         workspace.set("webappVersion", context.getWebappVersion());
-        
+
         workspace.set("isAvailable", context.getState().isAvailable());
+
+        final StringBuilder tmp = new StringBuilder();
+        tmp.append("path=");
+        tmp.append(URLEncoder.encode(displayPath, "UTF-8"));
+        if (context.getWebappVersion().length() > 0) {
+          tmp.append("&version=");
+          tmp.append(URLEncoder.encode(context.getWebappVersion(), "UTF-8"));
+        }
+
+        workspace.set("pathVersion", tmp.toString());
 
         final Manager manager = context.getManager();
         if (manager instanceof DistributedManager) {
@@ -81,12 +371,11 @@ public class JREDManagerServlet extends ManagerServlet {
         } catch (Exception e) { // JMX invocation error
           workspace.set("isDeployed", false);
         }
-        
+
         workspaces.push(workspace);
       }
+    }
 
-    });
-    
-    HttpServletUtil.sendJSON(res, workspaces);
+    return workspaces;
   }
 }

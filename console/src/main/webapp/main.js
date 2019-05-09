@@ -26,15 +26,22 @@ let workspaces = {
         value: 'version'
       }, { 
         text: 'Running',
+        align: 'center',
+        sortable: false,
         value: 'isDeployed'
       }, {
         text: 'Sessions',
+        align: 'right',
+        sortable: true,
         value: 'activeSessions'
       }, {
-        text: 'Commands'
+        text: 'Actions',
+        align: 'center',
+        sortable: false
       }],
       items: [],
-      loading: true
+      loading: true,
+      dialog: false
     };
   },
   mounted() {
@@ -45,9 +52,17 @@ let workspaces = {
     });
   },
   methods: {
+    refresh: function() {
+      var _this = this;
+      this.getItems(function(items){
+        _this.items = items;
+        _this.loading = false;
+      });
+    },
     getItems: function(callback) { 
       axios.get('./manager/list')
         .then(function(response) {
+          console.log(response.data);
           callback(response.data);
         })
         .catch(function(error) {
@@ -56,7 +71,128 @@ let workspaces = {
         .then(function() {
             
         });
-    }   
+    },
+    doStart: function(item) {
+      var _this = this;
+      
+      axios.post('./manager/start?'+item.pathVersion)
+        .then(function(response) {
+          alert(response.data.message);
+
+          _this.items = response.data.items;
+          _this.loading = false;
+        })
+        .catch(function(error) {
+          console.error(error);
+        })
+        .then(function() {
+
+        });
+    },
+    doStop: function(item) {
+      var _this = this;
+      
+      axios.post('./manager/stop?'+item.pathVersion)
+        .then(function(response) {
+          alert(response.data.message);
+
+          _this.items = response.data.items;
+          _this.loading = false;
+        })
+        .catch(function(error) {
+          console.error(error);
+        })
+        .then(function() {
+
+        });
+    },
+    doExport: function(item) {
+      window.open('./manager/export?'+item.pathVersion, '_blank');
+    },
+    doImport: function(item) {
+      his.dialog = true;
+    },
+    doReload: function(item) {
+      var _this = this;
+
+      axios.post('./manager/reload?'+item.pathVersion)
+        .then(function(response) {
+          alert(response.data.message);
+
+          _this.items = response.data.items;
+          _this.loading = false;
+        })
+        .catch(function(error) {
+          console.error(error);
+        })
+        .then(function() {
+
+        });
+    },
+    doClone: function(item) {
+	  var _this = this;
+	    
+	  var workspace = prompt("Workspace name:", "/workspace")
+	  if (workspace) {
+	    // TODO validate workspace name
+	    
+	    axios.post('./manager/clone?'+item.pathVersion+'&workspace='+encodeURIComponent(workspace))
+	      .then(function(response) {
+	        alert(response.data.message);
+	      })
+	      .catch(function(error) {
+	        console.error(error);
+	      })
+	      .then(function() {
+	        _this.getItems(function(items){
+	          _this.items = items;
+	          _this.loading = false;
+	        });
+	      });
+	  }
+    },
+    doSettings: function(item) {
+    	
+    },
+    doUndeploy: function(item) {
+      var _this = this;
+
+      axios.post('./manager/undeploy?'+item.pathVersion)
+        .then(function(response) {
+          alert(response.data.message);
+        })
+        .catch(function(error) {
+          console.error(error);
+        })
+        .then(function() {
+          _this.getItems(function(items){
+            _this.items = items;
+            _this.loading = false;
+          });
+        });
+    },
+    doDeploy: function() {
+      var _this = this;
+      
+      var workspace = prompt("Workspace name:", "/workspace")
+      if (workspace) {
+        // TODO validate workspace name
+        
+        axios.post('./manager/deploy?workspace='+encodeURIComponent(workspace))
+          .then(function(response) {
+            alert(response.data.message);
+          })
+          .catch(function(error) {
+            console.error(error);
+          })
+          .then(function() {
+            _this.getItems(function(items){
+              _this.items = items;
+              _this.loading = false;
+            });
+          });
+      }
+    }
   }
 }
 

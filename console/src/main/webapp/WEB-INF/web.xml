@@ -8,10 +8,15 @@
 	<description>
       Servlet and JSP Examples.
     </description>
-    
+
 	<display-name>Servlet and JSP Examples</display-name>
 
 	<!-- <request-character-encoding>UTF-8</request-character-encoding> -->
+
+	<context-param>
+		<param-name>logbackDisableServletContainerInitializer</param-name>
+		<param-value>true</param-value>
+	</context-param>
 
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE project>
+
+<project xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${build.dir}" />
+	</target>
+
+	<target name="export" depends="init">
+		<echo>context.name='${context.name}', context.dir='${webapps.dir}'</echo>
+
+		<copy todir="${build.dir}/src/main/webapp">
+			<fileset dir="${webapps.dir}/${context.name}">
+				<include name="WEB-INF/flows/**" />
+				<include name="META-INF/context.xml" />
+			</fileset>
+		</copy>
+
+		<copy file="${webapps.dir}/${context.name}/META-INF/maven/com.nepheletech/jred-editor-template/pom.xml" todir="${build.dir}" />
+
+		<zip destfile="${build.dir}/${context.name}${context.extension}" basedir="${build.dir}" />
+	</target>
+</project>

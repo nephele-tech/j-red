@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE project>
+
+<project xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${build.dir}" />
+	</target>
+
+	<target name="clone" depends="init">
+		<echo>context.name='${context.name}', context.dir='${webapps.dir}'</echo>
+
+		<copy todir="${build.dir}">
+			<fileset dir="${webapps.dir}/${context.name}">
+				<include name="**/*" />
+				<exclude name="META-INF/war-tracker" />
+			</fileset>
+		</copy>
+		
+		<war basedir="${build.dir}" destfile="${webapps.dir}/${war.name}"/>
+	</target>
+</project>
