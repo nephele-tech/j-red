@@ -6,31 +6,34 @@ import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.json.JsonObject;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
+import com.nepheletech.messagebus.Subscription;
 
 public abstract class AbstractCamelNode extends AbstractNode {
 
   private final String camelContextRef;
 
-  private final MessageBusListener<CamelContext> camelContextStartupListener;
+  private final Subscription camelContextStartupSubscription;
 
   public AbstractCamelNode(Flow flow, JsonObject config) {
     super(flow, config);
 
     this.camelContextRef = config.getAsString("context");
-    this.camelContextStartupListener = new MessageBusListener<CamelContext>() {
-      @Override
-      public void messageSent(String topic, CamelContext camelContext) {
-        try {
-          addRoutes(camelContext);
-        } catch (Exception e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
-      }
-    };
 
     if (this.camelContextRef != null) {
-      MessageBus.subscribe(this.camelContextRef, camelContextStartupListener);
+      this.camelContextStartupSubscription = MessageBus
+          .subscribe(this.camelContextRef, new MessageBusListener<CamelContext>() {
+        @Override
+        public void messageSent(String topic, CamelContext camelContext) {
+          try {
+            addRoutes(camelContext);
+          } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+        }
+      });
+    } else {
+      this.camelContextStartupSubscription = null;
     }
   }
 
@@ -45,7 +48,7 @@ public abstract class AbstractCamelNode extends AbstractNode {
     logger.trace(">>> onClosed: {}", removed);
 
     if (/*removed &&*/ camelContextRef != null) {
-      MessageBus.unsubscribe(camelContextRef, camelContextStartupListener);
+      camelContextStartupSubscription.unsubscribe();
     }
   }
 }
