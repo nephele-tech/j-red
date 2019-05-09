@@ -157,6 +157,10 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
 
       // headers
 
+      String ctSet = "Content-Type"; // set default camel case
+      @SuppressWarnings("unused")
+      String clSet = "Content-Length";
+      
       if (msg.has("headers")) {
         final JsonObject headers = msg.getAsJsonObject("headers", true);
         if (headers.has("x-node-red-request-node")) {
@@ -174,7 +178,12 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
             // function. Otherwise leave them alone.
             name = key;
           } else {
-            // ignore content-type & content-length
+            if ("content-type".equals(name)) {
+              ctSet = e.getKey();
+            } else {
+              clSet = e.getKey();
+            }
+            // we add those fields later...
             continue;
           }
           if (value.isJsonPrimitive()) {
@@ -244,22 +253,20 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
         HttpEntity entity;
 
         final JsonElement payload = msg.get("payload");
-        final String contentType = JsonUtil.getProperty(msg, "headers.content-type").asString(null);
+        final String contentType = JsonUtil.getProperty(msg, "headers." + ctSet).asString(null);
         if (payload.isJsonPrimitive()) {
           if (contentType == null) {
-            entity = new StringEntity(payload.asString(), ContentType.create("text/plain", Consts.UTF_8));
+            entity = new StringEntity(payload.asString(), ContentType.TEXT_PLAIN);
           } else {
             entity = new StringEntity(payload.asString(), ContentType.create(contentType, Consts.UTF_8));
           }
         } else {
-          if ("application/x-www-form-urlencoded".equals(contentType)) {
-            entity = new StringEntity(jsonToURLEncoding(payload),
-                ContentType.create("application/x-www-form-urlencoded", Consts.UTF_8));
+          if (ContentType.APPLICATION_FORM_URLENCODED.getMimeType().equals(contentType)) {
+            entity = new StringEntity(jsonToURLEncoding(payload), ContentType.APPLICATION_FORM_URLENCODED);
           } else {
             if (contentType == null) {
-              entity = new StringEntity(jsonToURLEncoding(payload),
-                  ContentType.create("application/json", Consts.UTF_8));
-              requestBuilder.addHeader("Content-Type", "application/json");
+              entity = new StringEntity(jsonToURLEncoding(payload), ContentType.APPLICATION_JSON);
+              requestBuilder.addHeader("Content-Type", ContentType.APPLICATION_JSON.getMimeType());
             } else {
               entity = new StringEntity(payload.toString(), ContentType.create(contentType, Consts.UTF_8));
             }

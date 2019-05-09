@@ -1,0 +1,145 @@
+<!--
+  Copyright 2015-2018 VeraCloud Inc.
+-->
+<script type="text/x-red" data-template-name="convert">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
+    </div>
+	<div class="form-row" style="margin-bottom:0;">
+        <label><i class="fa fa-list"></i> <span data-i18n="change.label.rules"></span></label>
+    </div>
+	<div class="form-row node-input-rule-container-row">
+		<ol id="node-input-rule-container"></ol>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="convert">
+	<p>Converts the input value to the type specified.</p>
+	<p>The available conversion types are:</p>
+	<ul>
+        <li><code>boolean</code> Allowed</li>
+        <li><code>byte</code> Allowed</li>
+       	<li><code>bytes</code>  Not allowed- It will throw an exception</li>
+		<li><code>short</code> Allowed</li>
+		<li><code>int</code> Allowed</li>
+		<li><code>long</code> Allowed</li>
+		<li><code>float</code> Allowed</li>
+		<li><code>double</code> Allowed</li>
+		<li><code>bigint</code> Allowed</li>
+		<li><code>bigdecimal</code> Allowed</li>
+		<li><code>date</code> Allowed</li>
+		<li><code>sqldate</code> Allowed</li>
+		<li><code>sqltime</code> Allowed</li>
+		<li><code>sqltimestamp</code> Allowed</li>
+       </ul>
+</script>
+
+<script type="text/javascript">
+	RED.nodes.registerType('convert', {
+		color: "#E2D96E",
+        category: 'function',
+        defaults: {
+            name: {value:""},
+            rules:{value:[{t:"string",p:"payload",pt:"msg"}]},
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "arrow-in.png",
+        label: function() {
+            return this.name||"convert";
+        },
+        labelStyle: function() {
+            return this.name ? "node_label_italic" : "";
+        },
+        oneditprepare: function() {
+        	
+			var types = [
+			    {v:"boolean", l:"boolean"},
+			    {v:"byte", l:"byte"},
+			    {v:"bytes", l:"bytes"},
+			    {v:"short", l:"short"},
+			    {v:"int", l:"int"},
+			    {v:"long", l:"long"},
+			    {v:"float", l:"float"},
+			    {v:"double", l:"double"},
+			    {v:"string", l:"string"},
+			    {v:"bigint", l:"big int"},
+			    {v:"bigdecimal", l:"big decimal"},
+			    {v:"date", l:"date"},
+			    {v:"sqldate", l:"sql date"},
+			    {v:"sqltime", l:"sql time"},
+			    {v:"sqltimestamp", l:"sql timestamp"}
+			];
+			
+			function resizeRule(rule) {
+				var newWidth = rule.width();
+				rule.find('.red-ui-typedInput').typedInput("width",newWidth-150);
+			}
+			
+			$('#node-input-rule-container').css('min-height','300px').css('min-width','450px').editableList({
+				addItem: function(container,i,opt) {
+                    var rule = opt;
+                    if (!rule.hasOwnProperty('t')) {
+                        rule = {t:"string",p:"payload"};
+                    }
+
+                    var row1 = $('<div/>').appendTo(container);
+                    
+                    var selectField = $('<select/>',{class:"node-input-rule-type",style:"width:110px; margin-right:10px;"}).appendTo(row1);
+                    var selectOptions = types;
+                    for (var i=0; i<selectOptions.length; i++) {
+                        selectField.append($("<option></option>").val(selectOptions[i].v).text(selectOptions[i].l));
+                    }
+
+                    var propertyName = $('<input/>',{class:"node-input-rule-property-name",type:"text"})
+                        .appendTo(row1)
+                        .typedInput({types:['msg','flow','global']});
+
+                    selectField.val(rule.t);
+                    propertyName.typedInput('value',rule.p);
+                    propertyName.typedInput('type',rule.pt);
+
+                    var newWidth = $("#node-input-rule-container").width();
+                    resizeRule(container);
+				},
+                resizeItem: resizeRule,
+                removable: true,
+                sortable: true
+			});
+
+            for (var i=0; i<this.rules.length; i++) {
+                var rule = this.rules[i];
+                $("#node-input-rule-container").editableList('addItem',rule);
+            }
+        },
+        
+        oneditsave: function() {
+            var rules = $("#node-input-rule-container").editableList('items');
+            var ruleset;
+            var node = this;
+            node.rules= [];
+        		rules.each(function(i) {
+        			var rule = $(this);
+                var type = rule.find(".node-input-rule-type").val();
+                var r = {
+				    t:type,
+				    p:rule.find(".node-input-rule-property-name").typedInput('value'),
+				    pt:rule.find(".node-input-rule-property-name").typedInput('type')
+				};
+				node.rules.push(r);
+        		});
+        },
+        oneditresize: function(size) {
+            var rows = $("#dialog-form>div:not(.node-input-rule-container-row)");
+            var height = size.height;
+            for (var i=0; i<rows.size(); i++) {
+                height -= $(rows[i]).outerHeight(true);
+            }
+            var editorRow = $("#dialog-form>div.node-input-rule-container-row");
+            height -= (parseInt(editorRow.css("marginTop"))+parseInt(editorRow.css("marginBottom")));
+
+            $("#node-input-rule-container").editableList('height',height);
+        }
+	});
+</script>

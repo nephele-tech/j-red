@@ -9,6 +9,18 @@
 	</parent>
 	<artifactId>jred-core-nodes</artifactId>
 	<dependencies>
+
+		<!-- JUnit4 -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+
+
+		<!-- NepheleTech libraries -->
+
 		<dependency>
 			<groupId>com.nepheletech</groupId>
 			<artifactId>jred-api</artifactId>
@@ -107,15 +119,12 @@
 			<artifactId>bcpkix-jdk15on</artifactId>
 			<version>1.61</version>
 		</dependency>
-<!-- https://mvnrepository.com/artifact/joda-time/joda-time -->
-<dependency>
-    <groupId>joda-time</groupId>
-    <artifactId>joda-time</artifactId>
-    <version>2.10.1</version>
-</dependency>
-
-
-
+		<!-- https://mvnrepository.com/artifact/joda-time/joda-time -->
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>2.10.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>
