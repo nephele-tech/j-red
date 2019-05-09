@@ -45,9 +45,7 @@ public abstract class ListenerList<T> implements Iterable<T> {
 
     @Override
     public T next() {
-      if (index >= last) {
-        throw new NoSuchElementException();
-      }
+      if (index >= last) { throw new NoSuchElementException(); }
 
       return list[index++];
     }
@@ -110,13 +108,9 @@ public abstract class ListenerList<T> implements Iterable<T> {
   }
 
   private int indexOf(T listener) {
-    if (listener == null) {
-      throw new IllegalArgumentException("listener is null.");
-    }
+    if (listener == null) { throw new IllegalArgumentException("listener is null."); }
     for (int i = 0; i < last; i++) {
-      if (list[i] == listener) {
-        return i;
-      }
+      if (list[i] == listener) { return i; }
     }
     return -1;
   }
@@ -139,18 +133,14 @@ public abstract class ListenerList<T> implements Iterable<T> {
    * @return <tt>true</tt> if the list contains no listeners; <tt>false</tt>,
    *         otherwise.
    */
-  public boolean isEmpty() {
-    return last == 0;
-  }
+  public boolean isEmpty() { return last == 0; }
 
   /**
    * Get the number of elements in the list.
    *
    * @return the number of elements.
    */
-  public int getLength() {
-    return last;
-  }
+  public int getLength() { return last; }
 
   /**
    * Get the indexed element in the list.

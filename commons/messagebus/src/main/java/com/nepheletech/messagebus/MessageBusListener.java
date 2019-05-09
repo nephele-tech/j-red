@@ -20,10 +20,11 @@ package com.nepheletech.messagebus;
  * Message bus listener interface.
  */
 public interface MessageBusListener<T> {
-    /**
-     * Called when a message has been sent via {@link MessageBus#sendMessage(Object)}.
-     *
-     * @param message
-     */
-    public void messageSent(String topic, T message);
+  /**
+   * Called when a message has been sent via
+   * {@link MessageBus#sendMessage(Object)}.
+   *
+   * @param message
+   */
+  public void messageSent(String topic, T message);
 }

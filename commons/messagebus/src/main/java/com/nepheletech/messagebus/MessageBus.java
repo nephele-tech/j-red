@@ -31,8 +31,8 @@ public final class MessageBus {
    * @param topic
    * @param messageListener
    */
-  public static <T> void subscribe(Class<? super T> topic, MessageBusListener<T> messageListener) {
-    subscribe(topic.getName(), messageListener);
+  public static <T> Subscription subscribe(Class<? super T> topic, MessageBusListener<T> messageListener) {
+    return subscribe(topic.getName(), messageListener);
   }
 
   /**
@@ -41,7 +41,7 @@ public final class MessageBus {
    * @param topic
    * @param messageListener
    */
-  public static <T> void subscribe(String topic, MessageBusListener<T> messageListener) {
+  public static <T> Subscription subscribe(String topic, MessageBusListener<T> messageListener) {
     ListenerList<MessageBusListener<?>> topicListeners = messageTopics.get(topic);
 
     if (topicListeners == null) {
@@ -53,6 +53,17 @@ public final class MessageBus {
     }
 
     topicListeners.add(messageListener);
+
+    return new Subscription() {
+      @Override
+      public void unsubscribe() {
+        try {
+          MessageBus.unsubscribe(topic, messageListener);
+        } catch (IllegalArgumentException e) {
+          // ignore
+        }
+      }
+    };
   }
 
   /**
@@ -61,7 +72,8 @@ public final class MessageBus {
    * @param topic
    * @param messageListener
    */
-  public static <T> void unsubscribe(Class<? super T> topic, MessageBusListener<T> messageListener) {
+  @SuppressWarnings("unused")
+  private static <T> void unsubscribe(Class<? super T> topic, MessageBusListener<T> messageListener) {
     unsubscribe(topic.getName(), messageListener);
   }
 
@@ -71,12 +83,10 @@ public final class MessageBus {
    * @param topic
    * @param messageListener
    */
-  public static <T> void unsubscribe(String topic, MessageBusListener<T> messageListener) {
+  private static <T> void unsubscribe(String topic, MessageBusListener<T> messageListener) {
     ListenerList<MessageBusListener<?>> topicListeners = messageTopics.get(topic);
 
-    if (topicListeners == null) {
-      throw new IllegalArgumentException(topic + " does not exist.");
-    }
+    if (topicListeners == null) { throw new IllegalArgumentException(topic + " does not exist."); }
 
     topicListeners.remove(messageListener);
     if (topicListeners.isEmpty()) {
@@ -90,9 +100,7 @@ public final class MessageBus {
    * @param message
    */
   public static <T> void sendMessage(T message) {
-    if (message == null) {
-      throw new NullPointerException("message can't be null");
-    }
+    if (message == null) { throw new NullPointerException("message can't be null"); }
 
     sendMessage(message.getClass().getName(), message);
   }
