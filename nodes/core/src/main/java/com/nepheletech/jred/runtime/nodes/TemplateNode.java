@@ -9,10 +9,10 @@ import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParser;
-import com.nepheletech.json.JsonPrimitive;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonPrimitive;
 
 public class TemplateNode extends AbstractNode {
   private final String field;
@@ -25,7 +25,7 @@ public class TemplateNode extends AbstractNode {
   private final MustacheFactory mf;
   private Mustache mustache;
 
-  public TemplateNode(Flow flow, JsonObject config) {
+  public TemplateNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     this.field = config.get("field").asString("payload");
@@ -55,7 +55,7 @@ public class TemplateNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
     
     try {
@@ -88,14 +88,14 @@ public class TemplateNode extends AbstractNode {
     send(msg);
   }
 
-  protected Object prepare(final JsonObject msg) {
+  protected Object prepare(final JtonObject msg) {
     msg.set("_flow", getFlowContext());
     msg.set("_global", getGlobalContext());
     return msg;
   }
 
-  private void output(JsonObject msg, String _value) {
-    JsonElement value;
+  private void output(JtonObject msg, String _value) {
+    JtonElement value;
     
     logger.debug("----------------------------------------------------------------------{}", _value);
 
@@ -104,7 +104,7 @@ public class TemplateNode extends AbstractNode {
     } else if ("yaml".equals(outputFormat)) {
       throw new UnsupportedOperationException();
     } else {
-      value = new JsonPrimitive(_value);
+      value = new JtonPrimitive(_value);
     }
 
     if ("msg".equals(fieldType)) {

@@ -45,11 +45,11 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParser;
-import com.nepheletech.json.JsonPrimitive;
-import com.nepheletech.json.JsonUtil;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.JsonUtil;
 
 public class HttpRequestNode extends AbstractNode implements HasCredentials {
 
@@ -66,7 +66,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
   private final MustacheFactory mf;
   private Mustache mustache;
 
-  public HttpRequestNode(Flow flow, JsonObject config) {
+  public HttpRequestNode(Flow flow, JtonObject config) {
     super(flow, config);
     this.method = config.getAsString("method", "GET");
     this.url = config.getAsString("url", null);
@@ -91,7 +91,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
   }
 
   @Override
-  public void setCredentials(JsonObject credentials) {
+  public void setCredentials(JtonObject credentials) {
     if (credentials != null) {
       this.user = credentials.getAsString("user", null);
       this.password = credentials.getAsString("password", null);
@@ -99,11 +99,11 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}, thread={}", msg, Thread.currentThread().getId());
 
     try {
-      status(new JsonObject()
+      status(new JtonObject()
           .set("fill", "blue")
           .set("shape", "dot")
           .set("text", "requesting"));
@@ -114,7 +114,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
       // url must start http:// or https:// so assume http:// if not set
       if (url.indexOf("://") != -1 && url.indexOf("http") != 0) {
         // TODO warn("non-http transport requested");
-        status(new JsonObject()
+        status(new JtonObject()
             .set("fill", "red")
             .set("shape", "ring")
             .set("text", "non-http transport requested"));
@@ -162,16 +162,16 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
       String clSet = "Content-Length";
       
       if (msg.has("headers")) {
-        final JsonObject headers = msg.getAsJsonObject("headers", true);
+        final JtonObject headers = msg.getAsJsonObject("headers", true);
         if (headers.has("x-node-red-request-node")) {
           @SuppressWarnings("unused")
-          final JsonElement headerHash = headers.get("x-node-red-request-node");
+          final JtonElement headerHash = headers.get("x-node-red-request-node");
           headers.remove("x-node-red-request-node");
           // TODO hasSum
         }
-        for (Entry<String, JsonElement> e : headers.entrySet()) {
+        for (Entry<String, JtonElement> e : headers.entrySet()) {
           final String key = e.getKey();
-          final JsonElement value = e.getValue();
+          final JtonElement value = e.getValue();
           String name = e.getKey().toLowerCase();
           if (!name.equals("content-type") && !name.equals("content-length")) {
             // only normalize the known headers used later in this
@@ -200,10 +200,10 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
 
       final BasicCookieStore cookieStore = new BasicCookieStore();
       if (msg.has("cookies")) {
-        final JsonObject cookies = msg.getAsJsonObject("cookies", true);
-        for (Entry<String, JsonElement> e : cookies.entrySet()) {
+        final JtonObject cookies = msg.getAsJsonObject("cookies", true);
+        for (Entry<String, JtonElement> e : cookies.entrySet()) {
           final String key = e.getKey();
-          final JsonElement value = e.getValue();
+          final JtonElement value = e.getValue();
           if (value.isJsonPrimitive()) {
             cookieStore.addCookie(new BasicClientCookie(key, value.asString()));
           } else {
@@ -252,7 +252,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
       if (!"GET".equals(method) && !"HEAD".equals(method) && !msg.get("payload").isJsonNull()) {
         HttpEntity entity;
 
-        final JsonElement payload = msg.get("payload");
+        final JtonElement payload = msg.get("payload");
         final String contentType = JsonUtil.getProperty(msg, "headers." + ctSet).asString(null);
         if (payload.isJsonPrimitive()) {
           if (contentType == null) {
@@ -298,7 +298,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
 
           final StatusLine sl = response.getStatusLine();
 
-          final JsonObject headers = new JsonObject();
+          final JtonObject headers = new JtonObject();
           for (Header header : response.getAllHeaders()) {
             headers.set(header.getName(), header.getValue());
           }
@@ -308,9 +308,9 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
           msg.set("responseUrl", url);
 
           if (headers.has("Set-Cookie")) {
-            final JsonObject cookies = new JsonObject();
+            final JtonObject cookies = new JtonObject();
             for (Cookie cookie : context.getCookieStore().getCookies()) {
-              cookies.set(cookie.getName(), new JsonObject()
+              cookies.set(cookie.getName(), new JtonObject()
                   .set("value", cookie.getValue())
                   .set("domain", cookie.getDomain())
                   .set("expiryDate", cookie.getExpiryDate())
@@ -352,13 +352,13 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
       // TODO Auto-generated catch block
       e.printStackTrace();
     } finally {
-      status(new JsonObject());
+      status(new JtonObject());
     }
 
     send(msg);
   }
 
-  private String jsonToURLEncoding(JsonElement json) {
+  private String jsonToURLEncoding(JtonElement json) {
     try {
       final String result = jsonToURLEncoding(null, json);
       return result.replaceAll("&$", "");
@@ -371,12 +371,12 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
   private static final String DEFAULT_VALUE_NAME = "v";
   private static final String DEFAULT_ARRAY_NAME = "a";
 
-  private String jsonToURLEncoding(String prefix, JsonElement json) throws UnsupportedEncodingException {
+  private String jsonToURLEncoding(String prefix, JtonElement json) throws UnsupportedEncodingException {
     final StringBuilder sb = new StringBuilder("");
     if (json.isJsonNull()) {
       // do nothing
     } else if (json.isJsonPrimitive()) {
-      final JsonPrimitive _value = json.asJsonPrimitive();
+      final JtonPrimitive _value = json.asJsonPrimitive();
       if (!_value.isJsonTransient()) {
         final String key = prefix != null ? URLEncoder.encode(prefix, "UTF-8") : DEFAULT_VALUE_NAME;
         final String val = URLEncoder.encode(json.asString(""), "UTF-8");
@@ -388,14 +388,14 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
         final String val = URLEncoder.encode(json.toString(), "UTF-8");
         sb.append(key).append("=").append(val).append("&");
       } else {
-        for (Entry<String, JsonElement> entry : json.asJsonObject().entrySet()) {
+        for (Entry<String, JtonElement> entry : json.asJsonObject().entrySet()) {
           final String key = entry.getKey();
-          final JsonElement value = entry.getValue();
+          final JtonElement value = entry.getValue();
           sb.append(jsonToURLEncoding(key, value));
         }
       }
     } else if (json.isJsonArray()) {
-      for (JsonElement value : json.asJsonArray()) {
+      for (JtonElement value : json.asJsonArray()) {
         String key = prefix != null ? prefix : DEFAULT_ARRAY_NAME;
         sb.append(jsonToURLEncoding(key, value));
       }
@@ -413,7 +413,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
     }
   }
 
-  private String getUrl(final JsonObject msg) {
+  private String getUrl(final JtonObject msg) {
     if (template) {
       try {
         final StringWriter output = new StringWriter();

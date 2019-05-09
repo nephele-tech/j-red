@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParser;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParser;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/locales/*" })
@@ -38,7 +38,7 @@ public class LocalesServlet extends HttpServlet {
       HttpServletUtil.sendJSON(res, JsonParser.parse(new String(Files.readAllBytes(file.toPath()), "UTF-8")));
     } else {
       // TODO third party nodes...
-      HttpServletUtil.sendJSON(res, new JsonObject());
+      HttpServletUtil.sendJSON(res, new JtonObject());
     }
   }
 

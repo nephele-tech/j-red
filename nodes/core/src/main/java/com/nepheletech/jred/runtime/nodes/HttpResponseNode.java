@@ -10,18 +10,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonPrimitive;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 public class HttpResponseNode extends AbstractNode {
   private static final Logger logger = LoggerFactory.getLogger(HttpResponseNode.class);
 
   private final int statusCode;
-  private final JsonObject headers;
+  private final JtonObject headers;
 
-  public HttpResponseNode(Flow flow, JsonObject config) {
+  public HttpResponseNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     this.statusCode = config.get("statusCode").asInt(-1);
@@ -34,18 +34,18 @@ public class HttpResponseNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
-    final JsonElement _res = msg.remove("_res");
+    final JtonElement _res = msg.remove("_res");
     if (_res.isJsonTransient()
         && _res.asJsonTransient().getValue() instanceof HttpServletResponse) {
       final HttpServletResponse res = (HttpServletResponse) _res.asJsonTransient().getValue();
       final int statusCode = (this.statusCode == -1) ? msg.get("statusCode").asInt(200) : this.statusCode;
-      final JsonObject headers = (this.headers == null || this.headers.size() == 0)
+      final JtonObject headers = (this.headers == null || this.headers.size() == 0)
           ? msg.get("headers").asJsonObject(true)
           : this.headers;
-      final JsonObject cookies = msg.get("cookies").asJsonObject(true);
+      final JtonObject cookies = msg.get("cookies").asJsonObject(true);
 
       try {
         res.setStatus(statusCode);
@@ -55,14 +55,14 @@ public class HttpResponseNode extends AbstractNode {
         }
 
         for (String name : cookies.keySet()) {
-          final JsonElement value = cookies.get(name);
+          final JtonElement value = cookies.get(name);
           if (value.isJsonPrimitive()) {
             final String cookieValue = value.asString(null);
             if (StringUtils.trimToNull(cookieValue) != null) {
               res.addCookie(new Cookie(name, cookieValue));
             }
           } else if (value.isJsonObject()) {
-            final JsonObject o = value.asJsonObject();
+            final JtonObject o = value.asJsonObject();
             final String cookieValue = o.get("value").asString("");
             if (StringUtils.trimToEmpty(cookieValue) != null) {
               final Cookie cookie = new Cookie(name, cookieValue);
@@ -87,9 +87,9 @@ public class HttpResponseNode extends AbstractNode {
           } else if (contentType.startsWith("application/octet-stream")) { // TODO
             throw new UnsupportedOperationException();
           } else {
-            final JsonElement payload = msg.get("payload");
+            final JtonElement payload = msg.get("payload");
             if (payload.isJsonPrimitive()) {
-              final JsonPrimitive primitive = payload.asJsonPrimitive();
+              final JtonPrimitive primitive = payload.asJsonPrimitive();
               if (!primitive.isJsonTransient()) {
                 HttpServletUtil.send(res, contentType, primitive.asString());
               } else {

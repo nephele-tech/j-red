@@ -5,27 +5,27 @@ import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParser;
-import com.nepheletech.json.JsonPrimitive;
-import com.nepheletech.json.JsonUtil;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.JsonUtil;
 
 public class ChangeNode extends AbstractNode {
   private static final Logger logger = LoggerFactory.getLogger(ChangeNode.class);
 
-  private final JsonArray rules;
+  private final JtonArray rules;
 
   private boolean valid = true;
 
-  public ChangeNode(Flow flow, JsonObject config) {
+  public ChangeNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     this.rules = config.getAsJsonArray("rules");
 
     for (int i = 0, iMax = rules.size(); i < iMax; i++) {
-      final JsonObject rule = rules.getAsJsonObject(i);
+      final JtonObject rule = rules.getAsJsonObject(i);
       // Migrate to type-aware rules
       if (!rule.has("pt")) {
         rule.set("pt", "msg");
@@ -78,13 +78,13 @@ public class ChangeNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace("onMessage: msg={}", msg);
 
     if (!valid) { return; }
 
-    for (JsonElement _rule : rules) {
-      final JsonObject r = _rule.asJsonObject();
+    for (JtonElement _rule : rules) {
+      final JtonObject r = _rule.asJsonObject();
       final String r_t = r.getAsString("t");
       if ("move".equals(r_t)) {
         final String r_p = r.getAsString("p");
@@ -92,34 +92,34 @@ public class ChangeNode extends AbstractNode {
         final String r_to = r.getAsString("to");
         final String r_tot = r.getAsString("tot");
         if (!r_tot.equals(r_pt) || r_p.indexOf(r_to) != -1) {
-          msg = applyRule(msg, new JsonObject()
+          msg = applyRule(msg, new JtonObject()
               .set("t", "set")
               .set("p", r_to)
               .set("pt", r_tot)
               .set("to", r_p)
               .set("tot", r_pt));
-          applyRule(msg, new JsonObject()
+          applyRule(msg, new JtonObject()
               .set("t", "delete")
               .set("p", r_p)
               .set("pt", r_pt));
         } else { // 2 step move if we moving from a child
-          msg = applyRule(msg, new JsonObject()
+          msg = applyRule(msg, new JtonObject()
               .set("t", "set")
               .set("p", "_temp_move")
               .set("pt", r_tot)
               .set("to", r_p)
               .set("tot", r_pt));
-          applyRule(msg, new JsonObject()
+          applyRule(msg, new JtonObject()
               .set("t", "delete")
               .set("p", r_p)
               .set("pt", r_pt));
-          msg = applyRule(msg, new JsonObject()
+          msg = applyRule(msg, new JtonObject()
               .set("t", "set")
               .set("p", r_to)
               .set("pt", r_tot)
               .set("to", "_temp_move")
               .set("tot", r_pt));
-          applyRule(msg, new JsonObject()
+          applyRule(msg, new JtonObject()
               .set("t", "delete")
               .set("p", "_temp_move")
               .set("pt", r_pt));
@@ -132,36 +132,36 @@ public class ChangeNode extends AbstractNode {
     send(msg);
   }
 
-  private JsonObject applyRule(JsonObject msg, JsonObject rule) {
+  private JtonObject applyRule(JtonObject msg, JtonObject rule) {
     final String rule_t = rule.getAsString("t");
     final String rule_pt = rule.getAsString("pt");
     final String rule_tot = rule.getAsString("tot");
 
     final String property = rule.getAsString("p");
 
-    JsonElement value = rule.get("to");
+    JtonElement value = rule.get("to");
 
     if ("json".equals(rule_tot)) {
       value = JsonParser.parse(value.asString()).asJsonArray();
     } else if ("bin".equals(rule_tot)) {
-      final JsonArray byteArray = JsonParser.parse(value.asString()).asJsonArray();
-      value = new JsonPrimitive(JRedUtil.toBuffer(byteArray));
+      final JtonArray byteArray = JsonParser.parse(value.asString()).asJsonArray();
+      value = new JtonPrimitive(JRedUtil.toBuffer(byteArray));
     } else if ("msg".equals(rule_tot)) {
       value = JRedUtil.getMessageProperty(msg, value.asString());
     } else if ("flow".equals(rule_tot) || "global".equals(rule_tot)) {
       value = JRedUtil.getObjectProperty(getContext(rule_tot), value.asString());
     } else if ("date".equals(rule_tot)) {
-      value = new JsonPrimitive(System.currentTimeMillis());
+      value = new JtonPrimitive(System.currentTimeMillis());
     } else if ("jsonata".equals(rule_tot)) {
       value = JRedUtil.evaluateJSONataExpression(msg, value.asString());
     }
 
     String fromType = null;
-    JsonElement fromValue = null;
+    JtonElement fromValue = null;
     // TODO fromRE
 
     if ("change".equals(rule_t)) {
-      final JsonElement rule_from = rule.get("from");
+      final JtonElement rule_from = rule.get("from");
       final String rule_fromt = rule.getAsString("fromt");
       if ("msg".equals(rule_fromt) || "flow".equals(rule_fromt) || "global".equals(rule_fromt)) {
         throw new UnsupportedOperationException();
@@ -178,7 +178,7 @@ public class ChangeNode extends AbstractNode {
       } else if ("set".equals(rule_t)) {
         JRedUtil.setMessageproperty(msg, property, value, true);
       } else if ("change".equals(rule_t)) {
-        final JsonPrimitive current = JsonUtil.getProperty(msg, property).asJsonPrimitive(false);
+        final JtonPrimitive current = JsonUtil.getProperty(msg, property).asJsonPrimitive(false);
         if (current != null) {
           if (current.isString()) {
             if (("num".equals(fromType) || "bool".equals(fromType) || "str".equals(fromType))
@@ -202,7 +202,7 @@ public class ChangeNode extends AbstractNode {
         }
       }
     } else {
-      JsonObject target = null;
+      JtonObject target = null;
       if ("flow".equals(rule_pt) || "global".equals(rule_pt)) {
         target = getContext(rule_pt);
       }
@@ -212,7 +212,7 @@ public class ChangeNode extends AbstractNode {
         } else if ("set".equals(rule_t)) {
           JsonUtil.setProperty(target, property, value, true);
         } else if ("change".equals(rule_t)) {
-          final JsonPrimitive current = JsonUtil.getProperty(target, property).asJsonPrimitive(null);
+          final JtonPrimitive current = JsonUtil.getProperty(target, property).asJsonPrimitive(null);
           if (current != null) {
             if (current.isString()) {
               if (("num".equals(fromType) || "bool".equals(fromType) || "str".equals(fromType))

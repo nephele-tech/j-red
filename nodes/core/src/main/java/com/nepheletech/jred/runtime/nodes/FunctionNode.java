@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jfc.ScriptEvaluator;
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
 
 public class FunctionNode extends AbstractNode {
   private static final Logger logger = LoggerFactory.getLogger(FunctionNode.class);
@@ -23,10 +23,10 @@ public class FunctionNode extends AbstractNode {
   private final String func;
   private final int outputs;
 
-  private ScriptEvaluator<JsonElement> se = null;
+  private ScriptEvaluator<JtonElement> se = null;
   private Runnable stopHandler = null;
 
-  public FunctionNode(Flow flow, JsonObject config) {
+  public FunctionNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     this.func = config.get("func").asString();
@@ -42,20 +42,20 @@ public class FunctionNode extends AbstractNode {
       }
     }
 
-    imports.add(JsonElement.class.getPackage().getName() + ".*");
+    imports.add(JtonElement.class.getPackage().getName() + ".*");
 
     // create script evaluator
 
     final String[] _imports = imports.toArray(new String[imports.size()]);
     final String[] parameterNames = new String[] { "node", "msg", "logger" };
     final Class<?>[] parameterTypes = new Class<?>[] {
-        FunctionNode.class, JsonObject.class, Logger.class
+        FunctionNode.class, JtonObject.class, Logger.class
     };
     final Class<?>[] throwTypes = new Class<?>[] {
         Exception.class
     };
 
-    se = new ScriptEvaluator<>(_imports, func, JsonElement.class, parameterNames, parameterTypes, throwTypes,
+    se = new ScriptEvaluator<>(_imports, func, JtonElement.class, parameterNames, parameterTypes, throwTypes,
         getName() != null ? getName() : getId());
 
     try {
@@ -85,7 +85,7 @@ public class FunctionNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     try {
@@ -95,7 +95,7 @@ public class FunctionNode extends AbstractNode {
         send(se.evaluate(new Object[] { this, msg, logger }).asJsonObject(null));
       }
     } catch (ScriptException e) {
-      final JsonArray sourceCode = new JsonArray()
+      final JtonArray sourceCode = new JtonArray()
           .push("// JFunction1.java");
       final String[] script = se.getScript().split("\n");
       for (String line : script) {

@@ -5,22 +5,22 @@ import java.util.Objects;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonPrimitive;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
 
 public class SwitchNode extends AbstractNode {
   
-  private final JsonArray rules;
+  private final JtonArray rules;
   private final String property;
   private final String propertyType;
   private final boolean checkAll;
 
   private boolean valid = false;
 
-  public SwitchNode(Flow flow, JsonObject config) {
+  public SwitchNode(Flow flow, JtonObject config) {
     super(flow, config);
     
     this.rules = config.getAsJsonArray("rules", true);
@@ -35,9 +35,9 @@ public class SwitchNode extends AbstractNode {
       throw new UnsupportedOperationException("jsonata is not supported yet");
     }
 
-    for (JsonElement _rule : rules) {
+    for (JtonElement _rule : rules) {
       if (_rule.isJsonObject()) {
-        final JsonObject rule = _rule.asJsonObject();
+        final JtonObject rule = _rule.asJsonObject();
 
         if (!rule.has("vt") || !rule.get("vt").isJsonPrimitive()) {
           if (!Double.isNaN(rule.get("v").asDouble(Double.NaN))) {
@@ -55,7 +55,7 @@ public class SwitchNode extends AbstractNode {
             throw new UnsupportedOperationException("jsonata is not supported yet");
           }
         }
-        if (rule.get("v2") != JsonNull.INSTANCE) {
+        if (rule.get("v2") != JtonNull.INSTANCE) {
           if (!rule.has("v2t") || !rule.isJsonPrimitive("v2t")) {
             if (!Double.isNaN(rule.getAsDouble("v2"))) {
               rule.set("v2t", "num");
@@ -78,14 +78,14 @@ public class SwitchNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     if (!valid) {
       return;
     }
 
-    JsonArray onward = new JsonArray();
+    JtonArray onward = new JtonArray();
 
-    JsonElement prop;
+    JtonElement prop;
 
     if ("jsonata".equals(this.propertyType)) {
       throw new UnsupportedOperationException("jsonata is not supported yet");
@@ -95,19 +95,19 @@ public class SwitchNode extends AbstractNode {
 
     boolean elseFlag = true;
 
-    for (JsonElement _rule : rules) {
+    for (JtonElement _rule : rules) {
       if (!_rule.isJsonObject()) {
         continue;
       }
-      JsonObject rule = _rule.asJsonObject();
+      JtonObject rule = _rule.asJsonObject();
 
-      JsonElement test = prop;
+      JtonElement test = prop;
 
-      JsonElement v1, v2;
+      JtonElement v1, v2;
 
       String vt = rule.getAsString("vt");
       if ("prev".equals(vt)) {
-        v1 = JsonNull.INSTANCE;
+        v1 = JtonNull.INSTANCE;
       } else if ("jsonata".equals(vt)) {
         throw new UnsupportedOperationException("jsonata");
       } else {
@@ -116,7 +116,7 @@ public class SwitchNode extends AbstractNode {
 
       String v2t = rule.getAsString("v2t", null);
       if ("prev".equals(v2t)) {
-        v2 = JsonNull.INSTANCE;
+        v2 = JtonNull.INSTANCE;
       } else if ("jsonata".equals(v2t)) {
         throw new UnsupportedOperationException("jsonata");
       } else {
@@ -125,7 +125,7 @@ public class SwitchNode extends AbstractNode {
 
       String t = rule.getAsString("t", null);
       if ("else".equals(t)) {
-        test = new JsonPrimitive(elseFlag);
+        test = new JtonPrimitive(elseFlag);
         elseFlag = true;
       }
 
@@ -181,14 +181,14 @@ public class SwitchNode extends AbstractNode {
           break;
         }
       } else {
-        onward.push(JsonNull.INSTANCE);
+        onward.push(JtonNull.INSTANCE);
       }
     }
 
     send(onward);
   }
 
-  private double toDouble(JsonElement value) {
+  private double toDouble(JtonElement value) {
     return value.asJsonPrimitive().asDouble(Double.NaN);
   }
 

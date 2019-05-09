@@ -16,11 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.nodes.Node;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonPrimitive;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.messagebus.MessageBus;
 
 public final class FlowUtil {
@@ -28,14 +28,14 @@ public final class FlowUtil {
 
   private static Pattern subflowInstanceRE = Pattern.compile("^subflow:(.+)$", Pattern.MULTILINE);
 
-  public static JsonObject parseConfig(JsonArray config) {
-    final JsonObject allNodes = new JsonObject();
-    final JsonObject subflows = new JsonObject();
-    final JsonObject configs = new JsonObject();
-    final JsonObject flows = new JsonObject();
-    final JsonArray missingTypes = new JsonArray();
+  public static JtonObject parseConfig(JtonArray config) {
+    final JtonObject allNodes = new JtonObject();
+    final JtonObject subflows = new JtonObject();
+    final JtonObject configs = new JtonObject();
+    final JtonObject flows = new JtonObject();
+    final JtonArray missingTypes = new JtonArray();
 
-    final JsonObject flow = new JsonObject()
+    final JtonObject flow = new JtonObject()
         .set("allNodes", allNodes)
         .set("subflows", subflows)
         .set("configs", configs)
@@ -43,34 +43,34 @@ public final class FlowUtil {
         .set("missingTypes", missingTypes);
 
     config.forEach(_n -> {
-      final JsonObject n = _n.asJsonObject();
+      final JtonObject n = _n.asJsonObject();
       final String nId = n.get("id").asString();
       final String nType = n.get("type").asString();
       allNodes.set(nId, n.deepCopy());
       if ("tab".equals(nType)) {
         flows.set(nId, n);
-        n.set("subflows", new JsonObject());
-        n.set("configs", new JsonObject());
-        n.set("nodes", new JsonObject());
+        n.set("subflows", new JtonObject());
+        n.set("configs", new JtonObject());
+        n.set("nodes", new JtonObject());
       }
     });
 
     config.forEach(_n -> {
-      final JsonObject n = _n.asJsonObject();
+      final JtonObject n = _n.asJsonObject();
       final String nId = n.get("id").asString();
       final String nType = n.get("type").asString();
       if ("subflow".equals(nType)) {
         subflows.set(nId, n);
-        n.set("configs", new JsonObject());
-        n.set("nodes", new JsonObject());
-        n.set("instances", new JsonArray());
+        n.set("configs", new JtonObject());
+        n.set("nodes", new JtonObject());
+        n.set("instances", new JtonArray());
       }
     });
 
-    final JsonObject linkWires = new JsonObject();
-    final JsonArray linkOutNodes = new JsonArray();
+    final JtonObject linkWires = new JtonObject();
+    final JtonArray linkOutNodes = new JtonArray();
     config.forEach(_n -> {
-      final JsonObject n = _n.asJsonObject();
+      final JtonObject n = _n.asJsonObject();
       final String nType = n.get("type").asString();
       if (!"subflow".equals(nType) && !"tab".equals(nType)) {
         final String nId = n.get("id").asString();
@@ -84,7 +84,7 @@ public final class FlowUtil {
           }
         }
 
-        JsonObject container = null;
+        JtonObject container = null;
         if (flows.has(nZ)) {
           container = flows.get(nZ).asJsonObject();
         } else if (subflows.has(nZ)) {
@@ -108,7 +108,7 @@ public final class FlowUtil {
                 .set(nId, n);
           } else {
             configs.set(nId, n);
-            n.set("_users", new JsonArray());
+            n.set("_users", new JtonArray());
           }
         }
 
@@ -117,14 +117,14 @@ public final class FlowUtil {
           n.get("links").asJsonArray().forEach(_id -> {
             final String id = _id.asString();
             if (!linkWires.has(id)) {
-              linkWires.set(id, new JsonObject());
+              linkWires.set(id, new JtonObject());
             }
-            final JsonObject linksMap = linkWires.get(id).asJsonObject();
+            final JtonObject linksMap = linkWires.get(id).asJsonObject();
             linksMap.set(nId, true);
           });
         } else if ("link out".equals(nType) && n.has("links")) {
           if (!linkWires.has(nId)) {
-            linkWires.set(nId, new JsonObject());
+            linkWires.set(nId, new JtonObject());
           }
           n.get("links").asJsonArray().forEach(_id -> {
             final String id = _id.asString();
@@ -136,19 +136,19 @@ public final class FlowUtil {
     });
 
     linkOutNodes.forEach(_n -> {
-      final JsonObject n = _n.asJsonObject();
+      final JtonObject n = _n.asJsonObject();
       final String nId = n.get("id").asString();
-      final JsonObject links = linkWires.get(nId).asJsonObject();
-      n.set("wires", new JsonArray().push(links.keys()));
+      final JtonObject links = linkWires.get(nId).asJsonObject();
+      n.set("wires", new JtonArray().push(links.keys()));
     });
 
-    final JsonObject addedTabs = new JsonObject();
+    final JtonObject addedTabs = new JtonObject();
     config.forEach(_n -> {
-      final JsonObject n = _n.asJsonObject();
+      final JtonObject n = _n.asJsonObject();
       final String nType = n.get("type").asString();
       if (!"subflow".equals(nType) && !"tab".equals(nType)) {
         final String nId = n.get("id").asString();
-        for (Entry<String, JsonElement> entry : n.entrySet()) {
+        for (Entry<String, JtonElement> entry : n.entrySet()) {
           final String prop = entry.getKey();
           final String value = entry.getValue().asString(null);
           if (n.has(prop) && !"id".equals(prop)
@@ -163,20 +163,20 @@ public final class FlowUtil {
         final String nZ = StringUtils.trimToNull(n.get("z").asString(null));
         if (nZ != null && !subflows.has(nZ)) {
           if (!flows.has(nZ)) {
-            final JsonObject tab = new JsonObject().set("type", "tab").set("id", nZ);
+            final JtonObject tab = new JtonObject().set("type", "tab").set("id", nZ);
             flows.set(nZ, tab);
-            tab.set("subflows", new JsonObject());
-            tab.set("configs", new JsonObject());
-            tab.set("nodes", new JsonObject());
+            tab.set("subflows", new JtonObject());
+            tab.set("configs", new JtonObject());
+            tab.set("nodes", new JtonObject());
             addedTabs.set(nZ, tab);
           }
           if (addedTabs.has(nZ)) {
-            final JsonObject tab = addedTabs.get(nZ).asJsonObject();
+            final JtonObject tab = addedTabs.get(nZ).asJsonObject();
             if (n.has("x") && n.has("y")) {
-              final JsonObject tabNodes = tab.get("nodes").asJsonObject();
+              final JtonObject tabNodes = tab.get("nodes").asJsonObject();
               tabNodes.set(nId, n);
             } else {
-              final JsonObject tabConfigs = tab.get("configs").asJsonObject();
+              final JtonObject tabConfigs = tab.get("configs").asJsonObject();
               tabConfigs.set(nId, n);
             }
           }
@@ -187,31 +187,31 @@ public final class FlowUtil {
     return flow;
   }
 
-  public static JsonObject diffConfigs(JsonObject oldConfig, JsonObject newConfig) {
+  public static JtonObject diffConfigs(JtonObject oldConfig, JtonObject newConfig) {
     logger.trace(">>> diffConfigs: oldConfig={}, newConfig={}", oldConfig, newConfig);
 
     if (oldConfig == null) {
-      oldConfig = new JsonObject()
-          .set("flows", new JsonObject())
-          .set("allNodes", new JsonObject());
+      oldConfig = new JtonObject()
+          .set("flows", new JtonObject())
+          .set("allNodes", new JtonObject());
     }
 
-    final JsonObject changedSubflows = new JsonObject();
+    final JtonObject changedSubflows = new JtonObject();
 
-    final JsonObject added = new JsonObject();
-    final JsonObject removed = new JsonObject();
-    final JsonObject changed = new JsonObject();
-    final JsonObject wiringChanged = new JsonObject();
+    final JtonObject added = new JtonObject();
+    final JtonObject removed = new JtonObject();
+    final JtonObject changed = new JtonObject();
+    final JtonObject wiringChanged = new JtonObject();
 
-    final JsonObject linkMap = new JsonObject();
+    final JtonObject linkMap = new JtonObject();
 
     final HashSet<String> changedTabs = new HashSet<>();
 
-    final JsonObject oldFlows = oldConfig.get("flows").asJsonObject();
-    final JsonObject allOldNodes = oldConfig.get("allNodes").asJsonObject();
+    final JtonObject oldFlows = oldConfig.get("flows").asJsonObject();
+    final JtonObject allOldNodes = oldConfig.get("allNodes").asJsonObject();
 
-    final JsonObject newFlows = newConfig.get("flows").asJsonObject();
-    final JsonObject allNewNodes = newConfig.get("allNodes").asJsonObject();
+    final JtonObject newFlows = newConfig.get("flows").asJsonObject();
+    final JtonObject allNewNodes = newConfig.get("allNodes").asJsonObject();
 
     // Look for tabs that have been removed
     for (String id : oldFlows.keySet()) {
@@ -238,27 +238,27 @@ public final class FlowUtil {
       }
     }
 
-    for (Entry<String, JsonElement> entry : allOldNodes.entrySet()) {
+    for (Entry<String, JtonElement> entry : allOldNodes.entrySet()) {
       final String id = entry.getKey();
-      final JsonObject node = entry.getValue().asJsonObject();
+      final JtonObject node = entry.getValue().asJsonObject();
       final String nodeType = node.get("type").asString();
       if (!"tab".equals(nodeType)) {
         // build the map of what this node was previously wired to
         if (node.has("wires")) {
           if (!linkMap.has(id)) {
-            linkMap.set(id, new JsonArray());
+            linkMap.set(id, new JtonArray());
           }
-          final JsonArray nodeWires = node.get("wires").asJsonArray();
+          final JtonArray nodeWires = node.get("wires").asJsonArray();
           for (int j = 0, jMax = nodeWires.size(); j < jMax; j++) {
-            final JsonArray wires = nodeWires.get(j).asJsonArray();
+            final JtonArray wires = nodeWires.get(j).asJsonArray();
             for (int k = 0, kMax = wires.size(); k < kMax; k++) {
               linkMap.get(id).asJsonArray().push(wires.get(k));
               final String wire = wires.get(k).asString();
-              final JsonObject nn = allOldNodes.get(wire).asJsonObject(null);
+              final JtonObject nn = allOldNodes.get(wire).asJsonObject(null);
               if (nn != null) {
                 final String nnId = nn.get("id").asString();
                 if (!linkMap.has(nnId)) {
-                  linkMap.set(nnId, new JsonArray());
+                  linkMap.set(nnId, new JtonArray());
                 }
                 linkMap.get(nnId).asJsonArray().push(id);
               }
@@ -271,7 +271,7 @@ public final class FlowUtil {
           removed.set(id, node);
           // Mark the container as changed
           if (!removed.has(nodeZ) && allNewNodes.has(nodeZ)) {
-            final JsonObject container = allNewNodes.getAsJsonObject(nodeZ);
+            final JtonObject container = allNewNodes.getAsJsonObject(nodeZ);
             final String containerType = container.get("type").asString();
             changed.set(nodeZ, container);
             if ("subflow".equals(containerType)) {
@@ -284,7 +284,7 @@ public final class FlowUtil {
             added.set(id, node);
           } else {
             // This node has a material configuration change
-            final JsonObject newNode = allNewNodes.get(id).asJsonObject();
+            final JtonObject newNode = allNewNodes.get(id).asJsonObject();
             if (diffNodes(node, newNode) || newNode.has("credentials")) {
               changed.set(id, newNode);
               final String newNodeType = newNode.get("type").asString();
@@ -294,7 +294,7 @@ public final class FlowUtil {
               // Mark the container as changed
               final String newNodeZ = newNode.getAsString("z", null);
               if (allNewNodes.has(newNodeZ)) {
-                final JsonObject container = allNewNodes.get(newNodeZ).asJsonObject();
+                final JtonObject container = allNewNodes.get(newNodeZ).asJsonObject();
                 changed.set(newNodeZ, container);
                 final String containerType = container.get("type").asString();
                 if ("subflow".equals(containerType)) {
@@ -309,7 +309,7 @@ public final class FlowUtil {
               // Mark the container as changed
               final String newNodeZ = newNode.get("z").asString();
               if (allNewNodes.has(newNodeZ)) {
-                final JsonObject container = allNewNodes.get(newNodeZ).asJsonObject();
+                final JtonObject container = allNewNodes.get(newNodeZ).asJsonObject();
                 changed.set(newNodeZ, container);
                 final String containerType = container.get("type").asString();
                 if ("subflow".equals(containerType)) {
@@ -324,26 +324,26 @@ public final class FlowUtil {
     }
 
     // Look for added nodes
-    for (Entry<String, JsonElement> entry : allNewNodes.entrySet()) {
+    for (Entry<String, JtonElement> entry : allNewNodes.entrySet()) {
       final String id = entry.getKey();
-      final JsonObject node = entry.getValue().asJsonObject();
+      final JtonObject node = entry.getValue().asJsonObject();
       // build the map of what this node is now wired to
       if (node.has("wires")) {
         if (!linkMap.has(id)) {
-          linkMap.set(id, new JsonArray());
+          linkMap.set(id, new JtonArray());
         }
-        final JsonArray nodeWires = node.get("wires").asJsonArray();
+        final JtonArray nodeWires = node.get("wires").asJsonArray();
         for (int j = 0, jMax = nodeWires.size(); j < jMax; j++) {
-          final JsonArray wires = nodeWires.get(j).asJsonArray();
+          final JtonArray wires = nodeWires.get(j).asJsonArray();
           for (int k = 0, kMax = wires.size(); k < kMax; k++) {
             if (linkMap.get(id).asJsonArray().indexOf(wires.get(k)) == -1) {
               linkMap.get(id).asJsonArray().push(wires.get(k));
             }
             final String wire = wires.get(k).asString();
-            final JsonObject nn = allNewNodes.get(wire).asJsonObject(null);
+            final JtonObject nn = allNewNodes.get(wire).asJsonObject(null);
             if (nn != null) {
               if (!linkMap.has(wire)) {
-                linkMap.set(wire, new JsonArray());
+                linkMap.set(wire, new JtonArray());
               }
               final String nnId = nn.get("id").asString();
               if (linkMap.get(nnId).asJsonArray().indexOf(node.get("id")) == -1) {
@@ -359,7 +359,7 @@ public final class FlowUtil {
         // Mark the container as changed
         final String nodeZ = StringUtils.trimToNull(node.get("z").asString(null));
         if (allNewNodes.has(nodeZ)) {
-          final JsonObject container = allNewNodes.get(nodeZ).asJsonObject();
+          final JtonObject container = allNewNodes.get(nodeZ).asJsonObject();
           changed.set(nodeZ, container);
           final String containerType = container.get("type").asString();
           if ("subflow".equals(containerType)) {
@@ -378,9 +378,9 @@ public final class FlowUtil {
     // more targeted
     do {
       madeChange = false;
-      for (Entry<String, JsonElement> entry : allNewNodes.entrySet()) {
+      for (Entry<String, JtonElement> entry : allNewNodes.entrySet()) {
         final String id = entry.getKey();
-        final JsonObject node = entry.getValue().asJsonObject();
+        final JtonObject node = entry.getValue().asJsonObject();
         for (String prop : node.keySet()) {
           if (!"z".equals(prop) && !"id".equals(prop) && !"wires".equals(prop)
               && node.get(prop).isJsonPrimitive()) {
@@ -396,7 +396,7 @@ public final class FlowUtil {
                 // template as having changed.
                 final String nodeZ = StringUtils.trimToNull(node.get("z").asString(null));
                 if (allNewNodes.has(nodeZ)) {
-                  final JsonObject zNode = allNewNodes.get(nodeZ).asJsonObject();
+                  final JtonObject zNode = allNewNodes.get(nodeZ).asJsonObject();
                   changed.set(nodeZ, zNode);
                   final String zNodeType = zNode.get("type").asString();
                   if ("subflow".equals(zNodeType)) {
@@ -412,12 +412,12 @@ public final class FlowUtil {
 
     // Find any nodes that exists on a subflow template and remove from changed
     // list as the parent subflow will now be marked as containing a change.
-    for (Entry<String, JsonElement> entry : allNewNodes.entrySet()) {
+    for (Entry<String, JtonElement> entry : allNewNodes.entrySet()) {
       final String id = entry.getKey();
-      final JsonObject node = entry.getValue().asJsonObject(null);
+      final JtonObject node = entry.getValue().asJsonObject(null);
       final String nodeZ = StringUtils.trimToNull(node.get("z").asString(null));
       if (nodeZ != null && allNewNodes.has(nodeZ)) {
-        final JsonObject container = allNewNodes.get(nodeZ).asJsonObject();
+        final JtonObject container = allNewNodes.get(nodeZ).asJsonObject();
         if ("subflow".equals(container.get("type").asString())) {
           changed.remove(id);
         }
@@ -425,19 +425,19 @@ public final class FlowUtil {
     }
 
     // Recursively mark all instances of changed subflows as changed
-    final JsonArray changedSubflowStack = changedSubflows.keys();
+    final JtonArray changedSubflowStack = changedSubflows.keys();
     while (changedSubflowStack.size() > 0) {
       final String subflowId = changedSubflowStack.remove(0).asString();
       if (allNewNodes != null) {
-        for (Entry<String, JsonElement> entry : allNewNodes.entrySet()) {
+        for (Entry<String, JtonElement> entry : allNewNodes.entrySet()) {
           final String id = entry.getKey();
-          final JsonObject node = entry.getValue().asJsonObject(null);
+          final JtonObject node = entry.getValue().asJsonObject(null);
           if (("subflow:" + subflowId).equals(node.get("type").asString())) {
             if (!changed.has(id)) {
               changed.set(id, node);
               final String z = node.get("z").asString();
               if (!changed.has(z) && allNewNodes.has(z)) {
-                final JsonObject zNode = allNewNodes.get(z).asJsonObject();
+                final JtonObject zNode = allNewNodes.get(z).asJsonObject();
                 changed.set(z, zNode);
                 if ("subflow".equals(zNode.get("type").asString())) {
                   // This subflow instance is inside a subflow. Add the
@@ -452,12 +452,12 @@ public final class FlowUtil {
       }
     }
 
-    final JsonArray addedKeys = added.keys();
-    final JsonArray changedKeys = changed.keys();
-    final JsonArray removedKeys = removed.keys();
-    final JsonArray rewiredKeys = wiringChanged.keys();
-    final JsonArray linked = new JsonArray();
-    final JsonObject diff = new JsonObject()
+    final JtonArray addedKeys = added.keys();
+    final JtonArray changedKeys = changed.keys();
+    final JtonArray removedKeys = removed.keys();
+    final JtonArray rewiredKeys = wiringChanged.keys();
+    final JtonArray linked = new JtonArray();
+    final JtonObject diff = new JtonObject()
         .set("added", addedKeys)
         .set("changed", changedKeys)
         .set("removed", removedKeys)
@@ -465,10 +465,10 @@ public final class FlowUtil {
         .set("linked", linked);
 
     // Traverse the links of all modified nodes to mark the connected nodes
-    final JsonArray modifiedNodes = JsonArray.concat(addedKeys, changedKeys, removedKeys, rewiredKeys);
+    final JtonArray modifiedNodes = JtonArray.concat(addedKeys, changedKeys, removedKeys, rewiredKeys);
     final HashSet<String> visited = new HashSet<>();
     while (modifiedNodes.size() > 0) {
-      final JsonElement elem = modifiedNodes.remove(0);
+      final JtonElement elem = modifiedNodes.remove(0);
       final String node = elem.asString();
       if (!visited.contains(node)) {
         visited.add(node);
@@ -484,54 +484,54 @@ public final class FlowUtil {
     return diff;
   }
 
-  private static boolean diffNodes(JsonObject oldNode, JsonObject newNode) {
+  private static boolean diffNodes(JtonObject oldNode, JtonObject newNode) {
     return !Objects.equals(oldNode, newNode);
   }
 
-  private static void mapEnvVarProperties(JsonObject obj, String prop, Flow flow) {
-    final JsonElement v = obj.get(prop);
+  private static void mapEnvVarProperties(JtonObject obj, String prop, Flow flow) {
+    final JtonElement v = obj.get(prop);
     if (v.isJsonPrimitive()) {
-      final JsonPrimitive p = v.asJsonPrimitive();
+      final JtonPrimitive p = v.asJsonPrimitive();
       if (p.isString()) {
         final String value = p.asString();
         if (value.startsWith("$") && value.matches("^\\$\\{(\\S+)\\}$")) {
           final String envVar = value.substring(2, value.length() - 1);
-          final JsonElement r = flow.getSetting(envVar);
-          obj.set(prop, r != JsonNull.INSTANCE ? r : v);
+          final JtonElement r = flow.getSetting(envVar);
+          obj.set(prop, r != JtonNull.INSTANCE ? r : v);
         }
       }
     } else if (v.isJsonArray()) {
-      final JsonArray a = v.asJsonArray();
+      final JtonArray a = v.asJsonArray();
       for (int i = 0, iMax = a.size(); i < iMax; i++) {
         mapEnvVarProperties(a, i, flow);
       }
     } else if (v.isJsonObject()) {
-      final JsonObject o = v.asJsonObject();
+      final JtonObject o = v.asJsonObject();
       for (String p : o.keySet()) {
         mapEnvVarProperties(o, p, flow);
       }
     }
   }
 
-  private static void mapEnvVarProperties(JsonArray arr, int index, Flow flow) {
-    final JsonElement v = arr.get(index);
+  private static void mapEnvVarProperties(JtonArray arr, int index, Flow flow) {
+    final JtonElement v = arr.get(index);
     if (v.isJsonPrimitive()) {
-      final JsonPrimitive p = v.asJsonPrimitive();
+      final JtonPrimitive p = v.asJsonPrimitive();
       if (p.isString()) {
         final String value = p.asString();
         if (value.startsWith("$") && value.matches("^\\$\\{(\\S+)\\}$")) {
           final String envVar = value.substring(2, value.length() - 1);
-          final JsonElement r = flow.getSetting(envVar);
-          arr.set(index, r != JsonNull.INSTANCE ? r : v);
+          final JtonElement r = flow.getSetting(envVar);
+          arr.set(index, r != JtonNull.INSTANCE ? r : v);
         }
       }
     } else if (v.isJsonArray()) {
-      final JsonArray a = v.asJsonArray();
+      final JtonArray a = v.asJsonArray();
       for (int i = 0, iMax = a.size(); i < iMax; i++) {
         mapEnvVarProperties(a, i, flow);
       }
     } else if (v.isJsonObject()) {
-      final JsonObject o = v.asJsonObject();
+      final JtonObject o = v.asJsonObject();
       for (String p : o.keySet()) {
         mapEnvVarProperties(o, p, flow);
       }
@@ -539,11 +539,11 @@ public final class FlowUtil {
   }
 
   // TODO should be moved to a JSON helper class.
-  private static JsonArray stackTrace(Throwable t) {
-    final JsonArray stackTrace = new JsonArray();
+  private static JtonArray stackTrace(Throwable t) {
+    final JtonArray stackTrace = new JtonArray();
     StackTraceElement elements[] = t.getStackTrace();
     for (StackTraceElement e : elements) {
-      stackTrace.push(new JsonObject()
+      stackTrace.push(new JtonObject()
           .set("className", e.getClassName())
           .set("methodName", e.getMethodName())
           .set("fileName", e.getFileName())
@@ -552,12 +552,12 @@ public final class FlowUtil {
     return stackTrace;
   }
 
-  protected static void publish(String topic, JsonObject data) {
+  protected static void publish(String topic, JtonObject data) {
     publish(topic, topic, data);
   }
 
-  protected static void publish(String localTopic, String topic, JsonObject data) {
-    MessageBus.sendMessage(localTopic, new JsonObject()
+  protected static void publish(String localTopic, String topic, JtonObject data) {
+    MessageBus.sendMessage(localTopic, new JtonObject()
         .set("topic", topic)
         .set("data", data));
   }
@@ -569,14 +569,14 @@ public final class FlowUtil {
    * @param config the node configuration object
    * @return the instance of the node
    */
-  public static Node createNode(Flow flow, JsonObject config) {
+  public static Node createNode(Flow flow, JtonObject config) {
     Node newNode = null;
 
     try {
       final String type = config.getAsString("type");
       final Constructor<?> nodeTypeConstructor = getConstructor(type);
       if (nodeTypeConstructor != null) {
-        final JsonObject conf = config.deepCopy();
+        final JtonObject conf = config.deepCopy();
         conf.remove("credentials");
         for (String p : conf.keySet()) {
           mapEnvVarProperties(conf, p, flow);
@@ -598,12 +598,12 @@ public final class FlowUtil {
           .append(": ")
           .append(rootCause.getMessage());
 
-      publish("debug", new JsonObject()
+      publish("debug", new JtonObject()
           .set("id", config.get("id"))
           .set("name", config.get("name"))
           .set("type", config.get("type"))
           .set("level", 20)
-          .set("msg", new JsonObject()
+          .set("msg", new JtonObject()
               .set("message", sb.toString())
               .set("stackTrace", stackTrace(e))
               .set("config", config))
@@ -626,7 +626,7 @@ public final class FlowUtil {
           WordUtils.capitalize(WordUtils.capitalizeFully(type), '-').replaceAll("\\s+|\\-", ""));
       @SuppressWarnings("unchecked")
       final Class<? extends Node> nodeClass = (Class<? extends Node>) FlowUtil.class.getClassLoader().loadClass(cn);
-      constructor = nodeClass.getConstructor(Flow.class, JsonObject.class);
+      constructor = nodeClass.getConstructor(Flow.class, JtonObject.class);
       constructors.put(type, constructor);
     }
 

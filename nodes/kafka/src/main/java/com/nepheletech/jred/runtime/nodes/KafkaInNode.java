@@ -7,8 +7,8 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParser;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParser;
 
 public class KafkaInNode extends AbstractCamelNode implements Processor {
 
@@ -16,7 +16,7 @@ public class KafkaInNode extends AbstractCamelNode implements Processor {
   private final String topic;
   private final String groupId;
 
-  public KafkaInNode(Flow flow, JsonObject config) {
+  public KafkaInNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     this.broker = config.getAsString("broker");
@@ -44,13 +44,13 @@ public class KafkaInNode extends AbstractCamelNode implements Processor {
     logger.trace(">>> process: exchange={}", exchange);
 
     final Message message = exchange.getIn();
-    receive(new JsonObject()
+    receive(new JtonObject()
         .set("_uid", exchange.getExchangeId())
         .set("payload", JsonParser.parse(message.getBody(String.class))));
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     send(msg);

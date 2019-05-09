@@ -12,10 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.FlowsRuntime;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jred.editor.Constants;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/flows/*" })
@@ -32,7 +32,7 @@ public class FlowsServlet extends HttpServlet {
       final String version = req.getHeader(Constants.NODE_RED_API_VERSION);
       if (!(Constants.NODE_RED_API_V1.equals(version)
           || Constants.NODE_RED_API_V2.equals(version))) {
-        res.sendError(HttpServletResponse.SC_BAD_REQUEST, new JsonObject()
+        res.sendError(HttpServletResponse.SC_BAD_REQUEST, new JtonObject()
             .set("code", "invalid_api_version")
             .set("message", "Invalid API Version requested")
             .toString());
@@ -41,7 +41,7 @@ public class FlowsServlet extends HttpServlet {
       
       logger.debug("{} = {}", Constants.NODE_RED_API_VERSION, version);
 
-      final JsonObject result = getRuntime().getFlows();
+      final JtonObject result = getRuntime().getFlows();
       if (Constants.NODE_RED_API_V1.equals(version)) {
         HttpServletUtil.sendJSON(res, result.get("flows"));
       } else if (Constants.NODE_RED_API_V2.equals(version)) {
@@ -57,7 +57,7 @@ public class FlowsServlet extends HttpServlet {
     final String version = req.getHeader(Constants.NODE_RED_API_VERSION);
     if (!(Constants.NODE_RED_API_V1.equals(version)
         || Constants.NODE_RED_API_V2.equals(version))) {
-      res.sendError(HttpServletResponse.SC_BAD_REQUEST, new JsonObject()
+      res.sendError(HttpServletResponse.SC_BAD_REQUEST, new JtonObject()
           .set("code", "invalid_api_version")
           .set("message", "Invalid API Version requested")
           .toString());
@@ -66,7 +66,7 @@ public class FlowsServlet extends HttpServlet {
     
     // XXX opts
 
-    final JsonElement flows = HttpServletUtil.getJSONBody(req);
+    final JtonElement flows = HttpServletUtil.getJSONBody(req);
     
     if (logger.isDebugEnabled()) {
       logger.debug("flows: {}", flows.toString(" "));
@@ -83,18 +83,18 @@ public class FlowsServlet extends HttpServlet {
       if (Constants.NODE_RED_API_V1.equals(version)) {
         res.setStatus(HttpServletResponse.SC_NO_CONTENT);
       } else {
-        HttpServletUtil.sendJSON(res, new JsonObject()
+        HttpServletUtil.sendJSON(res, new JtonObject()
             .set("rev", flowRevision));
       }
     } else {
-      final JsonArray flowConfig;
+      final JtonArray flowConfig;
       if (Constants.NODE_RED_API_V2.equals(version)) {
-        final JsonObject _flows = flows.asJsonObject();
+        final JtonObject _flows = flows.asJsonObject();
         flowConfig = _flows.get("flows").asJsonArray();
         if (_flows.has("rev")) {
           final String currentVersion = getRuntime().getFlows().get("rev").asString();
           if (!currentVersion.equals(_flows.get("rev").asString())) {
-            res.sendError(HttpServletResponse.SC_CONFLICT, new JsonObject()
+            res.sendError(HttpServletResponse.SC_CONFLICT, new JtonObject()
                 .set("code", "version_mismatch")
                 .toString());
             return;
@@ -109,7 +109,7 @@ public class FlowsServlet extends HttpServlet {
       if (Constants.NODE_RED_API_V1.equals(version)) {
         res.setStatus(HttpServletResponse.SC_NO_CONTENT);
       } else {
-        HttpServletUtil.sendJSON(res, new JsonObject()
+        HttpServletUtil.sendJSON(res, new JtonObject()
             .set("rev", flowRevision));
       }
     }

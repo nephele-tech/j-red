@@ -8,9 +8,10 @@
   <artifactId>jred-commons</artifactId>
   <packaging>pom</packaging>
   <modules>
-    <module>nephele-jfc</module>
-  	<module>nephele-json</module>
+    <module>dao</module>
+    <module>jfc</module>
+  	<module>jton</module>
   	<module>messagebus</module>
-  	<module>servlet-utils</module>
+    <module>servlet-utils</module>
   </modules>
 </project>

@@ -7,15 +7,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.FlowsRuntime;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonObject;
 
 public final class Credentials {
   private static final Logger logger = LoggerFactory.getLogger(Credentials.class);
 
   private final FlowsRuntime flowsRuntime;
 
-  private final JsonObject credentialCache = new JsonObject();
+  private final JtonObject credentialCache = new JtonObject();
   //private final JsonObject credentialsDef = new JsonObject();
 
   private boolean dirty = false;
@@ -33,7 +33,7 @@ public final class Credentials {
   /**
    * Sets the credentials from storage.
    */
-  public void load(JsonObject credentials) {
+  public void load(JtonObject credentials) {
     dirty = false;
     
     // TODO encrypted
@@ -46,7 +46,7 @@ public final class Credentials {
    * @param id the node id for the credentials
    * @return the credentials
    */
-  public JsonObject get(String id) {
+  public JtonObject get(String id) {
     return credentialCache.getAsJsonObject(id, true); // TODO false
   }
 
@@ -56,10 +56,10 @@ public final class Credentials {
    * @param config a flow config
    * @return a promise for saving of credentials to storage.
    */
-  public void clean(JsonArray config) {
+  public void clean(JtonArray config) {
     final HashSet<String> existingIds = new HashSet<>();
     config.forEach(_n -> {
-      final JsonObject n = _n.asJsonObject();
+      final JtonObject n = _n.asJsonObject();
       final String nId = n.getAsString("id");
       existingIds.add(nId);
       if (n.has("credentials")) {
@@ -90,17 +90,17 @@ public final class Credentials {
    * 
    * @param node the node to extract credentials from
    */
-  public void extract(JsonObject node) {
+  public void extract(JtonObject node) {
     logger.trace(">>> extract: node={}", node);
     
     final String nodeID = node.getAsString("id");
     
-    final JsonObject newCreds = node.getAsJsonObject("credentials", false);
+    final JtonObject newCreds = node.getAsJsonObject("credentials", false);
     
     if (newCreds != null) {
       node.remove("credentials");
       
-      final JsonObject savedCredentials = credentialCache.getAsJsonObject(nodeID, true);
+      final JtonObject savedCredentials = credentialCache.getAsJsonObject(nodeID, true);
       for (String cred : newCreds.keySet()) {
         final String value = newCreds.getAsString(cred, null);
         if (StringUtils.trimToNull(value) == null) {
@@ -119,8 +119,8 @@ public final class Credentials {
     }
   }
 
-  public JsonObject export() {
-    final JsonObject result = credentialCache;
+  public JtonObject export() {
+    final JtonObject result = credentialCache;
     if (encryptionEnabled) { throw new UnsupportedOperationException(); }
     dirty = false;
     if (removeDefaultKey) {

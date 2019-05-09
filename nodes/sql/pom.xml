@@ -16,8 +16,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.nepheletech</groupId>
-			<artifactId>nephele-dao</artifactId>
-			<version>0.0.2</version>
+			<artifactId>dao</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Resilience4j -->

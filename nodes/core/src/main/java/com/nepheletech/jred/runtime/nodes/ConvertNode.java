@@ -4,10 +4,10 @@ import java.util.Set;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
 
 public class ConvertNode extends AbstractNode {
 
@@ -30,16 +30,16 @@ public class ConvertNode extends AbstractNode {
   public static final String JTON_PREFIX = "__jton_";
   private static final int JTON_PREFIX_LENGTH = JTON_PREFIX.length();
 
-  private final JsonArray _rules;
+  private final JtonArray _rules;
 
-  public ConvertNode(Flow flow, JsonObject config) {
+  public ConvertNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     _rules = config.getAsJsonArray("rules", null);
 
     if (_rules != null) {
-      for (JsonElement _rule : _rules) {
-        final JsonObject rule = _rule.asJsonObject(false);
+      for (JtonElement _rule : _rules) {
+        final JtonObject rule = _rule.asJsonObject(false);
         if (rule != null) {
           final String t = rule.getAsString("t", null);
           if ("boolean".equals(t)) {
@@ -79,10 +79,10 @@ public class ConvertNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     if (_rules != null) {
-      for (JsonElement _rule : _rules) {
-        final JsonObject rule = _rule.asJsonObject(null);
+      for (JtonElement _rule : _rules) {
+        final JtonObject rule = _rule.asJsonObject(null);
         if (rule != null) {
           final int type = rule.getAsInt("t", -1);
           final String p = rule.getAsString("p", null);
@@ -91,7 +91,7 @@ public class ConvertNode extends AbstractNode {
           }
 
           final String pt = rule.getAsString("pt", "msg");
-          final JsonElement _value = JRedUtil.evaluateNodeProperty(p, pt, this, msg);
+          final JtonElement _value = JRedUtil.evaluateNodeProperty(p, pt, this, msg);
 
           Object value = null;
 
@@ -108,14 +108,14 @@ public class ConvertNode extends AbstractNode {
       // NO RULES: Use payload properties
       //
 
-      final JsonObject payload = msg.getAsJsonObject("payload", false);
+      final JtonObject payload = msg.getAsJsonObject("payload", false);
       if (payload != null) {
         final Set<String> keys = payload.deepCopy().keySet();
         for (String key : keys) {
           if (key.startsWith(JTON_PREFIX)) {
             key = key.substring(JTON_PREFIX_LENGTH);
             if (!payload.has(key)) {
-              payload.set(key, JsonNull.INSTANCE);
+              payload.set(key, JtonNull.INSTANCE);
             }
           }
         }
@@ -126,7 +126,7 @@ public class ConvertNode extends AbstractNode {
 
           final String type = payload.getAsString(JTON_PREFIX + key, null);
           if (type != null) {
-            final JsonElement value = payload.get(key);
+            final JtonElement value = payload.get(key);
             if (value.isJsonPrimitive()) {
               payload.set(key, convert(value, type), true);
             }
@@ -143,7 +143,7 @@ public class ConvertNode extends AbstractNode {
     send(msg);
   }
 
-  private Object convert(JsonElement value, String type) {
+  private Object convert(JtonElement value, String type) {
     if ("boolean".equals(type)) {
       return convert(value, TBOOLEAN);
     } else if ("byte".equals(type)) {
@@ -179,7 +179,7 @@ public class ConvertNode extends AbstractNode {
     }
   }
 
-  private Object convert(JsonElement _value, int type) {
+  private Object convert(JtonElement _value, int type) {
     switch (type) {
     case TBOOLEAN:
       return _value.asBoolean(false);

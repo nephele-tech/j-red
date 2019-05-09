@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.FlowsRuntime;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/credentials/*" })
@@ -39,7 +39,7 @@ public class CredentialsServlet extends HttpServlet {
         if (parts.length > 2) {
           final String type = parts[1];
           final String id = parts[2];
-          final JsonObject credentials = getRuntime().getNodeCredentials(type, id);
+          final JtonObject credentials = getRuntime().getNodeCredentials(type, id);
           logger.debug("credentials: {}", credentials);
           HttpServletUtil.sendJSON(res, credentials);
           return;

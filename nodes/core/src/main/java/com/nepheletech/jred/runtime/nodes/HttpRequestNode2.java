@@ -17,10 +17,10 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParser;
-import com.nepheletech.json.JsonPrimitive;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonPrimitive;
 
 public class HttpRequestNode2 extends AbstractCamelNode implements Processor {
 
@@ -29,7 +29,7 @@ public class HttpRequestNode2 extends AbstractCamelNode implements Processor {
   private final String ret;
   private final String tls;
 
-  public HttpRequestNode2(Flow flow, JsonObject config) {
+  public HttpRequestNode2(Flow flow, JtonObject config) {
     super(flow, config);
     this.method = config.getAsString("method", "GET");
     this.url = config.getAsString("url");
@@ -144,7 +144,7 @@ public class HttpRequestNode2 extends AbstractCamelNode implements Processor {
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}, thread={}", msg, Thread.currentThread().getId());
 
     final ProducerTemplate template = getCamelContext().createProducerTemplate();
@@ -173,13 +173,13 @@ public class HttpRequestNode2 extends AbstractCamelNode implements Processor {
               Builder.constant(org.apache.camel.component.http4.HttpMethods.DELETE));
         }
 
-        final JsonObject headers = msg.getAsJsonObject("headers", false);
+        final JtonObject headers = msg.getAsJsonObject("headers", false);
         if (headers != null) {
-          for (Entry<String, JsonElement> entry : headers.entrySet()) {
+          for (Entry<String, JtonElement> entry : headers.entrySet()) {
             final String key = entry.getKey();
-            final JsonElement value = entry.getValue();
+            final JtonElement value = entry.getValue();
             if (value.isJsonPrimitive()) {
-              final JsonPrimitive _value = value.asJsonPrimitive();
+              final JtonPrimitive _value = value.asJsonPrimitive();
               if (_value.isJsonTransient()) {
                 in.getHeaders().put(key, _value.getValue());
               } else {
@@ -197,7 +197,7 @@ public class HttpRequestNode2 extends AbstractCamelNode implements Processor {
     logger.trace(">>> process: exchange={}, thread={}", exchange, Thread.currentThread().getId());
 
     final Message in = exchange.getIn();
-    final JsonObject msg = (JsonObject) in.removeHeader("msg-" + getId());
+    final JtonObject msg = (JtonObject) in.removeHeader("msg-" + getId());
 
     final Object statusCode = in.removeHeader(Exchange.HTTP_RESPONSE_CODE);
     msg.set("statusCode", statusCode, false);
@@ -221,7 +221,7 @@ public class HttpRequestNode2 extends AbstractCamelNode implements Processor {
 
     final Map<String, Object> headers = in.getHeaders();
     if (headers != null && headers.size() > 0) {
-      final JsonObject _headers = new JsonObject();
+      final JtonObject _headers = new JtonObject();
       for (Map.Entry<String, Object> entry : headers.entrySet()) {
         try {
           _headers.set(entry.getKey(), entry.getValue(), false);

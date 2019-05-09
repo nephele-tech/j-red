@@ -5,17 +5,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonObject;
 
 public final class CatchNode extends AbstractNode {
   private final HashSet<String> scope;
   private final boolean uncaught;
 
-  public CatchNode(Flow flow, JsonObject config) {
+  public CatchNode(Flow flow, JtonObject config) {
     super(flow, config);
 
-    final JsonArray scope = config.getAsJsonArray("scope", false);
+    final JtonArray scope = config.getAsJsonArray("scope", false);
     if (scope != null) {
       this.scope = new HashSet<>();
       scope.forEach(elem -> this.scope.add(elem.asString()));
@@ -31,7 +31,7 @@ public final class CatchNode extends AbstractNode {
   public boolean isUncaught() { return uncaught; }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     send(msg);

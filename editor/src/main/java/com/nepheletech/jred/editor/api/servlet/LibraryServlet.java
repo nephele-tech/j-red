@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/library/*" })
@@ -18,7 +18,7 @@ public class LibraryServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     if (HttpServletUtil.acceptsJSON(req)) {
-      HttpServletUtil.sendJSON(res, new JsonObject());
+      HttpServletUtil.sendJSON(res, new JtonObject());
     } else {
       throw new UnsupportedOperationException("other");
     }

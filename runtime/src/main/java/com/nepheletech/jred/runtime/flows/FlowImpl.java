@@ -19,9 +19,9 @@ import com.nepheletech.jred.runtime.nodes.CatchNode;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jred.runtime.nodes.StatusNode;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.messagebus.MessageBus;
 
 /**
@@ -33,8 +33,8 @@ public class FlowImpl implements Flow {
 
   protected final Flow parent;
 
-  protected JsonObject global;
-  protected JsonObject flow;
+  protected JtonObject global;
+  protected JtonObject flow;
 
   private final boolean isGlobalFlow;
 
@@ -45,7 +45,7 @@ public class FlowImpl implements Flow {
   private final List<CatchNode> catchNodes;
   private final List<StatusNode> statusNodes;
 
-  private final JsonObject context;
+  private final JtonObject context;
 
   /**
    * Create a {@code Flow} object.
@@ -53,7 +53,7 @@ public class FlowImpl implements Flow {
    * @param flowsRuntime
    * @param globalFlow   The global flow definition
    */
-  public FlowImpl(Flow parent, JsonObject globalFlow) {
+  public FlowImpl(Flow parent, JtonObject globalFlow) {
     this(parent, globalFlow, null);
   }
 
@@ -64,7 +64,7 @@ public class FlowImpl implements Flow {
    * @param globalFlow   The global flow definition.
    * @param flow         This flow's definition.
    */
-  public FlowImpl(Flow parent, JsonObject globalFlow, JsonObject flow) {
+  public FlowImpl(Flow parent, JtonObject globalFlow, JtonObject flow) {
     this.parent = parent;
     this.global = globalFlow;
     if (flow == null) {
@@ -79,7 +79,7 @@ public class FlowImpl implements Flow {
     this.subflowInstanceNodes = new HashMap<>();
     this.catchNodes = new ArrayList<>();
     this.statusNodes = new ArrayList<>();
-    this.context = new JsonObject();
+    this.context = new JtonObject();
   }
 
   /**
@@ -91,7 +91,7 @@ public class FlowImpl implements Flow {
    * @param diff
    */
   @Override
-  public void start(final JsonObject diff) {
+  public void start(final JtonObject diff) {
     logger.trace(">>> start: id={}, diff={}", this.id, diff);
 
     Node newNode = null;
@@ -99,12 +99,12 @@ public class FlowImpl implements Flow {
     catchNodes.clear();
     statusNodes.clear();
 
-    final JsonObject configs = flow.getAsJsonObject("configs", true);
+    final JtonObject configs = flow.getAsJsonObject("configs", true);
     final List<String> configNodes = new ArrayList<>(configs.keySet());
-    final JsonObject configNodesAttempts = new JsonObject();
+    final JtonObject configNodesAttempts = new JtonObject();
     while (configNodes.size() > 0) {
       final String id = configNodes.remove(0);
-      final JsonObject node = configs.getAsJsonObject(id);
+      final JtonObject node = configs.getAsJsonObject(id);
       if (!activeNodes.containsKey(id)) {
         boolean readyToCreate = true;
         // This node doesn't exist.
@@ -137,21 +137,21 @@ public class FlowImpl implements Flow {
     }
 
     if (diff != null && diff.has("rewired")) {
-      final JsonArray rewired = diff.getAsJsonArray("rewired");
-      for (JsonElement rewireNodeRef : rewired) {
+      final JtonArray rewired = diff.getAsJsonArray("rewired");
+      for (JtonElement rewireNodeRef : rewired) {
         final Node rewireNode = activeNodes.get(rewireNodeRef.asString());
         if (rewireNode != null) {
-          final JsonObject flowNodes = flow.getAsJsonObject("nodes");
-          final JsonObject node = flowNodes.getAsJsonObject(rewireNode.getId());
+          final JtonObject flowNodes = flow.getAsJsonObject("nodes");
+          final JtonObject node = flowNodes.getAsJsonObject(rewireNode.getId());
           rewireNode.updateWires(node.getAsJsonArray("wires"));
         }
       }
     }
 
-    final JsonObject flowNodes = flow.getAsJsonObject("nodes", false);
+    final JtonObject flowNodes = flow.getAsJsonObject("nodes", false);
     if (flowNodes != null) {
       for (String id : flowNodes.keySet()) {
-        final JsonObject node = flowNodes.getAsJsonObject(id);
+        final JtonObject node = flowNodes.getAsJsonObject(id);
         if (!node.has("subflow")) {
           if (!activeNodes.containsKey(id)) {
             newNode = FlowUtil.createNode(this, node);
@@ -163,9 +163,9 @@ public class FlowImpl implements Flow {
           if (!subflowInstanceNodes.containsKey(id)) {
             try {
               final String subflowRef = node.getAsString("subflow");
-              final JsonObject flowSubflows = flow.getAsJsonObject("subflows");
-              final JsonObject globalSubflows = global.getAsJsonObject("subflows");
-              final JsonObject subflowDefinition = flowSubflows.has(subflowRef)
+              final JtonObject flowSubflows = flow.getAsJsonObject("subflows");
+              final JtonObject globalSubflows = global.getAsJsonObject("subflows");
+              final JtonObject subflowDefinition = flowSubflows.has(subflowRef)
                   ? flowSubflows.getAsJsonObject(subflowRef)
                   : globalSubflows.getAsJsonObject(subflowRef);
               // console.log("NEED TO CREATE A SUBFLOW",id,node.subflow);
@@ -237,22 +237,22 @@ public class FlowImpl implements Flow {
    * @param removedList
    */
   @Override
-  public void stop(JsonArray stopList, JsonArray removedList) {
+  public void stop(JtonArray stopList, JtonArray removedList) {
     logger.trace(">>> stop: stopList: {}, removedList: {}", stopList, removedList);
 
     if (stopList == null) {
-      stopList = JsonObject.keys(this.activeNodes);
+      stopList = JtonObject.keys(this.activeNodes);
       logger.debug("stopList=", stopList);
     }
 
     if (removedList == null) {
-      removedList = new JsonArray();
+      removedList = new JtonArray();
       logger.debug("removedList=", removedList);
     }
 
     // Convert the list to a map to avoid multiple scans of the list
     final HashSet<String> removedMap = new HashSet<>();
-    for (JsonElement e : removedList) {
+    for (JtonElement e : removedList) {
       removedMap.add(e.asString());
     }
 
@@ -300,14 +300,14 @@ public class FlowImpl implements Flow {
 
   /**
    * Update the flow definition. This doesn't change anything that is running.
-   * This should be called after {@link #stop(JsonArray, JsonArray)} and before
-   * {@link #start(JsonObject)}.
+   * This should be called after {@link #stop(JtonArray, JtonArray)} and before
+   * {@link #start(JtonObject)}.
    * 
    * @param global
    * @param flow
    */
   @Override
-  public void update(JsonObject global, JsonObject flow) {
+  public void update(JtonObject global, JtonObject flow) {
     this.global = global;
     this.flow = flow;
   }
@@ -342,8 +342,8 @@ public class FlowImpl implements Flow {
 
     if (id == null) { return null; }
 
-    final JsonObject configs = flow.getAsJsonObject("configs", false);
-    final JsonObject nodes = flow.getAsJsonObject("nodes", false);
+    final JtonObject configs = flow.getAsJsonObject("configs", false);
+    final JtonObject nodes = flow.getAsJsonObject("nodes", false);
     if ((configs != null && configs.has(id)) || (nodes != null && nodes.has(id))) {
       // This is a node owned by this flow, so return whatever we have got during a
       // stop/start, activeNodes could be null for this id
@@ -379,7 +379,7 @@ public class FlowImpl implements Flow {
    * @return
    */
   @Override
-  public JsonElement getSetting(String key) {
+  public JtonElement getSetting(String key) {
     return parent.getSetting(key);
   }
 
@@ -392,7 +392,7 @@ public class FlowImpl implements Flow {
    * @param muteStatusEvent Whether to emit the status event.
    */
   @Override
-  public boolean handleStatus(final Node node, final JsonObject statusMessage, Node reportingNode,
+  public boolean handleStatus(final Node node, final JtonObject statusMessage, Node reportingNode,
       final boolean muteStatusEvent) {
     logger.trace(">>> handleStatus: node={}, statusMessage={}, reportingNode={}, muteStatusEvent={}",
         node, statusMessage, reportingNode, muteStatusEvent);
@@ -401,7 +401,7 @@ public class FlowImpl implements Flow {
       reportingNode = node;
     }
     if (!muteStatusEvent) {
-      MessageBus.sendMessage("node-status", new JsonObject()
+      MessageBus.sendMessage("node-status", new JtonObject()
           .set("id", Optional.ofNullable(node.getAlias()).orElse(node.getId()))
           .set("status", statusMessage));
     }
@@ -423,14 +423,14 @@ public class FlowImpl implements Flow {
 //        }
         //@formatter:on
         
-        final JsonObject message = new JsonObject()
+        final JtonObject message = new JtonObject()
             .set("status", statusMessage.deepCopy());
         
         if (statusMessage.has("text")) {
           message.getAsJsonObject("status").set("text", statusMessage.getAsString("text"));
         }
 
-        message.getAsJsonObject("status").set("source", new JsonObject()
+        message.getAsJsonObject("status").set("source", new JtonObject()
             .set("id", node.getAlias() != null ? node.getAlias() : node.getId())
             .set("type", node.getType())
             .set("name", node.getName()));
@@ -448,7 +448,7 @@ public class FlowImpl implements Flow {
    * {@link CatchNode}s within this flow, pass the event to the parent flow.
    */
   @Override
-  public boolean handleError(final Node node, final Throwable logMessage, final JsonObject msg, Node reportingNode) {
+  public boolean handleError(final Node node, final Throwable logMessage, final JtonObject msg, Node reportingNode) {
     logger.trace(">>> handleError: {}", logMessage);
 
     if (reportingNode == null) {
@@ -457,9 +457,9 @@ public class FlowImpl implements Flow {
 
     int count = 1;
     if (msg != null && msg.isJsonObject("error")) {
-      final JsonObject error = msg.getAsJsonObject("error");
+      final JtonObject error = msg.getAsJsonObject("error");
       if (error.isJsonObject("source")) {
-        final JsonObject source = error.getAsJsonObject("source");
+        final JtonObject source = error.getAsJsonObject("source");
         final String sourceId = source.get("id").asString(null);
         if (node.getId().equals(sourceId)) {
           count = source.get("count").asInt(0) + 1;
@@ -495,7 +495,7 @@ public class FlowImpl implements Flow {
           // This is an uncaught error
           handledByUncaught = true;
         }
-        final JsonObject errorMessage = msg != null ? msg.deepCopy() : new JsonObject();
+        final JtonObject errorMessage = msg != null ? msg.deepCopy() : new JtonObject();
         if (errorMessage.has("error")) {
           errorMessage.set("_error", errorMessage.get("error"));
         }
@@ -505,9 +505,9 @@ public class FlowImpl implements Flow {
           rootCause = logMessage;
         }
 
-        errorMessage.set("error", new JsonObject()
+        errorMessage.set("error", new JtonObject()
             .set("message", rootCause.toString())
-            .set("source", new JsonObject()
+            .set("source", new JtonObject()
                 .set("id", node.getId())
                 .set("type", node.getType())
                 .set("name", node.getName())
@@ -528,7 +528,7 @@ public class FlowImpl implements Flow {
   }
 
   @Override
-  public JsonObject getContext(String type) {
+  public JtonObject getContext(String type) {
     if ("flow".equalsIgnoreCase(type)) {
       return context;
     } else {

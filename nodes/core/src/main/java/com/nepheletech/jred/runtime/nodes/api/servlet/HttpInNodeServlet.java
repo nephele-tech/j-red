@@ -21,10 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.nodes.HttpInNode;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonPrimitive;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
@@ -45,7 +45,7 @@ public class HttpInNodeServlet extends HttpServlet {
     // Request object.
     //
 
-    final JsonObject request = new JsonObject()
+    final JtonObject request = new JtonObject()
         .set("method", req.getMethod())
         .set("body", getBody(req))
         .set("headers", getHeaders(req))
@@ -57,7 +57,7 @@ public class HttpInNodeServlet extends HttpServlet {
     // Message object.
     //
 
-    final JsonObject msg = new JsonObject()
+    final JtonObject msg = new JtonObject()
         .set("req", request)
         .set("_req", req, true)
         .set("_res", res, true);
@@ -82,7 +82,7 @@ public class HttpInNodeServlet extends HttpServlet {
         : new String[0];
 
     final StringBuilder sb = new StringBuilder();
-    JsonObject _msg = null;
+    JtonObject _msg = null;
     for (int i = 1; i < parts.length; i++) {
       sb.append("/")
           .append(parts[i]);
@@ -115,11 +115,11 @@ public class HttpInNodeServlet extends HttpServlet {
    *         request.
    * @throws IOException
    */
-  private JsonElement getBody(HttpServletRequest req) throws IOException {
+  private JtonElement getBody(HttpServletRequest req) throws IOException {
     final String method = req.getMethod();
 
     if ("GET".equals(method)) {
-      return new JsonObject();
+      return new JtonObject();
     } else if ("POST".equals(method)) {
       final String contentType = HttpServletUtil.getContentType(req, APPLICATION_FORM_URLENCODED);
       if (contentType.startsWith(MULTIPART_FORM_DATA)) {
@@ -129,18 +129,18 @@ public class HttpInNodeServlet extends HttpServlet {
       } else if (contentType.startsWith(APPLICATION_JSON)) {
         return HttpServletUtil.getJSONBody(req);
       } else {
-        return new JsonPrimitive(HttpServletUtil.getBody(req));
+        return new JtonPrimitive(HttpServletUtil.getBody(req));
       }
     } else {
       final String contentType = HttpServletUtil.getContentType(req, TEXT_PLAIN);
       if (contentType.startsWith(APPLICATION_JSON)) {
         return HttpServletUtil.getJSONBody(req);
       } else {
-        return new JsonPrimitive(HttpServletUtil.getBody(req));
+        return new JtonPrimitive(HttpServletUtil.getBody(req));
       }
     }
 
-    return new JsonObject(); // should never happen
+    return new JtonObject(); // should never happen
   }
 
   /**
@@ -148,8 +148,8 @@ public class HttpInNodeServlet extends HttpServlet {
    * @param req
    * @return an object containing the HTTP request headers.
    */
-  protected JsonObject getHeaders(HttpServletRequest req) {
-    final JsonObject result = new JsonObject();
+  protected JtonObject getHeaders(HttpServletRequest req) {
+    final JtonObject result = new JtonObject();
 
     for (final Enumeration<String> e = req.getHeaderNames(); e.hasMoreElements();) {
       final String name = e.nextElement();
@@ -164,17 +164,17 @@ public class HttpInNodeServlet extends HttpServlet {
    * @param req an object containing any query string parameters.
    * @return
    */
-  protected JsonObject getQuery(HttpServletRequest req) {
+  protected JtonObject getQuery(HttpServletRequest req) {
     return parseParameters(req.getQueryString());
   }
 
-  protected JsonObject getCookies(HttpServletRequest req) {
-    final JsonObject result = new JsonObject();
+  protected JtonObject getCookies(HttpServletRequest req) {
+    final JtonObject result = new JtonObject();
 
     final Cookie[] cookies = req.getCookies();
     if (cookies != null) {
       for (Cookie cookie : cookies) {
-        result.set(cookie.getName(), new JsonObject()
+        result.set(cookie.getName(), new JtonObject()
             .set("comment", cookie.getComment()))
             .set("domain", cookie.getDomain())
             .set("maxAge", cookie.getMaxAge())
@@ -188,8 +188,8 @@ public class HttpInNodeServlet extends HttpServlet {
     return result;
   }
 
-  private static JsonObject parseParameters(String params) {
-    final JsonObject result = new JsonObject();
+  private static JtonObject parseParameters(String params) {
+    final JtonObject result = new JtonObject();
 
     if (params != null && !params.isEmpty()) {
       final String[] pairs = params.split("&");
@@ -207,11 +207,11 @@ public class HttpInNodeServlet extends HttpServlet {
               value = decode(p[1]);
             }
             if (result.has(key)) {
-              final JsonElement e = result.get(key);
+              final JtonElement e = result.get(key);
               if (e.isJsonArray()) {
                 e.asJsonArray().push(value);
               } else {
-                result.set(key, new JsonArray()
+                result.set(key, new JtonArray()
                     .push(e)
                     .push(value));
               }

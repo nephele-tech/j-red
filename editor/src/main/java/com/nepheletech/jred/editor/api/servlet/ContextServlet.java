@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/context/*" })
@@ -19,11 +19,11 @@ public class ContextServlet extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     final String pathInfo = req.getPathInfo();
     if (pathInfo != null && pathInfo.startsWith("flow/")) {
-      HttpServletUtil.sendJSON(res, new JsonObject()
-          .set("memory", new JsonObject()));
+      HttpServletUtil.sendJSON(res, new JtonObject()
+          .set("memory", new JtonObject()));
     } else {
-      HttpServletUtil.sendJSON(res, new JsonObject()
-          .set("memory", new JsonObject()));
+      HttpServletUtil.sendJSON(res, new JtonObject()
+          .set("memory", new JtonObject()));
     }
   }
 }

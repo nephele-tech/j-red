@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jred.runtime.storage.Storage;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonObject;
 
 public interface FlowsRuntime {
 
@@ -20,7 +20,7 @@ public interface FlowsRuntime {
    * @return flow revision
    * @throws IOException
    */
-  String setFlows(JsonArray config, String type) throws IOException;
+  String setFlows(JtonArray config, String type) throws IOException;
 
   void stopFlows();
 
@@ -29,7 +29,7 @@ public interface FlowsRuntime {
    * 
    * @return the active flow configuration.
    */
-  JsonObject getFlows();
+  JtonObject getFlows();
 
   /**
    * 
@@ -45,7 +45,7 @@ public interface FlowsRuntime {
    * @param id the node id
    * @return the safe credentials
    */
-  JsonObject getNodeCredentials(String type, String id);
+  JtonObject getNodeCredentials(String type, String id);
 
   // ---
 

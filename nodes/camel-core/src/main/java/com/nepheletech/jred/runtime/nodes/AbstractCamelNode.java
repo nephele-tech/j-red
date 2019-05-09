@@ -3,7 +3,7 @@ package com.nepheletech.jred.runtime.nodes;
 import org.apache.camel.CamelContext;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 import com.nepheletech.messagebus.Subscription;
@@ -14,7 +14,7 @@ public abstract class AbstractCamelNode extends AbstractNode {
 
   private final Subscription camelContextStartupSubscription;
 
-  public AbstractCamelNode(Flow flow, JsonObject config) {
+  public AbstractCamelNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     this.camelContextRef = config.getAsString("context");

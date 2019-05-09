@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Predicate;
 import com.google.common.io.Resources;
 import com.nepheletech.jred.runtime.nodes.Node;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jred.editor.Constants;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonObject;
 
 public final class NodeRegistry {
   @SuppressWarnings("unused")
@@ -29,7 +29,7 @@ public final class NodeRegistry {
 
   private static final Pattern pattern = Pattern.compile("<script ([^>]*)data-template-name=['\"]([^'\"]*)['\"]");
 
-  private final JsonArray nodeList;
+  private final JtonArray nodeList;
   private final String nodeConfigs;
 
   public NodeRegistry() {
@@ -42,7 +42,7 @@ public final class NodeRegistry {
     final String[] resources = resourceSet.toArray(new String[resourceSet.size()]);
     Arrays.sort(resources);
 
-    final JsonArray nodeList = new JsonArray();
+    final JtonArray nodeList = new JtonArray();
     final StringBuilder sb = new StringBuilder();
 
     final String module = "node-red";
@@ -53,7 +53,7 @@ public final class NodeRegistry {
         final String name = rc.replaceAll("^.+-|.html$", "");
         final String id = module + "/" + name;
 
-        final JsonArray types = new JsonArray();
+        final JtonArray types = new JtonArray();
         final URL url = Resources.getResource(rc);
         final String content = Resources.toString(url, StandardCharsets.UTF_8);
         final Matcher m = pattern.matcher(content);
@@ -62,7 +62,7 @@ public final class NodeRegistry {
         }
 
         if (types.size() > 0) {
-          final JsonObject node = new JsonObject()
+          final JtonObject node = new JtonObject()
               .set("id", id)
               .set("name", name)
               .set("types", types)
@@ -85,7 +85,7 @@ public final class NodeRegistry {
     this.nodeConfigs = sb.toString();
   }
 
-  public JsonArray getNodeList() { return nodeList.deepCopy(); }
+  public JtonArray getNodeList() { return nodeList.deepCopy(); }
 
   public String getNodeConfigs() { return nodeConfigs; }
 }

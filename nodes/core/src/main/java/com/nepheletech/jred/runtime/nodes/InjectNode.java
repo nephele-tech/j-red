@@ -15,7 +15,7 @@ import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
 import com.nepheletech.jred.runtime.events.NodesStoppedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 
 import it.sauronsoftware.cron4j.Scheduler;
 
@@ -39,7 +39,7 @@ public class InjectNode extends AbstractNode
 
   private final Runnable scheduledTask = () -> receive(null);
 
-  public InjectNode(Flow flow, JsonObject config) {
+  public InjectNode(Flow flow, JtonObject config) {
     super(flow, config);
     this.topic = config.get("topic").asString("");
     this.payload = config.get("payload").asString("");
@@ -112,7 +112,7 @@ public class InjectNode extends AbstractNode
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: id={}, msg={}", getId(), msg);
 
     msg.set("topic", topic);

@@ -1,7 +1,7 @@
 package com.nepheletech.jred.runtime.nodes;
 
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 
 public interface HasCredentials {
-  void setCredentials(JsonObject credentials);
+  void setCredentials(JtonObject credentials);
 }

@@ -10,10 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonPrimitive;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
 
 public final class DebugNode extends AbstractNode {
   private final Logger logger = LoggerFactory.getLogger(DebugNode.class);
@@ -28,7 +28,7 @@ public final class DebugNode extends AbstractNode {
 
   private final String preparedEditExpression = null;
 
-  public DebugNode(Flow flow, JsonObject config) {
+  public DebugNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     final String targetType = config.get("targetType").asString("msg");
@@ -65,7 +65,7 @@ public final class DebugNode extends AbstractNode {
   public boolean isTostatus() { return tostatus; }
 
   @Override
-  protected void onMessage(final JsonObject msg) {
+  protected void onMessage(final JtonObject msg) {
     logger.trace(">>> onMessage: id={}, msg={}", getId(), msg);
 
     if ("true".equals(complete)) {
@@ -74,7 +74,7 @@ public final class DebugNode extends AbstractNode {
         log(msg); // TODO: colors & depth
       }
       if (active && tosidebar) {
-        sendDebug(new JsonObject()
+        sendDebug(new JtonObject()
             .set("id", getId())
             .set("name", getName())
             .set("topic", msg.get("topic"))
@@ -87,10 +87,10 @@ public final class DebugNode extends AbstractNode {
           error(error, null);
           return;
         }
-        final JsonElement output = _msg.get("msg");
+        final JtonElement output = _msg.get("msg");
         if (this.console) {
           if (output.isJsonPrimitive()) {
-            final JsonPrimitive _output = output.asJsonPrimitive();
+            final JtonPrimitive _output = output.asJsonPrimitive();
             log(msg);
           } else if (output.isJsonObject()) {
             log(msg);
@@ -106,7 +106,7 @@ public final class DebugNode extends AbstractNode {
           
           logger.debug("send status: {}", st);
           
-          status(new JsonObject()
+          status(new JtonObject()
               .set("fill", "grey")
               .set("shape", "dot")
               .set("text", st));
@@ -118,7 +118,7 @@ public final class DebugNode extends AbstractNode {
     }
   }
 
-  private void sendDebug(JsonObject msg) {
+  private void sendDebug(JtonObject msg) {
     logger.trace(">>> sendDebug: active={}, msg={}", active, msg);
 
     // don't put blank errors in sidebar (but do add to logs)
@@ -127,19 +127,19 @@ public final class DebugNode extends AbstractNode {
     JRedUtil.publish("debug", "debug", msg);
   }
 
-  private void prepareValue(JsonObject msg, BiConsumer<Throwable, JsonObject> done) {
+  private void prepareValue(JtonObject msg, BiConsumer<Throwable, JtonObject> done) {
     // Either apply the jsonata expression or...
     if (preparedEditExpression != null) {
       // TODO
     } else {
       // Extract the required message property
       String property = "payload";
-      JsonElement output = msg.get(property); // XXX FIXME
+      JtonElement output = msg.get(property); // XXX FIXME
       if (!"false".equals(complete) && complete != null) {
         property = this.complete;
         output = msg.get(property); // XXX FIXME
       }
-      done.accept(null, new JsonObject()
+      done.accept(null, new JtonObject()
           //.set("id", Optional.ofNullable(getAlias()).orElse(getId()))
           .set("id", getId())
           .set("z", getZ())
@@ -151,32 +151,32 @@ public final class DebugNode extends AbstractNode {
     }
   }
 
-  private JsonObject encodeObject(JsonObject msg, JsonObject opts) {
+  private JtonObject encodeObject(JtonObject msg, JtonObject opts) {
     int debugLength = 1_000;
     if (opts != null && opts.has("maxLength")) {
       debugLength = opts.get("maxLength").asInt(debugLength);
     }
 
-    final JsonElement _msg = msg.get("msg");
+    final JtonElement _msg = msg.get("msg");
     
     if (_msg.isJsonObject()) {
       msg.set("format", "Object");
       msg.set("msg", _msg.toString());
     } else if (_msg.isJsonArray()) {
-      final JsonArray a = _msg.asJsonArray();
+      final JtonArray a = _msg.asJsonArray();
       final int arrayLength = a.size();
       msg.set("format", "array[" + arrayLength + "]");
       if (arrayLength > debugLength) {
-        msg.set("msg", new JsonObject()
+        msg.set("msg", new JtonObject()
             .set("__enc__", true)
             .set("type", "array")
-            .set("data", new JsonArray(a.subList(0, debugLength)))
+            .set("data", new JtonArray(a.subList(0, debugLength)))
             .set("length", debugLength).toString());
       } else {
         msg.set("msg", a.toString());
       }
     } else if (_msg.isJsonPrimitive()) {
-      final JsonPrimitive p = _msg.asJsonPrimitive();
+      final JtonPrimitive p = _msg.asJsonPrimitive();
       if (p.isJsonTransient()) {
         msg.set("msg", "[Type not printable]");
       } else if (p.isBoolean()) {
@@ -190,9 +190,9 @@ public final class DebugNode extends AbstractNode {
         final int bufferLength = buffer.length;
         msg.set("format", "buffer[" + bufferLength + "]");
         if (bufferLength > debugLength) {
-          msg.set("msg", new JsonPrimitive(Hex.encodeHexString(Arrays.copyOf(buffer, debugLength))));
+          msg.set("msg", new JtonPrimitive(Hex.encodeHexString(Arrays.copyOf(buffer, debugLength))));
         } else {
-          msg.set("msg", new JsonPrimitive(Hex.encodeHexString(buffer)));
+          msg.set("msg", new JtonPrimitive(Hex.encodeHexString(buffer)));
         }
       } else {
         final String str = p.asString();

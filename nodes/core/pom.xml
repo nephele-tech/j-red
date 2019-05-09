@@ -78,7 +78,7 @@
 
 		<dependency>
 			<groupId>com.nepheletech</groupId>
-			<artifactId>nephele-jfc</artifactId>
+			<artifactId>jfc</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

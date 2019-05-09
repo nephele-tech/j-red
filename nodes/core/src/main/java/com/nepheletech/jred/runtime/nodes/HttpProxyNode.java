@@ -1,7 +1,7 @@
 package com.nepheletech.jred.runtime.nodes;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 
 /**
  * Configuration options for HTTP proxy.
@@ -10,12 +10,12 @@ import com.nepheletech.json.JsonObject;
  */
 public class HttpProxyNode extends AbstractConfigurationNode implements HasCredentials {
 
-  public HttpProxyNode(Flow flow, JsonObject config) {
+  public HttpProxyNode(Flow flow, JtonObject config) {
     super(flow, config);
   }
 
   @Override
-  public void setCredentials(JsonObject credentials) {
+  public void setCredentials(JtonObject credentials) {
     // TODO Auto-generated method stub
     
   }

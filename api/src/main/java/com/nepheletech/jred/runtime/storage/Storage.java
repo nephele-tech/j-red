@@ -2,21 +2,21 @@ package com.nepheletech.jred.runtime.storage;
 
 import java.io.IOException;
 
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 
 public interface Storage {
 
-  JsonObject getFlows();
+  JtonObject getFlows();
 
-  String saveFlows(JsonObject config) throws IOException;
+  String saveFlows(JtonObject config) throws IOException;
 
-  JsonObject getCredentials();
+  JtonObject getCredentials();
 
-  void saveCredentials(JsonObject credentials) throws IOException;
+  void saveCredentials(JtonObject credentials) throws IOException;
 
-  JsonObject getSettings();
+  JtonObject getSettings();
 
-  void saveSettings(JsonObject settings);
+  void saveSettings(JtonObject settings);
 
   // Sessions???
 
@@ -24,5 +24,5 @@ public interface Storage {
 
   String getLibraryEntry(String type, String path);
 
-  void setLibraryEntry(String type, String path, JsonObject meta, String body);
+  void setLibraryEntry(String type, String path, JtonObject meta, String body);
 }

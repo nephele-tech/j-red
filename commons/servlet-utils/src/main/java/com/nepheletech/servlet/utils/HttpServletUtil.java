@@ -12,10 +12,10 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonParseException;
-import com.nepheletech.json.JsonParser;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JsonParseException;
+import com.nepheletech.jton.JsonParser;
 
 /**
  * HttpServlet utility.
@@ -94,7 +94,7 @@ public final class HttpServletUtil {
    * @param json
    * @throws IOException
    */
-  public static void sendJSON(HttpServletResponse res, JsonElement json) throws IOException {
+  public static void sendJSON(HttpServletResponse res, JtonElement json) throws IOException {
     send(res, APPLICATION_JSON_UTF8, json.toString());
   }
 
@@ -172,12 +172,12 @@ public final class HttpServletUtil {
    *                                      been called on this request
    * @throws IOException                  if an input or output exception occurred
    */
-  public static JsonElement getJSONBody(HttpServletRequest req) throws IOException {
+  public static JtonElement getJSONBody(HttpServletRequest req) throws IOException {
     try (final Reader input = req.getReader()) {
       return JsonParser.parse(input);
     } catch (JsonParseException e) {
       // TODO log the error
-      return JsonNull.INSTANCE;
+      return JtonNull.INSTANCE;
     }
   }
 

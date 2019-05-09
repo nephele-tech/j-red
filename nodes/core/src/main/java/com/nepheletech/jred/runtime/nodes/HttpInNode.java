@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonUtil;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonUtil;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 
@@ -24,10 +24,10 @@ public class HttpInNode extends AbstractNode implements NodesStartedEventListene
   private final String method;
   private final boolean upload;
 
-  private final MessageBusListener<JsonObject> requestListener = (topic, msg) -> receive(msg);
+  private final MessageBusListener<JtonObject> requestListener = (topic, msg) -> receive(msg);
   private final String requestListenerTopic;
 
-  public HttpInNode(Flow flow, JsonObject config) {
+  public HttpInNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     final String url = config.get("url").asString(null);
@@ -56,7 +56,7 @@ public class HttpInNode extends AbstractNode implements NodesStartedEventListene
   }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     // TODO uploads...

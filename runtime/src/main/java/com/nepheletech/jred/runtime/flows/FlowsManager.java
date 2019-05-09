@@ -16,10 +16,10 @@ import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
 import com.nepheletech.jred.runtime.events.RuntimeDeployEvent;
 import com.nepheletech.jred.runtime.nodes.HasCredentials;
 import com.nepheletech.jred.runtime.nodes.Node;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonPrimitive;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.messagebus.MessageBus;
 
 public final class FlowsManager {
@@ -27,8 +27,8 @@ public final class FlowsManager {
 
   private final FlowsRuntime flowsRuntime;
 
-  private JsonObject activeConfig = null;
-  private JsonObject activeFlowConfig = null;
+  private JtonObject activeConfig = null;
+  private JtonObject activeFlowConfig = null;
 
   private final Map<String, Flow> activeFlows = new HashMap<>();
   private boolean started = false;
@@ -50,11 +50,11 @@ public final class FlowsManager {
 
   public Credentials getCredentials() { return credentials; }
 
-  private JsonObject loadFlows() {
+  private JtonObject loadFlows() {
     logger.trace(">>> loadFlows");
 
     try {
-      final JsonObject config = flowsRuntime.getStorage().getFlows();
+      final JtonObject config = flowsRuntime.getStorage().getFlows();
       // ---
       logger.debug("loaded flow revision: {}", config.getAsString("rev"));
       credentials.load(config.getAsJsonObject("credentials"));
@@ -93,7 +93,7 @@ public final class FlowsManager {
    *                load
    * @return the revision of the new flow.
    */
-  public String setFlows(final JsonArray _config, final String type) {
+  public String setFlows(final JtonArray _config, final String type) {
     logger.trace(">>> setFlows: _config={}, type={}", _config, type);
 
     return setFlows(_config, type, false);
@@ -108,7 +108,7 @@ public final class FlowsManager {
    * @param forceStart
    * @return the revision of the new flow.
    */
-  public String setFlows(final JsonArray _config, String type, boolean forceStart) {
+  public String setFlows(final JtonArray _config, String type, boolean forceStart) {
     logger.trace(">>> setFlows: _config={}, type={}, forceStart={}", _config, type, forceStart);
 
     type = (StringUtils.trimToNull(type) != null) ? type : "full";
@@ -124,14 +124,14 @@ public final class FlowsManager {
       }
     }
 
-    JsonArray config = null;
-    JsonObject diff = null;
-    JsonObject newFlowConfig;
+    JtonArray config = null;
+    JtonObject diff = null;
+    JtonObject newFlowConfig;
     String flowRevision = null;
     boolean isLoad = false;
     if ("load".equals(type)) {
       isLoad = true;
-      final JsonObject __config = loadFlows();
+      final JtonObject __config = loadFlows();
       // --- Future
       config = __config.getAsJsonArray("flows").deepCopy();
       newFlowConfig = FlowUtil.parseConfig(config.deepCopy());
@@ -148,8 +148,8 @@ public final class FlowsManager {
 
       // Now the flows have been compared, remove any credentials from newFlowConfig
       // so they don't cause false-positive diffs the next time a flow is deployed
-      final JsonObject allNewNodes = newFlowConfig.getAsJsonObject("allNodes");
-      for (JsonElement value : allNewNodes.values()) {
+      final JtonObject allNewNodes = newFlowConfig.getAsJsonObject("allNodes");
+      for (JtonElement value : allNewNodes.values()) {
         if (value.asJsonObject().has("credentials")) {
           value.asJsonObject().remove("credentials");
         }
@@ -163,9 +163,9 @@ public final class FlowsManager {
 
       // Get the latest credentials and ask storage to save them (if needed)
       // as well as the new flow configuration.
-      final JsonObject creds = credentials.export();
+      final JtonObject creds = credentials.export();
       // --- Future
-      final JsonObject saveConfig = new JsonObject()
+      final JtonObject saveConfig = new JtonObject()
           .set("flows", config)
           .set("credentialsDirty", credsDirty)
           .set("credentials", creds);
@@ -184,7 +184,7 @@ public final class FlowsManager {
       logger.debug("saved flow revision: {}", flowRevision);
     }
 
-    activeConfig = new JsonObject()
+    activeConfig = new JtonObject()
         .set("flows", config)
         .set("rev", flowRevision);
 
@@ -229,7 +229,7 @@ public final class FlowsManager {
    * 
    * @return the active flow configuration
    */
-  public JsonObject getFlows() { return activeConfig; }
+  public JtonObject getFlows() { return activeConfig; }
 
   /**
    * Start the current flow configuration.
@@ -244,7 +244,7 @@ public final class FlowsManager {
     }
   }
 
-  private void startFlows(String type, JsonObject diff) {
+  private void startFlows(String type, JtonObject diff) {
     logger.trace(">>> startFlows: type={}, diff={}", type, diff);
 
     type = StringUtils.trimToNull(type) != null ? type : "full";
@@ -253,7 +253,7 @@ public final class FlowsManager {
 
     // If there are missing types, report them, emit the necessary runtime event
     // and return
-    final JsonElement missingTypes = activeFlowConfig.get("missingTypes");
+    final JtonElement missingTypes = activeFlowConfig.get("missingTypes");
     if (missingTypes.isJsonArray() && missingTypes.asJsonArray().size() > 0) {
       throw new UnsupportedOperationException("TODO: missing types");
     }
@@ -280,11 +280,11 @@ public final class FlowsManager {
       }
 
       // Check each flow in the active configuration
-      final JsonObject flows = activeFlowConfig.getAsJsonObject("flows", false);
+      final JtonObject flows = activeFlowConfig.getAsJsonObject("flows", false);
       if (flows != null) {
-        for (Entry<String, JsonElement> entry : flows.entrySet()) {
+        for (Entry<String, JtonElement> entry : flows.entrySet()) {
           final String id = entry.getKey();
-          final JsonObject flow = entry.getValue().asJsonObject();
+          final JtonObject flow = entry.getValue().asJsonObject();
           if (!flow.getAsBoolean("disabled", false) && !activeFlows.containsKey(id)) {
             // This flow is not disabled, nor is it currently active, so create it
             activeFlows.put(id, new FlowImpl(flowAPI, activeFlowConfig, flow));
@@ -299,10 +299,10 @@ public final class FlowsManager {
 
       // Update the global flow
       activeFlows.get("global").update(activeFlowConfig, activeFlowConfig);
-      final JsonObject flows = activeFlowConfig.getAsJsonObject("flows", false);
+      final JtonObject flows = activeFlowConfig.getAsJsonObject("flows", false);
       if (flows != null) {
         for (String id : flows.keySet()) {
-          final JsonObject flow = flows.get(id).asJsonObject();
+          final JtonObject flow = flows.get(id).asJsonObject();
           if (!flow.getAsBoolean("disabled", false)) {
             if (activeFlows.containsKey(id)) {
               // This flow exists and is not disabled, so update it
@@ -344,7 +344,7 @@ public final class FlowsManager {
       credentialsPendingReset = false;
     } else {
       // TODO events.emit("runtime-event",{id:"runtime-state",retain:true});
-      MessageBus.sendMessage("runtime-event", new JsonObject()
+      MessageBus.sendMessage("runtime-event", new JtonObject()
           .set("id", "runtime-state")
           .set("retain", true));
     }
@@ -362,18 +362,18 @@ public final class FlowsManager {
     stopFlows("full", null);
   }
 
-  private void stopFlows(String type, JsonObject diff) {
+  private void stopFlows(String type, JtonObject diff) {
     if (!started) { return; }
 
     type = StringUtils.trimToNull(type) != null ? type : "full";
 
     diff = diff != null ? diff
-        : new JsonObject()
-            .set("added", new JsonArray())
-            .set("changed", new JsonArray())
-            .set("removed", new JsonArray())
-            .set("rewired", new JsonArray())
-            .set("linked", new JsonArray());
+        : new JtonObject()
+            .set("added", new JtonArray())
+            .set("changed", new JtonArray())
+            .set("removed", new JtonArray())
+            .set("rewired", new JtonArray())
+            .set("linked", new JtonArray());
 
     if (logger.isInfoEnabled()) {
       if (!"full".equals(type)) {
@@ -385,13 +385,13 @@ public final class FlowsManager {
 
     started = false;
 
-    final JsonArray addedList = diff.get("added").asJsonArray();
-    final JsonArray changedList = diff.get("changed").asJsonArray();
-    final JsonArray removedList = diff.get("removed").asJsonArray();
+    final JtonArray addedList = diff.get("added").asJsonArray();
+    final JtonArray changedList = diff.get("changed").asJsonArray();
+    final JtonArray removedList = diff.get("removed").asJsonArray();
     // final JtonArray rewiredList = diff.get("rewired").asJsonArray();
-    final JsonArray linkedList = diff.get("linked").asJsonArray();
+    final JtonArray linkedList = diff.get("linked").asJsonArray();
 
-    JsonArray stopList = null;
+    JtonArray stopList = null;
 
     if ("nodes".equals(type)) {
       stopList = changedList.concat(removedList);
@@ -403,7 +403,7 @@ public final class FlowsManager {
       final Entry<String, Flow> activeFlow = it.next();
       final String id = activeFlow.getKey();
       final Flow flow = activeFlow.getValue();
-      final JsonPrimitive _id = new JsonPrimitive(id);
+      final JtonPrimitive _id = new JtonPrimitive(id);
       final boolean flowStateChanged = addedList.indexOf(_id) != -1 || removedList.indexOf(_id) != -1;
       logger.debug("stopping flow: {}", id);
       flow.stop(flowStateChanged ? null : stopList, removedList);
@@ -439,7 +439,7 @@ public final class FlowsManager {
   // -----
 
   private Flow flowAPI = new Flow() {
-    private final JsonObject context = new JsonObject();
+    private final JtonObject context = new JtonObject();
 
     @Override
     public Node getNode(String id) {
@@ -457,37 +457,37 @@ public final class FlowsManager {
     }
 
     @Override
-    public void update(JsonObject global, JsonObject flow) {
+    public void update(JtonObject global, JtonObject flow) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public void start(JsonObject diff) {
+    public void start(JtonObject diff) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public void stop(JsonArray stopList, JsonArray removedList) {
+    public void stop(JtonArray stopList, JtonArray removedList) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public JsonElement getSetting(String key) {
-      return new JsonPrimitive(System.getenv(key));
+    public JtonElement getSetting(String key) {
+      return new JtonPrimitive(System.getenv(key));
     }
 
     @Override
-    public boolean handleStatus(Node node, JsonObject statusMessage, Node reportingNode, boolean muteStatusEvent) {
+    public boolean handleStatus(Node node, JtonObject statusMessage, Node reportingNode, boolean muteStatusEvent) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean handleError(Node node, Throwable logMessage, JsonObject msg, Node reportingNode) {
+    public boolean handleError(Node node, Throwable logMessage, JtonObject msg, Node reportingNode) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public JsonObject getContext(String type) {
+    public JtonObject getContext(String type) {
       return context; // global context
     }
 

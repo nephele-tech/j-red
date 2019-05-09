@@ -9,34 +9,34 @@ import org.junit.Test;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.nodes.ConvertNode;
 import com.nepheletech.jred.runtime.nodes.Node;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
 
 public class ConvertNodeTests {
 
   @Test
   public void creation() {
-    Assert.assertNotNull(create(new JsonObject()));
+    Assert.assertNotNull(create(new JtonObject()));
   }
 
   @Test
   public void double2string() {
-    ConvertNode convert = create(new JsonObject()
-        .set("rules", new JsonArray()
-            .push(new JsonObject()
+    ConvertNode convert = create(new JtonObject()
+        .set("rules", new JtonArray()
+            .push(new JtonObject()
                 .set("t", "string")
                 .set("p", "payload")
                 .set("pt", "msg"))));
 
-    JsonObject msg = new JsonObject()
+    JtonObject msg = new JtonObject()
         .set("_msgid", 1)
         .set("payload", 123D);
 
-    JsonObject expected = msg.deepCopy()
+    JtonObject expected = msg.deepCopy()
         .set("payload", "123.0");
 
-    convert.on("#send", (String topic, JsonElement message) -> {
+    convert.on("#send", (String topic, JtonElement message) -> {
       Assert.assertEquals(message, expected);
     });
 
@@ -45,33 +45,33 @@ public class ConvertNodeTests {
 
   @Test
   public void string2double() {
-    ConvertNode convert = create(new JsonObject()
-        .set("rules", new JsonArray()
-            .push(new JsonObject()
+    ConvertNode convert = create(new JtonObject()
+        .set("rules", new JtonArray()
+            .push(new JtonObject()
                 .set("t", "double")
                 .set("p", "payload")
                 .set("pt", "msg"))));
 
-    JsonObject msg = new JsonObject()
+    JtonObject msg = new JtonObject()
         .set("_msgid", 1)
         .set("payload", "123.0");
 
-    JsonObject expected = msg.deepCopy()
+    JtonObject expected = msg.deepCopy()
         .set("payload", 123D);
 
-    convert.on("#send", (String topic, JsonElement message) -> {
+    convert.on("#send", (String topic, JtonElement message) -> {
       Assert.assertEquals(message, expected);
     });
 
     convert.receive(msg);
   }
 
-  ConvertNode create(JsonObject config) {
+  ConvertNode create(JtonObject config) {
     return create(createFlow(), config
         .set("id", UUID.randomUUID().toString()));
   }
 
-  ConvertNode create(Flow flow, JsonObject config) {
+  ConvertNode create(Flow flow, JtonObject config) {
     try {
       return new ConvertNode(flow, config
           .set("type", "convert")
@@ -102,43 +102,43 @@ public class ConvertNodeTests {
       }
 
       @Override
-      public void update(JsonObject global, JsonObject flow) {
+      public void update(JtonObject global, JtonObject flow) {
         // TODO Auto-generated method stub
 
       }
 
       @Override
-      public void start(JsonObject diff) {
+      public void start(JtonObject diff) {
         // TODO Auto-generated method stub
 
       }
 
       @Override
-      public void stop(JsonArray stopList, JsonArray removedList) {
+      public void stop(JtonArray stopList, JtonArray removedList) {
         // TODO Auto-generated method stub
 
       }
 
       @Override
-      public JsonElement getSetting(String key) {
+      public JtonElement getSetting(String key) {
         // TODO Auto-generated method stub
         return null;
       }
 
       @Override
-      public boolean handleStatus(Node node, JsonObject statusMessage, Node reportingNode, boolean muteStatusEvent) {
+      public boolean handleStatus(Node node, JtonObject statusMessage, Node reportingNode, boolean muteStatusEvent) {
         // TODO Auto-generated method stub
         return false;
       }
 
       @Override
-      public boolean handleError(Node node, Throwable logMessage, JsonObject msg, Node reportingNode) {
+      public boolean handleError(Node node, Throwable logMessage, JtonObject msg, Node reportingNode) {
         // TODO Auto-generated method stub
         return false;
       }
 
       @Override
-      public JsonObject getContext(String type) {
+      public JtonObject getContext(String type) {
         // TODO Auto-generated method stub
         return null;
       }

@@ -1,15 +1,15 @@
 package com.nepheletech.jred.runtime.nodes;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 
 public abstract class AbstractConfigurationNode extends AbstractNode implements ConfigurationNode {
 
-  public AbstractConfigurationNode(final Flow flow, final JsonObject config) {
+  public AbstractConfigurationNode(final Flow flow, final JtonObject config) {
     super(flow, config);
   }
 
-  protected final void onMessage(JsonObject msg) {
+  protected final void onMessage(JtonObject msg) {
     throw new UnsupportedOperationException();
   }
 }

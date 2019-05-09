@@ -40,7 +40,7 @@ import org.bouncycastle.openssl.PEMParser;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.sslutils.SSLUtils;
 
 /**
@@ -70,11 +70,11 @@ public class TlsConfigNode extends AbstractConfigurationNode implements HasCrede
   private String key;
   private String ca;
 
-  private JsonObject credentials;
+  private JtonObject credentials;
 
   private final boolean valid;
 
-  public TlsConfigNode(Flow flow, JsonObject config) {
+  public TlsConfigNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     this.verifyservercert = config.getAsBoolean("verifyservercert", false);
@@ -151,7 +151,7 @@ public class TlsConfigNode extends AbstractConfigurationNode implements HasCrede
   public boolean isRejectUnauthorized() { return isValid() ? this.verifyservercert : false; }
 
   @Override
-  public void setCredentials(JsonObject credentials) { this.credentials = credentials; }
+  public void setCredentials(JtonObject credentials) { this.credentials = credentials; }
 
   public SSLContext getSSLContext() throws Exception {
     if (!valid) { return null; }

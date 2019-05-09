@@ -12,7 +12,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 
 public abstract class AbstractUINode extends AbstractNode {
   private static final Logger logger = LoggerFactory.getLogger(AbstractUINode.class);
@@ -20,7 +20,7 @@ public abstract class AbstractUINode extends AbstractNode {
   private final MustacheFactory mf;
   private Mustache mustache;
 
-	public AbstractUINode(Flow flow, JsonObject config, String template) {
+	public AbstractUINode(Flow flow, JtonObject config, String template) {
 		super(flow, config);
 
     mf = new DefaultMustacheFactory();
@@ -37,7 +37,7 @@ public abstract class AbstractUINode extends AbstractNode {
 	}
 	
 	@Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
     
     final StringWriter w = new StringWriter();
@@ -47,7 +47,7 @@ public abstract class AbstractUINode extends AbstractNode {
     send(msg);
 	}
 
-  protected Object prepare(final JsonObject msg) {
+  protected Object prepare(final JtonObject msg) {
     // TODO
 
     return msg;

@@ -8,7 +8,7 @@ import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
 import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
 import com.nepheletech.jred.runtime.events.NodesStoppedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.messagebus.MessageBus;
 
 public class CamelContextNode extends AbstractConfigurationNode
@@ -16,7 +16,7 @@ public class CamelContextNode extends AbstractConfigurationNode
 
   private final DefaultCamelContext camelContext;
 
-  public CamelContextNode(Flow flow, JsonObject config) {
+  public CamelContextNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     camelContext = new DefaultCamelContext();

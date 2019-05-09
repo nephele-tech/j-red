@@ -10,9 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.nepheletech.jred.editor.Constants;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParser;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParser;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/settings/*" })
@@ -23,11 +23,11 @@ public class SettingsServlet extends HttpServlet implements Constants {
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     if (HttpServletUtil.acceptsJSON(req)) {
       final String pathInfo = req.getPathInfo();
-      final JsonObject result;
+      final JtonObject result;
       if (null != pathInfo && "/user".equals(pathInfo)) {
-        result = new JsonObject()
-            .set("editor", new JsonObject()
-                .set("view", new JsonObject()
+        result = new JtonObject()
+            .set("editor", new JtonObject()
+                .set("view", new JtonObject()
                     .set("view-grid-size", 20)
                     .set("view-node-status", true)
                     .set("view-show-tips", true)
@@ -35,19 +35,19 @@ public class SettingsServlet extends HttpServlet implements Constants {
                     .set("view-show-grid", true)));
       } else {
         final String contextPath = req.getContextPath();
-        result = new JsonObject()
+        result = new JtonObject()
             .set("httpNodeRoot", contextPath + "/http-in/")
             .set("version", NODE_RED_VERSION)
-            .set("context", new JsonObject()
+            .set("context", new JtonObject()
                 .set("default", "memory")
-                .set("stores", new JsonArray()
+                .set("stores", new JtonArray()
                     .push("memory")))
-            .set("editorTheme", new JsonObject()
-                .set("menu", new JsonObject()
-                    .set("menu-item-help", new JsonObject()
+            .set("editorTheme", new JtonObject()
+                .set("menu", new JtonObject()
+                    .set("menu-item-help", new JtonObject()
                         .set("label", "J-RED website")
                         .set("url", "https://github.com/nephele-tech/j-red")))
-                .set("palette", new JsonObject()
+                .set("palette", new JtonObject()
                     .set("editable", false)))
             .set("flowEncryptionType", "system")
             .set("tlsConfigDisableLocalFiles", false);

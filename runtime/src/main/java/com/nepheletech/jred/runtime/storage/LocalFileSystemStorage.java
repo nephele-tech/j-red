@@ -13,12 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.storage.util.Crypto;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParseException;
-import com.nepheletech.json.JsonParser;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParseException;
+import com.nepheletech.jton.JsonParser;
 
 public class LocalFileSystemStorage implements Storage {
   private static final Logger logger = LoggerFactory.getLogger(LocalFileSystemStorage.class);
@@ -61,22 +61,22 @@ public class LocalFileSystemStorage implements Storage {
   public String getBaseDir() { return baseDir; }
 
   @Override
-  public JsonObject getFlows() {
+  public JtonObject getFlows() {
     logger.trace(">>> getFlows:");
-    final JsonElement flows = readJSONFile(flowsFile, flowsBackupFile);
+    final JtonElement flows = readJSONFile(flowsFile, flowsBackupFile);
     logger.debug("flows: {}", flows);
-    final JsonElement credentials = readJSONFile(credentialsFile, credentialsBackupFile);
-    final JsonObject result = new JsonObject()
-        .set("flows", flows.isJsonArray() ? flows : new JsonArray())
-        .set("credentials", credentials.isJsonObject() ? credentials : new JsonObject());
+    final JtonElement credentials = readJSONFile(credentialsFile, credentialsBackupFile);
+    final JtonObject result = new JtonObject()
+        .set("flows", flows.isJsonArray() ? flows : new JtonArray())
+        .set("credentials", credentials.isJsonObject() ? credentials : new JtonObject());
     result.set("rev", Crypto.createHashOf(result.toString()));
     return result;
   }
 
   @Override
-  public String saveFlows(JsonObject config) throws IOException {
-    final JsonArray flows = config.get("flows").asJsonArray();
-    final JsonObject credentials = config.get("credentials").asJsonObject();
+  public String saveFlows(JtonObject config) throws IOException {
+    final JtonArray flows = config.get("flows").asJsonArray();
+    final JtonObject credentials = config.get("credentials").asJsonObject();
     final boolean credentialsDirty = config.remove("credentialsDirty").asBoolean();
 
     if (credentialsDirty) {
@@ -88,7 +88,7 @@ public class LocalFileSystemStorage implements Storage {
     return Crypto.createHashOf(config.toString());
   }
 
-  private void saveFlows(JsonArray flows) throws IOException {
+  private void saveFlows(JtonArray flows) throws IOException {
     if (flowsFile.toFile().exists()) {
       Files.move(flowsFile, flowsBackupFile, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -96,13 +96,13 @@ public class LocalFileSystemStorage implements Storage {
   }
 
   @Override
-  public JsonObject getCredentials() {
-    final JsonObject credentials = readJSONFile(credentialsFile, credentialsBackupFile).asJsonObject();
-    return credentials.isJsonObject() ? credentials : new JsonObject();
+  public JtonObject getCredentials() {
+    final JtonObject credentials = readJSONFile(credentialsFile, credentialsBackupFile).asJsonObject();
+    return credentials.isJsonObject() ? credentials : new JtonObject();
   }
 
   @Override
-  public void saveCredentials(JsonObject credentials) throws IOException {
+  public void saveCredentials(JtonObject credentials) throws IOException {
     if (credentialsFile.toFile().exists()) {
       Files.move(credentialsFile, credentialsBackupFile, StandardCopyOption.REPLACE_EXISTING);
     }
@@ -110,12 +110,12 @@ public class LocalFileSystemStorage implements Storage {
   }
 
   @Override
-  public JsonObject getSettings() { // TODO Auto-generated method stub
+  public JtonObject getSettings() { // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public void saveSettings(JsonObject settings) {
+  public void saveSettings(JtonObject settings) {
     // TODO Auto-generated method stub
 
   }
@@ -127,14 +127,14 @@ public class LocalFileSystemStorage implements Storage {
   }
 
   @Override
-  public void setLibraryEntry(String type, String path, JsonObject meta, String body) {
+  public void setLibraryEntry(String type, String path, JtonObject meta, String body) {
     // TODO Auto-generated method stub
 
   }
 
   // ---
 
-  private static JsonElement readJSONFile(Path path, Path backupPath) {
+  private static JtonElement readJSONFile(Path path, Path backupPath) {
     String data = readFile(path, backupPath);
     if (data != null) {
       try {
@@ -147,11 +147,11 @@ public class LocalFileSystemStorage implements Storage {
           return JsonParser.parse(data);
         } catch (JsonParseException e2) {
           logger.debug(e1.getMessage(), e2);
-          return JsonNull.INSTANCE;
+          return JtonNull.INSTANCE;
         }
       }
     } else {
-      return JsonNull.INSTANCE;
+      return JtonNull.INSTANCE;
     }
   }
 

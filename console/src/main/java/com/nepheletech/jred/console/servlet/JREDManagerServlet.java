@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -36,15 +35,14 @@ import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
-import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.apache.tomcat.util.res.StringManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.console.Constants;
 import com.nepheletech.jred.console.util.AntExecutor;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/manager/*" })
@@ -113,7 +111,7 @@ public class JREDManagerServlet extends ManagerServlet {
       return;
     }
 
-    HttpServletUtil.sendJSON(res, new JsonObject()
+    HttpServletUtil.sendJSON(res, new JtonObject()
         .set("message", message)
         .set("items", list()));
   }
@@ -312,15 +310,15 @@ public class JREDManagerServlet extends ManagerServlet {
   protected void list(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     logger.trace(">>> list:");
 
-    final JsonArray workspaces = list();
+    final JtonArray workspaces = list();
 
     HttpServletUtil.sendJSON(res, workspaces);
   }
 
-  protected JsonArray list() throws UnsupportedEncodingException {
+  protected JtonArray list() throws UnsupportedEncodingException {
     logger.trace(">>> list:");
 
-    final JsonArray workspaces = new JsonArray();
+    final JtonArray workspaces = new JtonArray();
 
     for (Container child : host.findChildren()) {
       final String name = child.getName();
@@ -332,7 +330,7 @@ public class JREDManagerServlet extends ManagerServlet {
           continue;
         }
 
-        final JsonObject workspace = new JsonObject();
+        final JtonObject workspace = new JtonObject();
         String displayPath = context.getPath();
         if ("".equals(displayPath)) {
           displayPath = "/";

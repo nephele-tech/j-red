@@ -19,16 +19,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
-import com.nepheletech.json.JsonParser;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JsonParser;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 import com.nepheletech.messagebus.Subscription;
 
 @ServerEndpoint(value = "/comms", configurator = CommsEndpoint.CommsEndpointConfigurator.class)
-public class CommsEndpoint implements MessageBusListener<JsonObject> {
+public class CommsEndpoint implements MessageBusListener<JtonObject> {
   private static final Logger logger = LoggerFactory.getLogger(CommsEndpoint.class);
 
   public static class CommsEndpointConfigurator extends ServerEndpointConfig.Configurator {
@@ -42,14 +42,14 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
     }
   }
 
-  private static final MessageBusListener<JsonObject> handleStatusEvent = new MessageBusListener<JsonObject>() {
+  private static final MessageBusListener<JtonObject> handleStatusEvent = new MessageBusListener<JtonObject>() {
     @Override
-    public void messageSent(String topic, JsonObject message) {
+    public void messageSent(String topic, JtonObject message) {
       logger.trace(">>> handleStatusEvent: topic={}, message={}", topic, message);
 
       final String id = message.getAsString("id", null);
       if (id != null) {
-        final JsonObject status = message.getAsJsonObject("status", false);
+        final JtonObject status = message.getAsJsonObject("status", false);
         if (status != null) {
           JRedUtil.publish("status/#", "status/" + id, status, true);
         }
@@ -63,7 +63,7 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
 
   private Session session;
 
-  private final JsonArray stack = new JsonArray();
+  private final JtonArray stack = new JtonArray();
 
   @OnOpen
   public void onOpen(Session session, EndpointConfig config) {
@@ -78,7 +78,7 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
 
   private Subscription mbSubscription = null;
 
-  private void on(String topic, MessageBusListener<JsonObject> messageListener) {
+  private void on(String topic, MessageBusListener<JtonObject> messageListener) {
     if (mbSubscription != null) {
       mbSubscription.unsubscribe();
       mbSubscription = null;
@@ -103,9 +103,9 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
     logger.trace(">>> onMessage: message={}", message);
 
     try {
-      JsonElement jsonMsg = JsonParser.parse(message);
+      JtonElement jsonMsg = JsonParser.parse(message);
       if (jsonMsg.isJsonObject()) {
-        JsonObject msg = jsonMsg.asJsonObject();
+        JtonObject msg = jsonMsg.asJsonObject();
         if (msg.has("subscribe")) {
           String topic = msg.getAsString("subscribe", null);
 
@@ -127,7 +127,7 @@ public class CommsEndpoint implements MessageBusListener<JsonObject> {
   }
 
   @Override
-  public void messageSent(String topic, JsonObject message) {
+  public void messageSent(String topic, JtonObject message) {
     logger.trace(">>> messageSent: topic={}, message={}", topic, message);
 
     if (message != null) {

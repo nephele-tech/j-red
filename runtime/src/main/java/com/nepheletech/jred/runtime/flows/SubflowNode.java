@@ -3,21 +3,21 @@ package com.nepheletech.jred.runtime.flows;
 import java.util.function.BiConsumer;
 
 import com.nepheletech.jred.runtime.nodes.AbstractNode;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonObject;
 
 final class SubflowNode extends AbstractNode {
 
-  private BiConsumer<SubflowNode, JsonArray> updateWires;
+  private BiConsumer<SubflowNode, JtonArray> updateWires;
 
-  public SubflowNode(Flow flow, JsonObject config) {
+  public SubflowNode(Flow flow, JtonObject config) {
     super(flow, config);
   }
 
-  public void setUpdateWires(BiConsumer<SubflowNode, JsonArray> updateWires) { this.updateWires = updateWires; }
+  public void setUpdateWires(BiConsumer<SubflowNode, JtonArray> updateWires) { this.updateWires = updateWires; }
 
   @Override
-  protected void onMessage(JsonObject msg) {
+  protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
     send(msg);
   }
@@ -30,7 +30,7 @@ final class SubflowNode extends AbstractNode {
   }
 
   @Override
-  public void updateWires(JsonArray wires) {
+  public void updateWires(JtonArray wires) {
     if (updateWires == null) {
       super.updateWires(wires);
     } else {
@@ -38,7 +38,7 @@ final class SubflowNode extends AbstractNode {
     }
   }
 
-  protected void _updateWires(JsonArray wires) {
+  protected void _updateWires(JtonArray wires) {
     super.updateWires(wires);
   }
 }

@@ -14,9 +14,9 @@ import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
 import com.nepheletech.jred.runtime.events.NodesStoppedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 import com.nepheletech.messagebus.Subscription;
@@ -35,7 +35,7 @@ public abstract class AbstractNode implements Node {
   private final String name;
   private final String _alias;
 
-  private JsonArray wires;
+  private JtonArray wires;
   private String _wire;
   private int _wireCount;
 
@@ -45,7 +45,7 @@ public abstract class AbstractNode implements Node {
   private final Subscription nodesStartedSubscription;
   private final Subscription nodesStoppedSubscription;
 
-  public AbstractNode(final Flow flow, final JsonObject config) {
+  public AbstractNode(final Flow flow, final JtonObject config) {
     this.flow = flow;
     this.id = config.getAsString("id");
     this.type = config.getAsString("type");
@@ -113,14 +113,14 @@ public abstract class AbstractNode implements Node {
   public String getAlias() { return _alias; }
 
   @Override
-  public void updateWires(JsonArray wires) {
+  public void updateWires(JtonArray wires) {
     logger.debug("UPDATE {}", this.id);
 
     this.wires = wires;
     this._wire = null;
 
     int wc = 0;
-    for (final JsonElement w : this.wires) {
+    for (final JtonElement w : this.wires) {
       wc += w.asJsonArray().size();
     }
 
@@ -171,7 +171,7 @@ public abstract class AbstractNode implements Node {
   }
 
   @Override
-  public final void send(JsonElement _msg) {
+  public final void send(JtonElement _msg) {
     logger.trace(">>> send: _msg={}", _msg);
     logger.trace(">>> send: wires={}", wires);
 
@@ -196,7 +196,7 @@ public abstract class AbstractNode implements Node {
         // TODO: pre-load flows.get calls - cannot do in constructor as not all nodes
         //       are defined at that point
         //@formatter:on
-        final JsonObject msg = _msg.asJsonObject();
+        final JtonObject msg = _msg.asJsonObject();
         if (!msg.has("_msgid")) {
           msg.set("_msgid", UUID.randomUUID().toString());
         }
@@ -207,12 +207,12 @@ public abstract class AbstractNode implements Node {
           return;
         }
       } else {
-        _msg = new JsonArray().push(_msg);
+        _msg = new JtonArray().push(_msg);
       }
     }
 
     // Note: msg is an array of arrays
-    final JsonArray msg = _msg.asJsonArray();
+    final JtonArray msg = _msg.asJsonArray();
 
     final int numOutputs = this.wires.size();
 
@@ -225,12 +225,12 @@ public abstract class AbstractNode implements Node {
     // for each output of node eg. [msgs to output 0, msgs to output 1, ...]
     boolean msgSent = false;
     for (int i = 0, imax = numOutputs; i < imax; i++) {
-      final JsonArray wires = this.wires.get(i).asJsonArray(); // wires leaving output 1
+      final JtonArray wires = this.wires.get(i).asJsonArray(); // wires leaving output 1
       if (i < msg.asJsonArray().size()) {
-        JsonElement msgs = msg.asJsonArray().get(i); // msgs going to output i
+        JtonElement msgs = msg.asJsonArray().get(i); // msgs going to output i
         if (!msgs.isJsonNull() && !msgs.isJsonPrimitive()) {
           if (!msgs.isJsonArray()) {
-            msgs = new JsonArray().push(msgs);
+            msgs = new JtonArray().push(msgs);
           }
           int k = 0, kmax;
           // for each recipient node of that output
@@ -239,13 +239,13 @@ public abstract class AbstractNode implements Node {
             if (node != null) {
               // for each msg to send eg. [[m1, m2, ...], ...]
               for (k = 0, kmax = msgs.asJsonArray().size(); k < kmax; k++) {
-                final JsonElement m = msgs.asJsonArray().get(k);
+                final JtonElement m = msgs.asJsonArray().get(k);
                 if (m.isJsonObject()) {
                   if (sentMessageId == null) {
                     sentMessageId = m.asJsonObject().get("_msgid").asString();
                   }
                   if (msgSent) {
-                    final JsonElement clonedMsg = m.deepCopy();
+                    final JtonElement clonedMsg = m.deepCopy();
                     sendEvents.add(new SendEvent(node, clonedMsg.asJsonObject()));
                   } else {
                     sendEvents.add(new SendEvent(node, m.asJsonObject()));
@@ -274,18 +274,18 @@ public abstract class AbstractNode implements Node {
 
   private final class SendEvent {
     final Node n;
-    final JsonObject m;
+    final JtonObject m;
 
-    public SendEvent(final Node n, final JsonObject m) {
+    public SendEvent(final Node n, final JtonObject m) {
       this.n = n;
       this.m = m;
     }
   }
 
   @Override
-  public final void receive(JsonObject msg) {
+  public final void receive(JtonObject msg) {
     if (msg == null) {
-      msg = new JsonObject();
+      msg = new JtonObject();
     }
     if (!msg.has("_msgid")) {
       msg.set("_msgid", UUID.randomUUID().toString());
@@ -299,14 +299,14 @@ public abstract class AbstractNode implements Node {
     }
   }
 
-  protected abstract void onMessage(JsonObject msg);
+  protected abstract void onMessage(JtonObject msg);
 
   protected void metric() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void status(JsonObject status) {
+  public void status(JtonObject status) {
     logger.trace(">>> status: {}", status);
 
     flow.handleStatus(this, status, null, false);
@@ -314,7 +314,7 @@ public abstract class AbstractNode implements Node {
 
   @Override
   public void status(String text) {
-    status(new JsonObject().set("text", text));
+    status(new JtonObject().set("text", text));
   }
 
   private static final int OFF = 1;
@@ -327,11 +327,11 @@ public abstract class AbstractNode implements Node {
   private static final int AUDIT = 98;
   private static final int METRIC = 99;
 
-  protected void log(JsonObject msg) {
+  protected void log(JtonObject msg) {
     log_helper(INFO, msg);
   }
 
-  protected void warn(JsonObject msg) {
+  protected void warn(JtonObject msg) {
     log_helper(WARN, msg);
   }
 
@@ -341,7 +341,7 @@ public abstract class AbstractNode implements Node {
    * @param t
    * @param msg
    */
-  protected void error(Throwable t, JsonObject msg) {
+  protected void error(Throwable t, JtonObject msg) {
     if (t == null) { throw new IllegalArgumentException("Throwable is null"); }
     if (msg == null) { throw new IllegalArgumentException("Message is null"); }
 
@@ -367,7 +367,7 @@ public abstract class AbstractNode implements Node {
    */
 //@formatter:off
 
-  private void error0(Throwable logMessage, JsonObject msg) {
+  private void error0(Throwable logMessage, JtonObject msg) {
     boolean handled = false;
     if (msg != null) {
       handled = flow.handleError(this, logMessage, msg, null);
@@ -378,25 +378,25 @@ public abstract class AbstractNode implements Node {
         rootCause = logMessage;
       }
       
-      log_helper(ERROR, new JsonObject()
+      log_helper(ERROR, new JtonObject()
           .set("message", rootCause.toString())
           .set("stack", JRedUtil.stackTrace(rootCause))
           .set("msg", msg));
     }
   }
 
-  protected void debug(JsonObject msg) {
+  protected void debug(JtonObject msg) {
     log_helper(DEBUG, msg);
   }
 
-  protected void trace(JsonObject msg) {
+  protected void trace(JtonObject msg) {
     log_helper(TRACE, msg);
   }
   
   private void log_helper(int level, Object msg) {
     logger.trace(">>> log_helper: level={}, msg={}", level, msg);
 
-    final JsonObject o = new JsonObject()
+    final JtonObject o = new JtonObject()
         .set("id", getAlias() != null ? getAlias() : getId())
         .set("type", getType())
         .set("msg", msg, false);

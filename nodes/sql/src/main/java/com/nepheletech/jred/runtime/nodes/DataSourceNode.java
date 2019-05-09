@@ -7,7 +7,7 @@ import com.nepheletech.dao.NepheleDao;
 import com.nepheletech.dao.NepheleDaoFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonObject;
 
 public final class DataSourceNode extends AbstractConfigurationNode
     implements HasCredentials {
@@ -21,7 +21,7 @@ public final class DataSourceNode extends AbstractConfigurationNode
   private final NepheleDao dao;
 
   @SuppressWarnings("resource")
-  public DataSourceNode(Flow flow, JsonObject config) {
+  public DataSourceNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     final String driver = config.getAsString("driver");
@@ -46,7 +46,7 @@ public final class DataSourceNode extends AbstractConfigurationNode
   }
 
   @Override
-  public void setCredentials(JsonObject credentials) {
+  public void setCredentials(JtonObject credentials) {
     if (credentials != null) {
       this.user = credentials.getAsString("user", null);
       this.password = credentials.getAsString("password", null);

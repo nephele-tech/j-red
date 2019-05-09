@@ -4,8 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.nepheletech.dao.NepheleDao;
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonObject;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -17,7 +17,7 @@ public class SqlQueryNode extends AbstractNode {
 
   private final CircuitBreaker circuitBreaker;
 
-  public SqlQueryNode(Flow flow, JsonObject config) {
+  public SqlQueryNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     this.dataSource = config.getAsString("dataSource");
@@ -28,7 +28,7 @@ public class SqlQueryNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(final JsonObject msg) {
+  protected void onMessage(final JtonObject msg) {
     logger.trace(">>> trace: id={}, msg={}", getId(), msg);
 
     final NepheleDao dao = msg.has("dao")
@@ -44,9 +44,9 @@ public class SqlQueryNode extends AbstractNode {
           txStarted = true;
         }
 
-        final JsonArray payload = new JsonArray();
+        final JtonArray payload = new JtonArray();
         final String[] queries = sql.split(";");
-        final JsonObject namedParams = msg.getAsJsonObject("payload", false);
+        final JtonObject namedParams = msg.getAsJsonObject("payload", false);
         for (String query : queries) {
           query = StringUtils.trimToNull(query);
           if (query != null) {

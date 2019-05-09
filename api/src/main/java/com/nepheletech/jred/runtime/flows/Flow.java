@@ -3,9 +3,9 @@ package com.nepheletech.jred.runtime.flows;
 import java.util.Map;
 
 import com.nepheletech.jred.runtime.nodes.Node;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonObject;
 
 public interface Flow {
 
@@ -15,11 +15,11 @@ public interface Flow {
 
   Map<String, Node> getActiveNodes();
 
-  void update(JsonObject global, JsonObject flow);
+  void update(JtonObject global, JtonObject flow);
 
-  void start(JsonObject diff);
+  void start(JtonObject diff);
 
-  void stop(JsonArray stopList, JsonArray removedList);
+  void stop(JtonArray stopList, JtonArray removedList);
 
   /**
    * Get a flow setting value. This currently automatically defers to the parent
@@ -29,7 +29,7 @@ public interface Flow {
    * @param key
    * @return
    */
-  JsonElement getSetting(String key);
+  JtonElement getSetting(String key);
 
   /**
    * Handle a status event from a node within this flow.
@@ -43,7 +43,7 @@ public interface Flow {
    * @return {@code true} if the status event was handled; {@code false}
    *         otherwise.
    */
-  boolean handleStatus(Node node, JsonObject statusMessage, Node reportingNode, boolean muteStatusEvent);
+  boolean handleStatus(Node node, JtonObject statusMessage, Node reportingNode, boolean muteStatusEvent);
 
   /**
    * Handle an error event from a node within this flow. If there are no Catch
@@ -56,14 +56,14 @@ public interface Flow {
    *                      up.
    * @return {@code true} if the error event was handled; {@code false} otherwise.
    */
-  boolean handleError(Node node, Throwable logMessage, JsonObject msg, Node reportingNode);
+  boolean handleError(Node node, Throwable logMessage, JtonObject msg, Node reportingNode);
 
   /**
    * 
    * @param type
    * @return
    */
-  JsonObject getContext(String type);
+  JtonObject getContext(String type);
 
   /**
    * 

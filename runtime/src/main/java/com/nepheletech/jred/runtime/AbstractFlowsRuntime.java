@@ -5,8 +5,8 @@ import java.io.IOException;
 import com.nepheletech.jred.runtime.flows.FlowsManager;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jred.runtime.storage.Storage;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonObject;
 
 public class AbstractFlowsRuntime implements FlowsRuntime {
 
@@ -41,10 +41,10 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
   }
 
   @Override
-  public JsonObject getFlows() { return flowsManager.getFlows(); }
+  public JtonObject getFlows() { return flowsManager.getFlows(); }
 
   @Override
-  public String setFlows(JsonArray config, String type) throws IOException {
+  public String setFlows(JtonArray config, String type) throws IOException {
     return flowsManager.setFlows(config, type);
   }
 
@@ -54,7 +54,7 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
   }
 
   @Override
-  public JsonObject getNodeCredentials(String type, String id) {
+  public JtonObject getNodeCredentials(String type, String id) {
     return flowsManager.getCredentials().get(id);
     
     // TODO some things I don't follow... (runtime/lib/api/flows.js)

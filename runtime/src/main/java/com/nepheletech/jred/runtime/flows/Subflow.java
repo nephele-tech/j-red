@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 import com.nepheletech.jred.runtime.nodes.AbstractNode;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.json.JsonArray;
-import com.nepheletech.json.JsonElement;
-import com.nepheletech.json.JsonNull;
-import com.nepheletech.json.JsonObject;
+import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
+import com.nepheletech.jton.JtonObject;
 
 /**
  * This class represents a subflow - which is handled as a special type of
@@ -20,15 +20,15 @@ import com.nepheletech.json.JsonObject;
 public class Subflow extends FlowImpl {
   private static final Logger logger = LoggerFactory.getLogger(Subflow.class);
 
-  private final JsonObject subflowDef;
-  private final JsonObject subflowInstance;
-  private final JsonObject node_map;
+  private final JtonObject subflowDef;
+  private final JtonObject subflowInstance;
+  private final JtonObject node_map;
 
   protected Node statusNode;
 
   protected SubflowNode node;
 
-  private final JsonObject env;
+  private final JtonObject env;
 
   /**
    * Create a {@code Subflow} object.
@@ -41,20 +41,20 @@ public class Subflow extends FlowImpl {
    * @param subflowDef
    * @param subflowInstance
    */
-  public Subflow(Flow parent, JsonObject globalFlow, JsonObject subflowDef, JsonObject subflowInstance) {
+  public Subflow(Flow parent, JtonObject globalFlow, JtonObject subflowDef, JtonObject subflowInstance) {
     this(parent, globalFlow, subflowDef, subflowInstance,
         subflowInternalFlowConfig(parent, globalFlow, subflowDef, subflowInstance));
   }
 
-  public Subflow(Flow parent, JsonObject globalFlow, JsonObject subflowDef, JsonObject subflowInstance,
-      JsonObject[] data) {
+  public Subflow(Flow parent, JtonObject globalFlow, JtonObject subflowDef, JtonObject subflowInstance,
+      JtonObject[] data) {
     super(parent, globalFlow, data[0]);
 
     this.subflowDef = subflowDef;
     this.subflowInstance = subflowInstance;
     this.node_map = data[1];
 
-    final JsonObject env = new JsonObject();
+    final JtonObject env = new JtonObject();
     if (this.subflowDef.has("env")) {
       this.subflowDef.getAsJsonArray("env").forEach(e -> {
         env.set(e.asJsonObject().getAsString("name"), e);
@@ -78,23 +78,23 @@ public class Subflow extends FlowImpl {
    * @param diff
    */
   @Override
-  public void start(JsonObject diff) {
+  public void start(JtonObject diff) {
     if (this.subflowDef.has("status")) {
       final String subflowInstanceId = this.subflowInstance.getAsString("id");
-      final JsonObject subflowStatusConfig = new JsonObject()
+      final JtonObject subflowStatusConfig = new JtonObject()
           .set("id", subflowInstanceId + ":status")
           .set("type", "subflow-status")
           .set("z", subflowInstanceId);
 
       this.statusNode = new AbstractNode(this, subflowStatusConfig) {
         @Override
-        protected void onMessage(JsonObject msg) {
+        protected void onMessage(JtonObject msg) {
           if (msg.has("payload")) {
-            final JsonElement payload = msg.get("payload");
+            final JtonElement payload = msg.get("payload");
             if (payload.isJsonTransient() && payload.asJsonTransient().isString()) {
               // if msg.payload is a String, use it as status text
             } else if (payload.isJsonObject()) {
-              final JsonObject _payload = payload.asJsonObject();
+              final JtonObject _payload = payload.asJsonObject();
               if (_payload.has("text") || _payload.has("fill") || _payload.has("shape")
                   || _payload.keySet().size() == 0) {
                 // msg.payload is an object that looks like a status object
@@ -112,21 +112,21 @@ public class Subflow extends FlowImpl {
       };
     }
 
-    final JsonObject subflowInstanceConfig = new JsonObject()
+    final JtonObject subflowInstanceConfig = new JtonObject()
         .set("id", subflowInstance.get("id"))
         .set("type", subflowInstance.get("type"))
         .set("z", subflowInstance.get("z"))
         .set("name", subflowInstance.get("name"))
-        .set("wires", new JsonArray());
+        .set("wires", new JtonArray());
 
     if (subflowDef.has("in")) {
-      final JsonArray subflowInstanceConfigWires = new JsonArray();
-      final JsonArray in = subflowDef.getAsJsonArray("in");
+      final JtonArray subflowInstanceConfigWires = new JtonArray();
+      final JtonArray in = subflowDef.getAsJsonArray("in");
       for (int i = 0, iMax = in.size(); i < iMax; i++) {
-        final JsonArray wires = in.getAsJsonObject(i).getAsJsonArray("wires").deepCopy();
+        final JtonArray wires = in.getAsJsonObject(i).getAsJsonArray("wires").deepCopy();
         for (int j = 0, jMax = wires.size(); j < jMax; j++) {
-          final JsonObject w = wires.getAsJsonObject(j);
-          final JsonObject node = node_map.getAsJsonObject(w.getAsString("id"));
+          final JtonObject w = wires.getAsJsonObject(j);
+          final JtonObject node = node_map.getAsJsonObject(w.getAsString("id"));
           wires.set(j, node.get("id")); // uuid
         }
         subflowInstanceConfigWires.push(wires);
@@ -141,13 +141,13 @@ public class Subflow extends FlowImpl {
       if (subflowDef.has("out")) {
         // Restore the original wiring to the internal nodes
         subflowInstanceConfig.set("wires", subflowInstanceConfig.get("_originalWires").deepCopy());
-        final JsonArray out = subflowDef.getAsJsonArray("out");
+        final JtonArray out = subflowDef.getAsJsonArray("out");
         for (int i = 0; i < out.size(); i++) {
-          final JsonArray wires = out.getAsJsonObject(i).getAsJsonArray("wires");
+          final JtonArray wires = out.getAsJsonObject(i).getAsJsonArray("wires");
           for (int j = 0; j < wires.size(); j++) {
-            final JsonObject wire_j = wires.getAsJsonObject(j);
+            final JtonObject wire_j = wires.getAsJsonObject(j);
             if (!wire_j.get("id").equals(subflowDef.get("id"))) {
-              final JsonObject node = node_map.getAsJsonObject(wire_j.getAsString("id"));
+              final JtonObject node = node_map.getAsJsonObject(wire_j.getAsString("id"));
               if (node.has("_originalWires")) {
                 node.set("wires", node.get("_originalWires").deepCopy());
               }
@@ -155,30 +155,30 @@ public class Subflow extends FlowImpl {
           }
         }
 
-        final JsonObject modifiedNodes = new JsonObject();
+        final JtonObject modifiedNodes = new JtonObject();
         boolean subflowInstanceModified = false;
 
         for (int i = 0; i < out.size(); i++) {
-          final JsonArray wires = out.getAsJsonObject(i).getAsJsonArray("wires");
+          final JtonArray wires = out.getAsJsonObject(i).getAsJsonArray("wires");
           for (int j = 0; j < wires.size(); j++) {
-            final JsonObject wire_j = wires.getAsJsonObject(j);
+            final JtonObject wire_j = wires.getAsJsonObject(j);
             final String wireId = wire_j.getAsString("id");
             final int wirePort = wire_j.getAsInt("port");
             if (wireId.equals(subflowDef.getAsString("id"))) {
-              final JsonArray subflowWires = subflowInstance.getAsJsonArray("wires");
-              subflowWires.set(wirePort, JsonArray.concat(subflowWires.get(wirePort), newWires.get(i)));
+              final JtonArray subflowWires = subflowInstance.getAsJsonArray("wires");
+              subflowWires.set(wirePort, JtonArray.concat(subflowWires.get(wirePort), newWires.get(i)));
               subflowInstanceModified = true;
             } else {
-              final JsonObject node = node_map.getAsJsonObject(wireId);
+              final JtonObject node = node_map.getAsJsonObject(wireId);
               node.getAsJsonArray("wires").set(wirePort,
-                  JsonArray.concat(node.getAsJsonArray("wires").get(wirePort), newWires.get(i)));
+                  JtonArray.concat(node.getAsJsonArray("wires").get(wirePort), newWires.get(i)));
               modifiedNodes.set(node.getAsString("id"), node);
             }
           }
         }
 
         modifiedNodes.keySet().forEach((id) -> {
-          final JsonObject node = modifiedNodes.getAsJsonObject(id);
+          final JtonObject node = modifiedNodes.getAsJsonObject(id);
           activeNodes.get(id).updateWires(node.getAsJsonArray("wires"));
         });
 
@@ -190,31 +190,31 @@ public class Subflow extends FlowImpl {
 
     // Wire the subflow outputs
     if (subflowDef.has("out")) {
-      final JsonObject modifiedNodes = new JsonObject();
-      final JsonArray out = subflowDef.getAsJsonArray("out");
+      final JtonObject modifiedNodes = new JtonObject();
+      final JtonArray out = subflowDef.getAsJsonArray("out");
       for (int i = 0, iMax = out.size(); i < iMax; i++) {
         // i: the output index
         // This is what this Output is wired to
-        final JsonArray wires = out.getAsJsonObject(i).getAsJsonArray("wires");
+        final JtonArray wires = out.getAsJsonObject(i).getAsJsonArray("wires");
         for (int j = 0, jMax = wires.size(); j < jMax; j++) {
-          final JsonObject wire_j = wires.getAsJsonObject(j);
+          final JtonObject wire_j = wires.getAsJsonObject(j);
           final int port = wire_j.getAsInt("port");
           if (wire_j.get("id").equals(subflowDef.get("id"))) {
             // A subflow input wired straight to a subflow output
-            final JsonArray subflowInstanceConfigWires = subflowInstanceConfig.getAsJsonArray("wires");
+            final JtonArray subflowInstanceConfigWires = subflowInstanceConfig.getAsJsonArray("wires");
             subflowInstanceConfigWires.set(port,
-                JsonArray.concat(subflowInstanceConfig.getAsJsonArray("wires").get(port),
+                JtonArray.concat(subflowInstanceConfig.getAsJsonArray("wires").get(port),
                     this.subflowInstance.getAsJsonArray("wires").get(i)));
             this.node._updateWires(subflowInstance.getAsJsonArray("wires"));
           } else {
-            final JsonObject node = node_map.getAsJsonObject(wire_j.getAsString("id"));
+            final JtonObject node = node_map.getAsJsonObject(wire_j.getAsString("id"));
             modifiedNodes.set(node.getAsString("id"), node);
             if (!node.has("_originalWires")) {
               node.set("_originalWires", node.get("wires").deepCopy());
             }
-            final JsonArray nodeWires = node.getAsJsonArray("wires");
+            final JtonArray nodeWires = node.getAsJsonArray("wires");
             nodeWires.set(port,
-                JsonArray.concat(nodeWires.get(port), subflowInstance.getAsJsonArray("wires").get(i)));
+                JtonArray.concat(nodeWires.get(port), subflowInstance.getAsJsonArray("wires").get(i)));
           }
         }
       }
@@ -225,33 +225,33 @@ public class Subflow extends FlowImpl {
     super.start(diff);
   }
 
-  private static JsonObject[] subflowInternalFlowConfig(Flow parent,
-      JsonObject globalFlow, JsonObject subflowDef, JsonObject subflowInstance) {
-    final JsonObject subflows = ((FlowImpl) parent).flow.getAsJsonObject("subflows");
-    final JsonObject globalSubflows = ((FlowImpl) parent).global.getAsJsonObject("subflows");
+  private static JtonObject[] subflowInternalFlowConfig(Flow parent,
+      JtonObject globalFlow, JtonObject subflowDef, JtonObject subflowInstance) {
+    final JtonObject subflows = ((FlowImpl) parent).flow.getAsJsonObject("subflows");
+    final JtonObject globalSubflows = ((FlowImpl) parent).global.getAsJsonObject("subflows");
 
-    final JsonObject node_map = new JsonObject();
+    final JtonObject node_map = new JtonObject();
 
-    final JsonObject subflowInternalFlowConfig = new JsonObject()
+    final JtonObject subflowInternalFlowConfig = new JtonObject()
         .set("id", subflowInstance.get("id"))
-        .set("configs", new JsonObject())
-        .set("nodes", new JsonObject())
-        .set("subflows", new JsonObject());
+        .set("configs", new JtonObject())
+        .set("nodes", new JtonObject())
+        .set("subflows", new JtonObject());
 
     if (subflowDef.has("configs")) {
       // Clone all of the subflow config node definitions and give them new IDs
-      final JsonObject configs = subflowDef.getAsJsonObject("configs");
+      final JtonObject configs = subflowDef.getAsJsonObject("configs");
       for (String i : configs.keySet()) {
-        final JsonObject node = createNodeInSubflow(subflowInstance.getAsString("id"), configs.getAsJsonObject(i));
+        final JtonObject node = createNodeInSubflow(subflowInstance.getAsString("id"), configs.getAsJsonObject(i));
         node_map.set(node.getAsString("_alias"), node);
         subflowInternalFlowConfig.getAsJsonObject("configs").set(node.getAsString("id"), node);
       }
     }
     if (subflowDef.has("nodes")) {
       // Clone all of the subflow node definitions and give them new IDs
-      final JsonObject nodes = subflowDef.getAsJsonObject("nodes");
+      final JtonObject nodes = subflowDef.getAsJsonObject("nodes");
       for (String i : nodes.keySet()) {
-        final JsonObject node = createNodeInSubflow(subflowInstance.getAsString("id"), nodes.getAsJsonObject(i));
+        final JtonObject node = createNodeInSubflow(subflowInstance.getAsString("id"), nodes.getAsJsonObject(i));
         node_map.set(node.getAsString("_alias"), node);
         subflowInternalFlowConfig.getAsJsonObject("nodes").set(node.getAsString("id"), node);
       }
@@ -263,7 +263,7 @@ public class Subflow extends FlowImpl {
     remapSubflowNodes(subflowInternalFlowConfig.getAsJsonObject("configs"), node_map);
     remapSubflowNodes(subflowInternalFlowConfig.getAsJsonObject("nodes"), node_map);
 
-    return new JsonObject[] { subflowInternalFlowConfig, node_map };
+    return new JtonObject[] { subflowInternalFlowConfig, node_map };
   }
 
   /**
@@ -273,10 +273,10 @@ public class Subflow extends FlowImpl {
    * @return value of env var
    */
   @Override
-  public JsonElement getSetting(String name) {
+  public JtonElement getSetting(String name) {
     if (!name.startsWith("$parent.")) {
       if (env.has(name)) {
-        final JsonObject val = env.getAsJsonObject(name);
+        final JtonObject val = env.getAsJsonObject(name);
         // If this is an env type property we need to be careful not
         // to get into lookup loops.
         // 1. if the value to lookup is the same as this one, go straight to parent
@@ -292,7 +292,7 @@ public class Subflow extends FlowImpl {
             return JRedUtil.evaluateNodeProperty(value, val.getAsString("type"), this.node, null);
           } catch (RuntimeException e) {
             e.printStackTrace(); // TODO
-            return JsonNull.INSTANCE;
+            return JtonNull.INSTANCE;
           }
         } else {
           // This _is_ an env property pointing at itself - go to parent
@@ -305,7 +305,7 @@ public class Subflow extends FlowImpl {
 
     return (parent != null)
         ? parent.getSetting(name)
-        : JsonNull.INSTANCE;
+        : JtonNull.INSTANCE;
   }
 
   /**
@@ -326,7 +326,7 @@ public class Subflow extends FlowImpl {
   }
 
   @Override
-  public boolean handleStatus(Node node, JsonObject statusMessage, Node reportingNode, boolean muteStatusEvent) {
+  public boolean handleStatus(Node node, JtonObject statusMessage, Node reportingNode, boolean muteStatusEvent) {
     logger.trace(">>> handleStatus: statusMessage={}, muteStatusEvent={}", statusMessage, muteStatusEvent);
 
     boolean handled = super.handleStatus(node, statusMessage, reportingNode, muteStatusEvent);
@@ -337,7 +337,7 @@ public class Subflow extends FlowImpl {
   }
 
   @Override
-  public boolean handleError(Node node, Throwable logMessage, JsonObject msg, Node reportingNode) {
+  public boolean handleError(Node node, Throwable logMessage, JtonObject msg, Node reportingNode) {
     logger.trace(">>> handleError: logMessage={}, msg={}", logMessage, msg);
 
     boolean handled = super.handleError(node, logMessage, msg, reportingNode);
@@ -356,8 +356,8 @@ public class Subflow extends FlowImpl {
    * @param def
    * @return
    */
-  private static JsonObject createNodeInSubflow(String subflowInstanceId, JsonObject def) {
-    final JsonObject node = def.deepCopy();
+  private static JtonObject createNodeInSubflow(String subflowInstanceId, JtonObject def) {
+    final JtonObject node = def.deepCopy();
     final String nid = UUID.randomUUID().toString();
     node.set("_alias", node.get("id"));
     node.set("id", nid);
@@ -379,13 +379,13 @@ public class Subflow extends FlowImpl {
    * @param nodes
    * @param nodeMap
    */
-  private static void remapSubflowNodes(JsonObject nodes, JsonObject nodeMap) {
+  private static void remapSubflowNodes(JtonObject nodes, JtonObject nodeMap) {
     for (String id : nodes.keySet()) {
-      final JsonObject node = nodes.getAsJsonObject(id);
+      final JtonObject node = nodes.getAsJsonObject(id);
       if (node.has("wires")) {
-        final JsonArray outputs = node.getAsJsonArray("wires");
+        final JtonArray outputs = node.getAsJsonArray("wires");
         for (int j = 0, jMax = outputs.size(); j < jMax; j++) {
-          final JsonArray wires = outputs.getAsJsonArray(j);
+          final JtonArray wires = outputs.getAsJsonArray(j);
           for (int k = 0, kMax = wires.size(); k < kMax; k++) {
             wires.set(k, nodeMap.getAsJsonObject(wires.get(k).asString()).get("id"));
           }
