@@ -205,6 +205,14 @@ public abstract class JsonElement {
     }
   }
 
+  public Boolean asBoolean(Boolean defaultValue) {
+    try {
+      return isJsonPrimitive() ? asBoolean() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+
   /**
    * convenience method to get this element as a {@link Number}.
    *
@@ -264,6 +272,14 @@ public abstract class JsonElement {
     }
   }
 
+  public Double asDouble(final Double defaultValue) {
+    try {
+      return isJsonPrimitive() ? asDouble() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+
   /**
    * convenience method to get this element as a primitive float value.
    *
@@ -279,6 +295,14 @@ public abstract class JsonElement {
   }
 
   public float asFloat(final float defaultValue) {
+    try {
+      return isJsonPrimitive() ? asFloat() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+
+  public Float asFloat(final Float defaultValue) {
     try {
       return isJsonPrimitive() ? asFloat() : defaultValue;
     } catch (RuntimeException e) {
@@ -308,6 +332,14 @@ public abstract class JsonElement {
     }
   }
 
+  public Long asLong(Long defaultValue) {
+    try {
+      return isJsonPrimitive() ? asLong() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+
   /**
    * convenience method to get this element as a primitive integer value.
    *
@@ -323,6 +355,14 @@ public abstract class JsonElement {
   }
 
   public int asInt(final int defaultValue) {
+    try {
+      return isJsonPrimitive() ? asInt() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+
+  public Integer asInt(final Integer defaultValue) {
     try {
       return isJsonPrimitive() ? asInt() : defaultValue;
     } catch (RuntimeException e) {
@@ -353,6 +393,14 @@ public abstract class JsonElement {
     }
   }
 
+  public Byte asByte(final Byte defaultValue) {
+    try {
+      return isJsonPrimitive() ? asByte() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+
   /**
    * convenience method to get this element as a primitive character value.
    *
@@ -376,6 +424,14 @@ public abstract class JsonElement {
     }
   }
 
+  public Character asCharacter(final Character defaultValue) {
+    try {
+      return isJsonPrimitive() ? asCharacter() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+
   /**
    * convenience method to get this element as a {@link BigDecimal}.
    *
@@ -392,6 +448,14 @@ public abstract class JsonElement {
     throw new UnsupportedOperationException(getClass().getSimpleName());
   }
 
+  public BigDecimal asBigDecimal(BigDecimal defaultValue) {
+    try {
+      return isJsonPrimitive() ? asBigDecimal() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+
   /**
    * convenience method to get this element as a {@link BigInteger}.
    *
@@ -406,6 +470,14 @@ public abstract class JsonElement {
    */
   public BigInteger asBigInteger() {
     throw new UnsupportedOperationException(getClass().getSimpleName());
+  }
+
+  public BigInteger asBigInteger(BigInteger defaultValue) {
+    try {
+      return isJsonPrimitive() ? asBigInteger() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
   }
 
   /**
@@ -429,11 +501,19 @@ public abstract class JsonElement {
       return defaultValue;
     }
   }
-  
+
+  public Short asShort(Short defaultValue) {
+    try {
+      return isJsonPrimitive() ? asShort() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
+  }
+
   public Date asDate() {
     throw new UnsupportedOperationException(getClass().getSimpleName());
   }
-  
+
   public Date asDate(Date defaultValue) {
     try {
       return isJsonPrimitive() ? asDate() : defaultValue;
@@ -441,11 +521,11 @@ public abstract class JsonElement {
       return defaultValue;
     }
   }
-  
+
   public java.sql.Date asSqlDate() {
     throw new UnsupportedOperationException(getClass().getSimpleName());
   }
-  
+
   public java.sql.Date asSqlDate(java.sql.Date defaultValue) {
     try {
       return isJsonPrimitive() ? asSqlDate() : defaultValue;
@@ -453,11 +533,11 @@ public abstract class JsonElement {
       return defaultValue;
     }
   }
-  
+
   public java.sql.Time asSqlTime() {
     throw new UnsupportedOperationException(getClass().getSimpleName());
   }
-  
+
   public java.sql.Time asSqlTime(java.sql.Time defaultValue) {
     try {
       return isJsonPrimitive() ? asSqlTime() : defaultValue;
@@ -465,11 +545,11 @@ public abstract class JsonElement {
       return defaultValue;
     }
   }
-  
+
   public java.sql.Timestamp asSqlTimestamp() {
     throw new UnsupportedOperationException(getClass().getSimpleName());
   }
-  
+
   public java.sql.Timestamp asSqlTimestamp(java.sql.Timestamp defaultValue) {
     try {
       return isJsonPrimitive() ? asSqlTimestamp() : defaultValue;
@@ -477,7 +557,7 @@ public abstract class JsonElement {
       return defaultValue;
     }
   }
-  
+
   public byte[] asBytes() {
     throw new UnsupportedOperationException(getClass().getSimpleName());
   }

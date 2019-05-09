@@ -32,13 +32,15 @@ public final class HttpServletUtil {
   public static final String APPLICATION_XML = "application/html";
   private static final String APPLICATION_XML_UTF8 = "application/html; charset=UTF-8";
 
+  public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
+
   public static final String TEXT_HTML = "text/html";
   private static final String TEXT_HTML_UTF8 = "text/html; charset=UTF-8";
-  
+
   public static final String TEXT_PLAIN = "text/plain";
   @SuppressWarnings("unused")
   private static final String TEXT_PLAIN_UTF8 = "text/plain; charset=UTF-8";
-  
+
   public static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
   public static final String MULTIPART_FORM_DATA = "multipart/form-data";
 
@@ -115,7 +117,7 @@ public final class HttpServletUtil {
   public static void sendXML(HttpServletResponse res, String xml) throws IOException {
     send(res, APPLICATION_XML_UTF8, xml);
   }
-  
+
   /**
    * 
    * @param res
@@ -181,7 +183,5 @@ public final class HttpServletUtil {
 
   // ---
 
-  private HttpServletUtil() {
-    // hidden
-  }
+  private HttpServletUtil() {}
 }

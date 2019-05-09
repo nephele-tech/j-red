@@ -6,6 +6,10 @@ import java.util.Date;
  * 
  */
 public final class JsonPrimitive extends AbstractJsonPrimitive {
+  
+  public static JsonPrimitive create(Object value) {
+    return new JsonPrimitive(value);
+  }
 
   /**
    * Create a primitive containing a boolean value.
