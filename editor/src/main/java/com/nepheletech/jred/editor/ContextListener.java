@@ -19,7 +19,7 @@ import com.nepheletech.messagebus.MessageBus;
 @WebListener
 public class ContextListener implements ServletContextListener {
   private static final Logger logger = LoggerFactory.getLogger(ContextListener.class);
-  
+
   static {
     NepheleJsonPath.configure();
   }
@@ -45,7 +45,7 @@ public class ContextListener implements ServletContextListener {
     if (flowsRuntime != null) {
       flowsRuntime.stopFlows();
     }
-    
+
     // Reset message bus...
     MessageBus.unsubscribeAll();
   }

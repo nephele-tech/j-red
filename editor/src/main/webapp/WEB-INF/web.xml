@@ -10,6 +10,11 @@
 
 	<!-- <request-character-encoding>UTF-8</request-character-encoding> -->
 
+	<context-param>
+		<param-name>logbackDisableServletContainerInitializer</param-name>
+		<param-value>true</param-value>
+	</context-param>
+
 	<servlet>
 		<servlet-name>MainServlet</servlet-name>
 		<servlet-class>com.nepheletech.jred.editor.MainServlet</servlet-class>
