@@ -35,11 +35,11 @@ public class ConvertNode extends AbstractNode {
   public ConvertNode(Flow flow, JtonObject config) {
     super(flow, config);
 
-    _rules = config.getAsJsonArray("rules", null);
+    _rules = config.getAsJtonArray("rules", null);
 
     if (_rules != null) {
       for (JtonElement _rule : _rules) {
-        final JtonObject rule = _rule.asJsonObject(false);
+        final JtonObject rule = _rule.asJtonObject(false);
         if (rule != null) {
           final String t = rule.getAsString("t", null);
           if ("boolean".equals(t)) {
@@ -82,7 +82,7 @@ public class ConvertNode extends AbstractNode {
   protected void onMessage(JtonObject msg) {
     if (_rules != null) {
       for (JtonElement _rule : _rules) {
-        final JtonObject rule = _rule.asJsonObject(null);
+        final JtonObject rule = _rule.asJtonObject(null);
         if (rule != null) {
           final int type = rule.getAsInt("t", -1);
           final String p = rule.getAsString("p", null);
@@ -108,7 +108,7 @@ public class ConvertNode extends AbstractNode {
       // NO RULES: Use payload properties
       //
 
-      final JtonObject payload = msg.getAsJsonObject("payload", false);
+      final JtonObject payload = msg.getAsJtonObject("payload", false);
       if (payload != null) {
         final Set<String> keys = payload.deepCopy().keySet();
         for (String key : keys) {
@@ -127,7 +127,7 @@ public class ConvertNode extends AbstractNode {
           final String type = payload.getAsString(JTON_PREFIX + key, null);
           if (type != null) {
             final JtonElement value = payload.get(key);
-            if (value.isJsonPrimitive()) {
+            if (value.isJtonPrimitive()) {
               payload.set(key, convert(value, type), true);
             }
           }
@@ -199,9 +199,9 @@ public class ConvertNode extends AbstractNode {
     case TDOUBLE:
       return _value.asDouble(null);
     case TSTRING:
-      if (_value.isJsonNull()) {
+      if (_value.isJtonNull()) {
         return null;
-      } else if (_value.isJsonPrimitive()) {
+      } else if (_value.isJtonPrimitive()) {
         return _value.asString(null);
       } else {
         return _value.toString();

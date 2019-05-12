@@ -68,11 +68,11 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
 
     JtonElement e = (JtonElement) o;
 
-    if (e.isJsonNull()) {
+    if (e.isJtonNull()) {
       return null;
-    } else if (e.isJsonPrimitive()) {
+    } else if (e.isJtonPrimitive()) {
 
-      JtonPrimitive p = e.asJsonPrimitive();
+      JtonPrimitive p = e.asJtonPrimitive();
       if (p.isString()) {
         return p.asString();
       } else if (p.isBoolean()) {
@@ -242,7 +242,7 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
     } else {
       if (obj instanceof JtonElement) {
         JtonElement element = toJsonElement(obj);
-        if (element.isJsonPrimitive()) {
+        if (element.isJtonPrimitive()) {
           return element.toString().length();
         }
       }

@@ -42,7 +42,7 @@ public final class JRedUtil {
       return new JtonPrimitive(value != null ? value : "");
     } else if ("num".equals(type)) {
       try {
-        final JtonPrimitive num = JsonParser.parse(value).asJsonPrimitive();
+        final JtonPrimitive num = JsonParser.parse(value).asJtonPrimitive();
         return new JtonPrimitive(num.isNumber() ? num.asNumber() : Double.NaN);
       } catch (RuntimeException e) {
         return new JtonPrimitive(Double.NaN);
@@ -54,7 +54,7 @@ public final class JRedUtil {
     } else if ("date".equals(type)) {
       return new JtonPrimitive(System.currentTimeMillis());
     } else if ("bin".equals(type)) {
-      final JtonArray byteArray = JsonParser.parse(value).asJsonArray();
+      final JtonArray byteArray = JsonParser.parse(value).asJtonArray();
       return new JtonPrimitive(JRedUtil.toBuffer(byteArray));
     } else if ("msg".equals(type) && msg != null) {
       return getMessageProperty(msg, value);

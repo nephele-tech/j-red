@@ -10,6 +10,11 @@
 	<artifactId>jred-editor</artifactId>
 	<packaging>war</packaging>
 	<dependencies>
+    <dependency>
+      <groupId>com.nepheletech</groupId>
+      <artifactId>servlet-utils</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 		<dependency>
 			<groupId>com.nepheletech</groupId>
 			<artifactId>jred-runtime</artifactId>
@@ -32,7 +37,7 @@
     </dependency>
     <dependency>
       <groupId>com.nepheletech</groupId>
-      <artifactId>servlet-utils</artifactId>
+      <artifactId>jred-email-nodes</artifactId>
       <version>${project.version}</version>
     </dependency>
 

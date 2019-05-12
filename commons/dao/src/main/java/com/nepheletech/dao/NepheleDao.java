@@ -114,10 +114,10 @@ public class NepheleDao {
   protected Query<?> applyNamedParameters(final Query<?> query, final JtonObject namedParams) {
     for (String name : query.getParameterMetadata().getNamedParameterNames()) {
       final JtonElement value = getProperty(namedParams, name);
-      if (value.isJsonNull()) {
+      if (value.isJtonNull()) {
         query.setParameter(name, null);
       } else {
-        query.setParameter(name, value.asJsonPrimitive().getValue());
+        query.setParameter(name, value.asJtonPrimitive().getValue());
       }
     }
     return query;

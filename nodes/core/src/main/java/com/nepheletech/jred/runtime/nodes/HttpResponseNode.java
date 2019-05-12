@@ -27,7 +27,7 @@ public class HttpResponseNode extends AbstractNode {
     this.statusCode = config.get("statusCode").asInt(-1);
 
     if (config.has("headers")) {
-      headers = config.getAsJsonObject("headers");
+      headers = config.getAsJtonObject("headers");
     } else {
       headers = null;
     }
@@ -38,14 +38,14 @@ public class HttpResponseNode extends AbstractNode {
     logger.trace(">>> onMessage: msg={}", msg);
 
     final JtonElement _res = msg.remove("_res");
-    if (_res.isJsonTransient()
-        && _res.asJsonTransient().getValue() instanceof HttpServletResponse) {
-      final HttpServletResponse res = (HttpServletResponse) _res.asJsonTransient().getValue();
+    if (_res.isJtonTransient()
+        && _res.asJtonTransient().getValue() instanceof HttpServletResponse) {
+      final HttpServletResponse res = (HttpServletResponse) _res.asJtonTransient().getValue();
       final int statusCode = (this.statusCode == -1) ? msg.get("statusCode").asInt(200) : this.statusCode;
       final JtonObject headers = (this.headers == null || this.headers.size() == 0)
-          ? msg.get("headers").asJsonObject(true)
+          ? msg.get("headers").asJtonObject(true)
           : this.headers;
-      final JtonObject cookies = msg.get("cookies").asJsonObject(true);
+      final JtonObject cookies = msg.get("cookies").asJtonObject(true);
 
       try {
         res.setStatus(statusCode);
@@ -56,13 +56,13 @@ public class HttpResponseNode extends AbstractNode {
 
         for (String name : cookies.keySet()) {
           final JtonElement value = cookies.get(name);
-          if (value.isJsonPrimitive()) {
+          if (value.isJtonPrimitive()) {
             final String cookieValue = value.asString(null);
             if (StringUtils.trimToNull(cookieValue) != null) {
               res.addCookie(new Cookie(name, cookieValue));
             }
-          } else if (value.isJsonObject()) {
-            final JtonObject o = value.asJsonObject();
+          } else if (value.isJtonObject()) {
+            final JtonObject o = value.asJtonObject();
             final String cookieValue = o.get("value").asString("");
             if (StringUtils.trimToEmpty(cookieValue) != null) {
               final Cookie cookie = new Cookie(name, cookieValue);
@@ -88,9 +88,9 @@ public class HttpResponseNode extends AbstractNode {
             throw new UnsupportedOperationException();
           } else {
             final JtonElement payload = msg.get("payload");
-            if (payload.isJsonPrimitive()) {
-              final JtonPrimitive primitive = payload.asJsonPrimitive();
-              if (!primitive.isJsonTransient()) {
+            if (payload.isJtonPrimitive()) {
+              final JtonPrimitive primitive = payload.asJtonPrimitive();
+              if (!primitive.isJtonTransient()) {
                 HttpServletUtil.send(res, contentType, primitive.asString());
               } else {
                 throw new UnsupportedOperationException();

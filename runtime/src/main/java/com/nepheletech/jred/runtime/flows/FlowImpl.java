@@ -99,12 +99,12 @@ public class FlowImpl implements Flow {
     catchNodes.clear();
     statusNodes.clear();
 
-    final JtonObject configs = flow.getAsJsonObject("configs", true);
+    final JtonObject configs = flow.getAsJtonObject("configs", true);
     final List<String> configNodes = new ArrayList<>(configs.keySet());
     final JtonObject configNodesAttempts = new JtonObject();
     while (configNodes.size() > 0) {
       final String id = configNodes.remove(0);
-      final JtonObject node = configs.getAsJsonObject(id);
+      final JtonObject node = configs.getAsJtonObject(id);
       if (!activeNodes.containsKey(id)) {
         boolean readyToCreate = true;
         // This node doesn't exist.
@@ -137,21 +137,21 @@ public class FlowImpl implements Flow {
     }
 
     if (diff != null && diff.has("rewired")) {
-      final JtonArray rewired = diff.getAsJsonArray("rewired");
+      final JtonArray rewired = diff.getAsJtonArray("rewired");
       for (JtonElement rewireNodeRef : rewired) {
         final Node rewireNode = activeNodes.get(rewireNodeRef.asString());
         if (rewireNode != null) {
-          final JtonObject flowNodes = flow.getAsJsonObject("nodes");
-          final JtonObject node = flowNodes.getAsJsonObject(rewireNode.getId());
-          rewireNode.updateWires(node.getAsJsonArray("wires"));
+          final JtonObject flowNodes = flow.getAsJtonObject("nodes");
+          final JtonObject node = flowNodes.getAsJtonObject(rewireNode.getId());
+          rewireNode.updateWires(node.getAsJtonArray("wires"));
         }
       }
     }
 
-    final JtonObject flowNodes = flow.getAsJsonObject("nodes", false);
+    final JtonObject flowNodes = flow.getAsJtonObject("nodes", false);
     if (flowNodes != null) {
       for (String id : flowNodes.keySet()) {
-        final JtonObject node = flowNodes.getAsJsonObject(id);
+        final JtonObject node = flowNodes.getAsJtonObject(id);
         if (!node.has("subflow")) {
           if (!activeNodes.containsKey(id)) {
             newNode = FlowUtil.createNode(this, node);
@@ -163,11 +163,11 @@ public class FlowImpl implements Flow {
           if (!subflowInstanceNodes.containsKey(id)) {
             try {
               final String subflowRef = node.getAsString("subflow");
-              final JtonObject flowSubflows = flow.getAsJsonObject("subflows");
-              final JtonObject globalSubflows = global.getAsJsonObject("subflows");
+              final JtonObject flowSubflows = flow.getAsJtonObject("subflows");
+              final JtonObject globalSubflows = global.getAsJtonObject("subflows");
               final JtonObject subflowDefinition = flowSubflows.has(subflowRef)
-                  ? flowSubflows.getAsJsonObject(subflowRef)
-                  : globalSubflows.getAsJsonObject(subflowRef);
+                  ? flowSubflows.getAsJtonObject(subflowRef)
+                  : globalSubflows.getAsJtonObject(subflowRef);
               // console.log("NEED TO CREATE A SUBFLOW",id,node.subflow);
               // subflowInstanceNodes.put(id, true);
               final Subflow subflow = new Subflow(this, this.global, subflowDefinition, node);
@@ -342,8 +342,8 @@ public class FlowImpl implements Flow {
 
     if (id == null) { return null; }
 
-    final JtonObject configs = flow.getAsJsonObject("configs", false);
-    final JtonObject nodes = flow.getAsJsonObject("nodes", false);
+    final JtonObject configs = flow.getAsJtonObject("configs", false);
+    final JtonObject nodes = flow.getAsJtonObject("nodes", false);
     if ((configs != null && configs.has(id)) || (nodes != null && nodes.has(id))) {
       // This is a node owned by this flow, so return whatever we have got during a
       // stop/start, activeNodes could be null for this id
@@ -427,10 +427,10 @@ public class FlowImpl implements Flow {
             .set("status", statusMessage.deepCopy());
         
         if (statusMessage.has("text")) {
-          message.getAsJsonObject("status").set("text", statusMessage.getAsString("text"));
+          message.getAsJtonObject("status").set("text", statusMessage.getAsString("text"));
         }
 
-        message.getAsJsonObject("status").set("source", new JtonObject()
+        message.getAsJtonObject("status").set("source", new JtonObject()
             .set("id", node.getAlias() != null ? node.getAlias() : node.getId())
             .set("type", node.getType())
             .set("name", node.getName()));
@@ -456,10 +456,10 @@ public class FlowImpl implements Flow {
     }
 
     int count = 1;
-    if (msg != null && msg.isJsonObject("error")) {
-      final JtonObject error = msg.getAsJsonObject("error");
-      if (error.isJsonObject("source")) {
-        final JtonObject source = error.getAsJsonObject("source");
+    if (msg != null && msg.isJtonObject("error")) {
+      final JtonObject error = msg.getAsJtonObject("error");
+      if (error.isJtonObject("source")) {
+        final JtonObject source = error.getAsJtonObject("source");
         final String sourceId = source.get("id").asString(null);
         if (node.getId().equals(sourceId)) {
           count = source.get("count").asInt(0) + 1;

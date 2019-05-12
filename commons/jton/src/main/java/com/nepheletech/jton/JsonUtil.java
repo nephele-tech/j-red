@@ -29,11 +29,11 @@ public final class JsonUtil {
     for (int i = 0, n = path.size(); i < n; i++) {
       String prop = path.get(i);
 
-      if (e.isJsonObject()) {
-        e = e.asJsonObject().get(prop);
-      } else if (e.isJsonArray() && prop.startsWith("[")) {
+      if (e.isJtonObject()) {
+        e = e.asJtonObject().get(prop);
+      } else if (e.isJtonArray() && prop.startsWith("[")) {
         try {
-          e = e.asJsonArray().get(Integer.parseInt(prop.substring(1).trim()));
+          e = e.asJtonArray().get(Integer.parseInt(prop.substring(1).trim()));
         } catch (IndexOutOfBoundsException ex) {
           return JtonNull.INSTANCE;
         }
@@ -69,48 +69,48 @@ public final class JsonUtil {
 
       JtonElement parent = e;
 
-      if (e.isJsonObject()) {
-        e = e.asJsonObject().get(prop);
-      } else if (e.isJsonArray()) {
+      if (e.isJtonObject()) {
+        e = e.asJtonObject().get(prop);
+      } else if (e.isJtonArray()) {
         if (prop.startsWith("[")) {
-          e = e.asJsonArray().get(Integer.parseInt(prop.substring(1).trim()));
+          e = e.asJtonArray().get(Integer.parseInt(prop.substring(1).trim()));
         } else {
           throw new IllegalArgumentException("expecting array index: " + prop);
         }
       }
 
       if (createMissing
-          && (e.isJsonNull() || e.isJsonPrimitive())) {
+          && (e.isJtonNull() || e.isJtonPrimitive())) {
         final String nextProp = path.get(i + 1);
-        if (parent.isJsonObject()) {
+        if (parent.isJtonObject()) {
           if (nextProp.startsWith("[")) {
-            parent.asJsonObject().set(prop, e = new JtonArray());
+            parent.asJtonObject().set(prop, e = new JtonArray());
           } else {
-            parent.asJsonObject().set(prop, e = new JtonObject());
+            parent.asJtonObject().set(prop, e = new JtonObject());
           }
-        } else if (parent.isJsonArray()) {
+        } else if (parent.isJtonArray()) {
           int index = Integer.parseInt(prop.substring(1).trim());
           if (nextProp.startsWith("[")) {
-            parent.asJsonArray().set(index, e = new JtonArray());
+            parent.asJtonArray().set(index, e = new JtonArray());
           } else {
-            parent.asJsonArray().set(index, e = new JtonObject());
+            parent.asJtonArray().set(index, e = new JtonObject());
           }
         }
       }
     }
 
-    if (e.isJsonObject()) {
-      e.asJsonObject().set(lastPath, value);
-    } else if (e.isJsonArray()) {
+    if (e.isJtonObject()) {
+      e.asJtonObject().set(lastPath, value);
+    } else if (e.isJtonArray()) {
       if (lastPath.startsWith("[")) {
-        final JtonArray array = e.asJsonArray();
+        final JtonArray array = e.asJtonArray();
         final int index = Integer.parseInt(lastPath.substring(1).trim());
 
         for (int idx = array.size() - 1; idx < index; idx++) {
           array.push(JtonNull.INSTANCE);
         }
         
-        e.asJsonArray().set(index, value);
+        e.asJtonArray().set(index, value);
       } else {
         throw new IllegalArgumentException("expecting array index: " + lastPath);
       }

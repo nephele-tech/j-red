@@ -61,7 +61,7 @@ public final class JsonParser {
     try {
       JsonReader jsonReader = new JsonReader(json);
       JtonElement element = parse(jsonReader);
-      if (!element.isJsonNull() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
+      if (!element.isJtonNull() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
         throw new JsonSyntaxException("Did not consume the entire document.");
       }
       return element;

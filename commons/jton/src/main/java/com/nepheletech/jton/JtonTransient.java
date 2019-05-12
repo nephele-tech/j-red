@@ -1,12 +1,12 @@
 package com.nepheletech.jton;
 
-import com.nepheletech.jton.AbstractJsonPrimitive;
+import com.nepheletech.jton.AbstractJtonPrimitive;
 import com.nepheletech.jton.JtonTransient;
 
 /**
  * 
  */
-public class JtonTransient extends AbstractJsonPrimitive {
+public class JtonTransient extends AbstractJtonPrimitive {
 
   /**
    * Create a primitive using the specified Object. It must be an instance of

@@ -25,7 +25,7 @@ import java.util.TimeZone;
 
 import javax.xml.bind.DatatypeConverter;
 
-import com.nepheletech.jton.AbstractJsonPrimitive;
+import com.nepheletech.jton.AbstractJtonPrimitive;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.jton.internal.$Gson$Preconditions;
@@ -38,7 +38,7 @@ import com.nepheletech.jton.internal.LazilyParsedNumber;
  * @author Inderjeet Singh
  * @author Joel Leitch
  */
-public abstract class AbstractJsonPrimitive extends JtonElement {
+public abstract class AbstractJtonPrimitive extends JtonElement {
 
   private static final Class<?>[] PRIMITIVE_TYPES = { int.class, long.class, short.class,
       float.class, double.class, byte.class, byte[].class, boolean.class, char.class, Integer.class, Long.class,
@@ -311,7 +311,7 @@ public abstract class AbstractJsonPrimitive extends JtonElement {
   public boolean equals(Object obj) {
     if (this == obj) { return true; }
     if (obj == null || getClass() != obj.getClass()) { return false; }
-    AbstractJsonPrimitive other = (JtonPrimitive) obj;
+    AbstractJtonPrimitive other = (JtonPrimitive) obj;
     if (value == null) { return other.value == null; }
     if (isIntegral(this) && isIntegral(other)) { return asNumber().longValue() == other.asNumber().longValue(); }
     if (value instanceof Number && other.value instanceof Number) {
@@ -328,7 +328,7 @@ public abstract class AbstractJsonPrimitive extends JtonElement {
    * Returns true if the specified number is an integral type (Long, Integer,
    * Short, Byte, BigInteger)
    */
-  private static boolean isIntegral(AbstractJsonPrimitive primitive) {
+  private static boolean isIntegral(AbstractJtonPrimitive primitive) {
     if (primitive.value instanceof Number) {
       Number number = (Number) primitive.value;
       return number instanceof BigInteger || number instanceof Long || number instanceof Integer

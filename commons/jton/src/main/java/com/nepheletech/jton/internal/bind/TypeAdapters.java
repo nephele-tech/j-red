@@ -734,10 +734,10 @@ public final class TypeAdapters {
     }
 
     @Override public void write(JsonWriter out, JtonElement value) throws IOException {
-      if (value == null || value.isJsonNull()) {
+      if (value == null || value.isJtonNull()) {
         out.nullValue();
-      } else if (value.isJsonPrimitive()) {
-        JtonPrimitive primitive = value.asJsonPrimitive();
+      } else if (value.isJtonPrimitive()) {
+        JtonPrimitive primitive = value.asJtonPrimitive();
         if (primitive.isNumber()) {
           out.value(primitive.asNumber());
         } else if (primitive.isBoolean()) {
@@ -746,17 +746,17 @@ public final class TypeAdapters {
           out.value(primitive.asString());
         }
 
-      } else if (value.isJsonArray()) {
+      } else if (value.isJtonArray()) {
         out.beginArray();
-        for (JtonElement e : value.asJsonArray()) {
+        for (JtonElement e : value.asJtonArray()) {
           write(out, e);
         }
         out.endArray();
 
-      } else if (value.isJsonObject()) {
+      } else if (value.isJtonObject()) {
         out.beginObject();
-        for (Map.Entry<String, JtonElement> e : value.asJsonObject().entrySet()) {
-          if (!e.getValue().isJsonTransient()) { // ggeorg
+        for (Map.Entry<String, JtonElement> e : value.asJtonObject().entrySet()) {
+          if (!e.getValue().isJtonTransient()) { // ggeorg
             out.name(e.getKey());
             write(out, e.getValue());
           }

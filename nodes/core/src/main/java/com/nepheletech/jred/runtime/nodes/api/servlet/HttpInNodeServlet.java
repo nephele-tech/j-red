@@ -208,8 +208,8 @@ public class HttpInNodeServlet extends HttpServlet {
             }
             if (result.has(key)) {
               final JtonElement e = result.get(key);
-              if (e.isJsonArray()) {
-                e.asJsonArray().push(value);
+              if (e.isJtonArray()) {
+                e.asJtonArray().push(value);
               } else {
                 result.set(key, new JtonArray()
                     .push(e)

@@ -22,10 +22,10 @@ public class ChangeNode extends AbstractNode {
   public ChangeNode(Flow flow, JtonObject config) {
     super(flow, config);
 
-    this.rules = config.getAsJsonArray("rules");
+    this.rules = config.getAsJtonArray("rules");
 
     for (int i = 0, iMax = rules.size(); i < iMax; i++) {
-      final JtonObject rule = rules.getAsJsonObject(i);
+      final JtonObject rule = rules.getAsJtonObject(i);
       // Migrate to type-aware rules
       if (!rule.has("pt")) {
         rule.set("pt", "msg");
@@ -84,7 +84,7 @@ public class ChangeNode extends AbstractNode {
     if (!valid) { return; }
 
     for (JtonElement _rule : rules) {
-      final JtonObject r = _rule.asJsonObject();
+      final JtonObject r = _rule.asJtonObject();
       final String r_t = r.getAsString("t");
       if ("move".equals(r_t)) {
         final String r_p = r.getAsString("p");
@@ -142,9 +142,9 @@ public class ChangeNode extends AbstractNode {
     JtonElement value = rule.get("to");
 
     if ("json".equals(rule_tot)) {
-      value = JsonParser.parse(value.asString()).asJsonArray();
+      value = JsonParser.parse(value.asString()).asJtonArray();
     } else if ("bin".equals(rule_tot)) {
-      final JtonArray byteArray = JsonParser.parse(value.asString()).asJsonArray();
+      final JtonArray byteArray = JsonParser.parse(value.asString()).asJtonArray();
       value = new JtonPrimitive(JRedUtil.toBuffer(byteArray));
     } else if ("msg".equals(rule_tot)) {
       value = JRedUtil.getMessageProperty(msg, value.asString());
@@ -178,7 +178,7 @@ public class ChangeNode extends AbstractNode {
       } else if ("set".equals(rule_t)) {
         JRedUtil.setMessageproperty(msg, property, value, true);
       } else if ("change".equals(rule_t)) {
-        final JtonPrimitive current = JsonUtil.getProperty(msg, property).asJsonPrimitive(false);
+        final JtonPrimitive current = JsonUtil.getProperty(msg, property).asJtonPrimitive(false);
         if (current != null) {
           if (current.isString()) {
             if (("num".equals(fromType) || "bool".equals(fromType) || "str".equals(fromType))
@@ -212,7 +212,7 @@ public class ChangeNode extends AbstractNode {
         } else if ("set".equals(rule_t)) {
           JsonUtil.setProperty(target, property, value, true);
         } else if ("change".equals(rule_t)) {
-          final JtonPrimitive current = JsonUtil.getProperty(target, property).asJsonPrimitive(null);
+          final JtonPrimitive current = JsonUtil.getProperty(target, property).asJtonPrimitive(null);
           if (current != null) {
             if (current.isString()) {
               if (("num".equals(fromType) || "bool".equals(fromType) || "str".equals(fromType))

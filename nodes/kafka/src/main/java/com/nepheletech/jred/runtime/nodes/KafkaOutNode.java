@@ -54,14 +54,14 @@ public class KafkaOutNode extends AbstractCamelNode {
 
         in.setBody(msg.get("payload").toString(), String.class);
 
-        final JtonObject headers = msg.getAsJsonObject("headers", false);
+        final JtonObject headers = msg.getAsJtonObject("headers", false);
         if (headers != null) {
           for (Entry<String, JtonElement> entry : headers.entrySet()) {
             final String key = entry.getKey();
             final JtonElement value = entry.getValue();
-            if (value.isJsonPrimitive()) {
-              final JtonPrimitive _value = value.asJsonPrimitive();
-              if (_value.isJsonTransient()) {
+            if (value.isJtonPrimitive()) {
+              final JtonPrimitive _value = value.asJtonPrimitive();
+              if (_value.isJtonTransient()) {
                 in.getHeaders().put(key, _value.getValue());
               } else {
                 in.getHeaders().put(key, _value);

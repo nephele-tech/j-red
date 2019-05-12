@@ -2,13 +2,13 @@ package com.nepheletech.jton;
 
 import java.util.Date;
 
-import com.nepheletech.jton.AbstractJsonPrimitive;
+import com.nepheletech.jton.AbstractJtonPrimitive;
 import com.nepheletech.jton.JtonPrimitive;
 
 /**
  * 
  */
-public final class JtonPrimitive extends AbstractJsonPrimitive {
+public final class JtonPrimitive extends AbstractJtonPrimitive {
   
   public static JtonPrimitive create(Object value) {
     return new JtonPrimitive(value);
@@ -43,7 +43,7 @@ public final class JtonPrimitive extends AbstractJsonPrimitive {
 
   /**
    * Create a primitive containing a character. The character is turned into a one
-   * character String since Json only supports String.
+   * character String since Jton only supports String.
    *
    * @param c the value to create the primitive with.
    */

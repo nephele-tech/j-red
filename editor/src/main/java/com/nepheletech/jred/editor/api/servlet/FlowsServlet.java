@@ -89,8 +89,8 @@ public class FlowsServlet extends HttpServlet {
     } else {
       final JtonArray flowConfig;
       if (Constants.NODE_RED_API_V2.equals(version)) {
-        final JtonObject _flows = flows.asJsonObject();
-        flowConfig = _flows.get("flows").asJsonArray();
+        final JtonObject _flows = flows.asJtonObject();
+        flowConfig = _flows.get("flows").asJtonArray();
         if (_flows.has("rev")) {
           final String currentVersion = getRuntime().getFlows().get("rev").asString();
           if (!currentVersion.equals(_flows.get("rev").asString())) {
@@ -101,7 +101,7 @@ public class FlowsServlet extends HttpServlet {
           }
         }
       } else {
-        flowConfig = flows.asJsonArray();
+        flowConfig = flows.asJtonArray();
       }
 
       // Set flows...

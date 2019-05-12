@@ -7,7 +7,7 @@
   </parent>
   <artifactId>jfc</artifactId>
   <dependencies>
-      <dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-jci-core</artifactId>
       <version>RELEASE</version>
@@ -26,12 +26,11 @@
       <version>RELEASE</version>
     </dependency>
      -->
-    <!-- https://mvnrepository.com/artifact/org.eclipse.jdt/ecj -->
-<dependency>
-    <groupId>org.eclipse.jdt</groupId>
-    <artifactId>ecj</artifactId>
-    <version>3.16.0</version>
-</dependency>
+		<dependency>
+			<groupId>org.eclipse.jdt</groupId>
+			<artifactId>ecj</artifactId>
+			<version>3.16.0</version>
+		</dependency>
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>

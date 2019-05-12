@@ -1,7 +1,6 @@
 package com.nepheletech.jred.runtime.nodes;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.apache.commons.codec.binary.Hex;
@@ -89,17 +88,17 @@ public final class DebugNode extends AbstractNode {
         }
         final JtonElement output = _msg.get("msg");
         if (this.console) {
-          if (output.isJsonPrimitive()) {
-            final JtonPrimitive _output = output.asJsonPrimitive();
+          if (output.isJtonPrimitive()) {
+            final JtonPrimitive _output = output.asJtonPrimitive();
             log(msg);
-          } else if (output.isJsonObject()) {
+          } else if (output.isJtonObject()) {
             log(msg);
           } else {
             log(msg);
           }
         }
         if (tostatus) {
-          String st = output.isJsonPrimitive() ? output.asString() : output.toString();
+          String st = output.isJtonPrimitive() ? output.asString() : output.toString();
           if (st.length() > 32) {
             st = st.substring(0, 32) + "...";
           }
@@ -159,11 +158,11 @@ public final class DebugNode extends AbstractNode {
 
     final JtonElement _msg = msg.get("msg");
     
-    if (_msg.isJsonObject()) {
+    if (_msg.isJtonObject()) {
       msg.set("format", "Object");
       msg.set("msg", _msg.toString());
-    } else if (_msg.isJsonArray()) {
-      final JtonArray a = _msg.asJsonArray();
+    } else if (_msg.isJtonArray()) {
+      final JtonArray a = _msg.asJtonArray();
       final int arrayLength = a.size();
       msg.set("format", "array[" + arrayLength + "]");
       if (arrayLength > debugLength) {
@@ -175,9 +174,9 @@ public final class DebugNode extends AbstractNode {
       } else {
         msg.set("msg", a.toString());
       }
-    } else if (_msg.isJsonPrimitive()) {
-      final JtonPrimitive p = _msg.asJsonPrimitive();
-      if (p.isJsonTransient()) {
+    } else if (_msg.isJtonPrimitive()) {
+      final JtonPrimitive p = _msg.asJtonPrimitive();
+      if (p.isJtonTransient()) {
         msg.set("msg", "[Type not printable]");
       } else if (p.isBoolean()) {
         msg.set("format", "boolean");
@@ -202,7 +201,7 @@ public final class DebugNode extends AbstractNode {
             ? str.substring(0, debugLength) + "..."
             : str);
       }
-    } else if (_msg.isJsonNull()) {
+    } else if (_msg.isJtonNull()) {
       msg.set("format", "undefined");
       msg.set("msg", "(undefined)");
     }

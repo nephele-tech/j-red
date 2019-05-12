@@ -90,9 +90,9 @@ public class FunctionNode extends AbstractNode {
 
     try {
       if (outputs > 1) {
-        send(se.evaluate(new Object[] { this, msg, logger }).asJsonArray(null));
+        send(se.evaluate(new Object[] { this, msg, logger }).asJtonArray(null));
       } else {
-        send(se.evaluate(new Object[] { this, msg, logger }).asJsonObject(null));
+        send(se.evaluate(new Object[] { this, msg, logger }).asJtonObject(null));
       }
     } catch (ScriptException e) {
       final JtonArray sourceCode = new JtonArray()

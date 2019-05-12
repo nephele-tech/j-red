@@ -75,7 +75,7 @@ public final class JsonTreeWriter extends JsonWriter {
 
   private void put(JtonElement value) {
     if (pendingName != null) {
-      if (!value.isJsonNull() || getSerializeNulls()) {
+      if (!value.isJtonNull() || getSerializeNulls()) {
         JtonObject object = (JtonObject) peek();
         object.set(pendingName, value);
       }

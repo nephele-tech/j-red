@@ -49,7 +49,7 @@ public class CommsEndpoint implements MessageBusListener<JtonObject> {
 
       final String id = message.getAsString("id", null);
       if (id != null) {
-        final JtonObject status = message.getAsJsonObject("status", false);
+        final JtonObject status = message.getAsJtonObject("status", false);
         if (status != null) {
           JRedUtil.publish("status/#", "status/" + id, status, true);
         }
@@ -104,8 +104,8 @@ public class CommsEndpoint implements MessageBusListener<JtonObject> {
 
     try {
       JtonElement jsonMsg = JsonParser.parse(message);
-      if (jsonMsg.isJsonObject()) {
-        JtonObject msg = jsonMsg.asJsonObject();
+      if (jsonMsg.isJtonObject()) {
+        JtonObject msg = jsonMsg.asJtonObject();
         if (msg.has("subscribe")) {
           String topic = msg.getAsString("subscribe", null);
 

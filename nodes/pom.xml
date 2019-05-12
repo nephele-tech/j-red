@@ -10,7 +10,8 @@
   <modules>
     <module>core</module>
     <module>sql</module>
-    <module>kafka</module>
     <module>camel-core</module>
+    <module>email</module>
+    <module>kafka</module>
   </modules>
 </project>

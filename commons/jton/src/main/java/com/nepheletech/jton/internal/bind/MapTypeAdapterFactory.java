@@ -220,7 +220,7 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
         JtonElement keyElement = keyTypeAdapter.toJsonTree(entry.getKey());
         keys.add(keyElement);
         values.add(entry.getValue());
-        hasComplexKeys |= keyElement.isJsonArray() || keyElement.isJsonObject();
+        hasComplexKeys |= keyElement.isJtonArray() || keyElement.isJtonObject();
       }
 
       if (hasComplexKeys) {
@@ -244,8 +244,8 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
     }
 
     private String keyToString(JtonElement keyElement) {
-      if (keyElement.isJsonPrimitive()) {
-        JtonPrimitive primitive = keyElement.asJsonPrimitive();
+      if (keyElement.isJtonPrimitive()) {
+        JtonPrimitive primitive = keyElement.asJtonPrimitive();
         if (primitive.isNumber()) {
           return String.valueOf(primitive.asNumber());
         } else if (primitive.isBoolean()) {
@@ -255,7 +255,7 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
         } else {
           throw new AssertionError();
         }
-      } else if (keyElement.isJsonNull()) {
+      } else if (keyElement.isJtonNull()) {
         return "null";
       } else {
         throw new AssertionError();

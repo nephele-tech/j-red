@@ -32,9 +32,9 @@ import com.nepheletech.jton.JtonTransient;
 import com.nepheletech.jton.internal.LinkedTreeMap;
 
 /**
- * A class representing an object type in Json. An object consists of name-value
+ * A class representing an object type in Jton. An object consists of name-value
  * pairs where names are strings, and values are any other type of
- * {@link JtonElement}. This allows for a creating a tree of JsonElements. The
+ * {@link JtonElement}. This allows for a creating a tree of JtonElements. The
  * member elements of this object are maintained in order they were added.
  *
  * @author Inderjeet Singh
@@ -59,8 +59,8 @@ public final class JtonObject extends JtonElement implements Map<String, JtonEle
 
   /**
    * Adds a member, which is a name-value pair, to self. The name must be a
-   * String, but the value can be an arbitrary JsonElement, thereby allowing you
-   * to build a full tree of JsonElements rooted at this node.
+   * String, but the value can be an arJtonary JtonElement, thereby allowing you
+   * to build a full tree of JtonElements rooted at this node.
    *
    * @param property name of the member.
    * @param value    the member object.
@@ -87,65 +87,65 @@ public final class JtonObject extends JtonElement implements Map<String, JtonEle
 
   /**
    * Convenience method to add a primitive member. The specified value is
-   * converted to a JsonPrimitive of String.
+   * converted to a JtonPrimitive of String.
    *
    * @param property name of the member.
    * @param value    the string value associated with the member.
    */
   public JtonObject set(String property, String value) {
-    set(property, createJsonElement(value));
+    set(property, createJtonElement(value));
     return this;
   }
 
   /**
    * Convenience method to add a primitive member. The specified value is
-   * converted to a JsonPrimitive of Number.
+   * converted to a JtonPrimitive of Number.
    *
    * @param property name of the member.
    * @param value    the number value associated with the member.
    */
   public JtonObject set(String property, Number value) {
-    set(property, createJsonElement(value));
+    set(property, createJtonElement(value));
     return this;
   }
 
   /**
    * Convenience method to add a boolean member. The specified value is converted
-   * to a JsonPrimitive of Boolean.
+   * to a JtonPrimitive of Boolean.
    *
    * @param property name of the member.
    * @param value    the number value associated with the member.
    */
   public JtonObject set(String property, Boolean value) {
-    set(property, createJsonElement(value));
+    set(property, createJtonElement(value));
     return this;
   }
 
   /**
    * Convenience method to add a char member. The specified value is converted to
-   * a JsonPrimitive of Character.
+   * a JtonPrimitive of Character.
    *
    * @param property name of the member.
    * @param value    the number value associated with the member.
    */
   public JtonObject set(String property, Character value) {
-    set(property, createJsonElement(value));
+    set(property, createJtonElement(value));
     return this;
   }
 
   public JtonObject set(String property, Date value) {
-    set(property, createJsonElement(value));
+    set(property, createJtonElement(value));
     return this;
   }
 
   public JtonObject set(String property, byte[] value) {
-    set(property, createJsonElement(value));
+    set(property, createJtonElement(value));
     return this;
   }
 
-  public JtonObject set(String property, Object value, boolean jsonTransient) {
+  public JtonObject set(String property, Object value, boolean jtonTransient) {
     final JtonElement e = value instanceof JtonElement 
-        ? (JtonElement) value : createJsonElement(value, jsonTransient);
+        ? (JtonElement) value : createJtonElement(value, jtonTransient);
     return set(property, e);
   }
 
@@ -157,12 +157,12 @@ public final class JtonObject extends JtonElement implements Map<String, JtonEle
    * @return a {@link JtonPrimitive} if the {@code value} is not null, otherwise a
    *         {@link JtonNull}
    */
-  private JtonElement createJsonElement(Object value) {
-    return createJsonElement(value, false);
+  private JtonElement createJtonElement(Object value) {
+    return createJtonElement(value, false);
   }
 
-  private JtonElement createJsonElement(Object value, boolean jsonTransient) {
-    return value == null ? JtonNull.INSTANCE : jsonTransient ? new JtonTransient(value) : new JtonPrimitive(value);
+  private JtonElement createJtonElement(Object value, boolean jtonTransient) {
+    return value == null ? JtonNull.INSTANCE : jtonTransient ? new JtonTransient(value) : new JtonPrimitive(value);
   }
 
   /**
@@ -221,217 +221,217 @@ public final class JtonObject extends JtonElement implements Map<String, JtonEle
   }
 
   /**
-   * Convenience method to get the specified member as a JsonPrimitive element.
+   * Convenience method to get the specified member as a JtonPrimitive element.
    *
    * @param memberName name of the member being requested.
-   * @return the JsonPrimitive corresponding to the specified member.
+   * @return the JtonPrimitive corresponding to the specified member.
    */
-  public JtonPrimitive getAsJsonPrimitive(String memberName) {
-    return get(memberName).asJsonPrimitive();
+  public JtonPrimitive getAsJtonPrimitive(String memberName) {
+    return get(memberName).asJtonPrimitive();
   }
 
-  public JtonPrimitive getAsJsonPrimitive(String memberName, JtonPrimitive defaultValue) {
-    return get(memberName).asJsonPrimitive(defaultValue);
+  public JtonPrimitive getAsJtonPrimitive(String memberName, JtonPrimitive defaultValue) {
+    return get(memberName).asJtonPrimitive(defaultValue);
   }
 
-  public JtonPrimitive getAsJsonPrimitive(String memberName, Object value) {
-    return get(memberName).asJsonPrimitive(value);
+  public JtonPrimitive getAsJtonPrimitive(String memberName, Object value) {
+    return get(memberName).asJtonPrimitive(value);
   }
 
-  public boolean isJsonPrimitive(String memberName) {
-    return get(memberName).isJsonPrimitive();
+  public boolean isJtonPrimitive(String memberName) {
+    return get(memberName).isJtonPrimitive();
   }
 
   /**
-   * Convenience method to get the specified member as a JsonTransient element.
+   * Convenience method to get the specified member as a JtonTransient element.
    *
    * @param memberName name of the member being requested.
-   * @return the JsonTransient corresponding to the specified member.
+   * @return the JtonTransient corresponding to the specified member.
    */
-  public JtonTransient getAsJsonTransient(String memberName) {
-    return get(memberName).asJsonTransient();
+  public JtonTransient getAsJtonTransient(String memberName) {
+    return get(memberName).asJtonTransient();
   }
 
-  public JtonTransient getAsJsonTransient(String memberName, JtonTransient defaultValue) {
-    return get(memberName).asJsonTransient(defaultValue);
+  public JtonTransient getAsJtonTransient(String memberName, JtonTransient defaultValue) {
+    return get(memberName).asJtonTransient(defaultValue);
   }
 
-  public JtonTransient getAsJsonTransient(String memberName, Object value) {
-    return get(memberName).asJsonTransient(value);
+  public JtonTransient getAsJtonTransient(String memberName, Object value) {
+    return get(memberName).asJtonTransient(value);
   }
 
-  public boolean isJsonTransient(String memberName) {
-    return get(memberName).isJsonTransient();
+  public boolean isJtonTransient(String memberName) {
+    return get(memberName).isJtonTransient();
   }
 
   // ---
 
   public BigDecimal getAsBigDecimal(String memberName) {
-    return getAsJsonPrimitive(memberName).asBigDecimal();
+    return getAsJtonPrimitive(memberName).asBigDecimal();
   }
 
   public BigInteger getAsBigInteger(String memberName) {
-    return getAsJsonPrimitive(memberName).asBigInteger();
+    return getAsJtonPrimitive(memberName).asBigInteger();
   }
 
   public boolean getAsBoolean(String memberName) {
-    return getAsJsonPrimitive(memberName).asBoolean();
+    return getAsJtonPrimitive(memberName).asBoolean();
   }
 
   public boolean getAsBoolean(String memberName, boolean defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asBoolean(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asBoolean(defaultValue)
         : defaultValue;
   }
 
   public byte getAsByte(String memberName) {
-    return getAsJsonPrimitive(memberName).asByte();
+    return getAsJtonPrimitive(memberName).asByte();
   }
 
   public byte getAsByte(String memberName, final byte defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asByte(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asByte(defaultValue)
         : defaultValue;
   }
 
   public char getAsCharacter(String memberName) {
-    return getAsJsonPrimitive(memberName).asCharacter();
+    return getAsJtonPrimitive(memberName).asCharacter();
   }
 
   public char getAsCharacter(String memberName, final char defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asCharacter(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asCharacter(defaultValue)
         : defaultValue;
   }
 
   public double getAsDouble(String memberName) {
-    return getAsJsonPrimitive(memberName).asDouble();
+    return getAsJtonPrimitive(memberName).asDouble();
   }
 
   public double getAsDouble(String memberName, final double defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asDouble(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asDouble(defaultValue)
         : defaultValue;
   }
 
   public float getAsFloat(String memberName) {
-    return getAsJsonPrimitive(memberName).asFloat();
+    return getAsJtonPrimitive(memberName).asFloat();
   }
 
   public float getAsFloat(String memberName, final float defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asFloat(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asFloat(defaultValue)
         : defaultValue;
   }
 
   public int getAsInt(String memberName) {
-    return getAsJsonPrimitive(memberName).asInt();
+    return getAsJtonPrimitive(memberName).asInt();
   }
 
   public int getAsInt(String memberName, final int defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asInt(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asInt(defaultValue)
         : defaultValue;
   }
 
   public String getAsString(String memberName) {
-    return getAsJsonPrimitive(memberName).asString();
+    return getAsJtonPrimitive(memberName).asString();
   }
 
   public String getAsString(String memberName, final String defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asString(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asString(defaultValue)
         : defaultValue;
   }
 
   public Date getAsDate(String memberName) {
-    return getAsJsonPrimitive(memberName).asDate();
+    return getAsJtonPrimitive(memberName).asDate();
   }
 
   public Date getAsDate(String memberName, final Date defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asDate(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asDate(defaultValue)
         : defaultValue;
   }
 
   public java.sql.Date getAsSqlDate(String memberName) {
-    return getAsJsonPrimitive(memberName).asSqlDate();
+    return getAsJtonPrimitive(memberName).asSqlDate();
   }
 
   public java.sql.Date getAsSqlDate(String memberName, final java.sql.Date defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asSqlDate(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asSqlDate(defaultValue)
         : defaultValue;
   }
 
   public java.sql.Time getAsSqlTime(String memberName) {
-    return getAsJsonPrimitive(memberName).asSqlTime();
+    return getAsJtonPrimitive(memberName).asSqlTime();
   }
 
   public java.sql.Time getAsSqlTime(String memberName, final java.sql.Time defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asSqlTime(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asSqlTime(defaultValue)
         : defaultValue;
   }
 
   public java.sql.Timestamp getAsSqlTimestamp(String memberName) {
-    return getAsJsonPrimitive(memberName).asSqlTimestamp();
+    return getAsJtonPrimitive(memberName).asSqlTimestamp();
   }
 
   public java.sql.Timestamp getAsSqlTimestamp(String memberName, final java.sql.Timestamp defaultValue) {
-    return isJsonPrimitive(memberName)
-        ? getAsJsonPrimitive(memberName).asSqlTimestamp(defaultValue)
+    return isJtonPrimitive(memberName)
+        ? getAsJtonPrimitive(memberName).asSqlTimestamp(defaultValue)
         : defaultValue;
   }
 
   public byte[] getAsBytes(String memberName) {
-    return getAsJsonPrimitive(memberName).asBytes();
+    return getAsJtonPrimitive(memberName).asBytes();
   }
 
   // ---
 
   /**
-   * Convenience method to get the specified member as a JsonArray.
+   * Convenience method to get the specified member as a JtonArray.
    *
    * @param memberName name of the member being requested.
-   * @return the JsonArray corresponding to the specified member.
+   * @return the JtonArray corresponding to the specified member.
    */
-  public JtonArray getAsJsonArray(String memberName) {
-    return get(memberName).asJsonArray();
+  public JtonArray getAsJtonArray(String memberName) {
+    return get(memberName).asJtonArray();
   }
 
-  public JtonArray getAsJsonArray(String memberName, boolean create) {
-    return get(memberName).asJsonArray(create);
+  public JtonArray getAsJtonArray(String memberName, boolean create) {
+    return get(memberName).asJtonArray(create);
   }
 
-  public JtonArray getAsJsonArray(String memberName, JtonArray defaultValue) {
-    return get(memberName).asJsonArray(defaultValue);
+  public JtonArray getAsJtonArray(String memberName, JtonArray defaultValue) {
+    return get(memberName).asJtonArray(defaultValue);
   }
 
-  public boolean isJsonArray(String memberName) {
-    return get(memberName).isJsonArray();
+  public boolean isJtonArray(String memberName) {
+    return get(memberName).isJtonArray();
   }
 
   /**
-   * Convenience method to get the specified member as a JsonObject.
+   * Convenience method to get the specified member as a JtonObject.
    *
    * @param memberName name of the member being requested.
-   * @return the JsonObject corresponding to the specified member.
+   * @return the JtonObject corresponding to the specified member.
    */
-  public JtonObject getAsJsonObject(String memberName) {
-    return get(memberName).asJsonObject();
+  public JtonObject getAsJtonObject(String memberName) {
+    return get(memberName).asJtonObject();
   }
 
-  public JtonObject getAsJsonObject(String memberName, boolean create) {
-    return get(memberName).asJsonObject(create);
+  public JtonObject getAsJtonObject(String memberName, boolean create) {
+    return get(memberName).asJtonObject(create);
   }
 
-  public JtonObject getAsJsonObject(String memberName, JtonObject defaultValue) {
-    return get(memberName).asJsonObject(defaultValue);
+  public JtonObject getAsJtonObject(String memberName, JtonObject defaultValue) {
+    return get(memberName).asJtonObject(defaultValue);
   }
 
-  public boolean isJsonObject(String memberName) {
-    return get(memberName).isJsonObject();
+  public boolean isJtonObject(String memberName) {
+    return get(memberName).isJtonObject();
   }
 
   @Override
@@ -446,7 +446,7 @@ public final class JtonObject extends JtonElement implements Map<String, JtonEle
   }
 
   // -----------------------------------------------------------------------
-  // Map<String, JsonElement> implementation (not i GSON).
+  // Map<String, JtonElement> implementation (not i GSON).
   // -----------------------------------------------------------------------
 
   @Override

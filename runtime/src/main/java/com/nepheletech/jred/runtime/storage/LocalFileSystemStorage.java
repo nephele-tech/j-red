@@ -67,16 +67,16 @@ public class LocalFileSystemStorage implements Storage {
     logger.debug("flows: {}", flows);
     final JtonElement credentials = readJSONFile(credentialsFile, credentialsBackupFile);
     final JtonObject result = new JtonObject()
-        .set("flows", flows.isJsonArray() ? flows : new JtonArray())
-        .set("credentials", credentials.isJsonObject() ? credentials : new JtonObject());
+        .set("flows", flows.isJtonArray() ? flows : new JtonArray())
+        .set("credentials", credentials.isJtonObject() ? credentials : new JtonObject());
     result.set("rev", Crypto.createHashOf(result.toString()));
     return result;
   }
 
   @Override
   public String saveFlows(JtonObject config) throws IOException {
-    final JtonArray flows = config.get("flows").asJsonArray();
-    final JtonObject credentials = config.get("credentials").asJsonObject();
+    final JtonArray flows = config.get("flows").asJtonArray();
+    final JtonObject credentials = config.get("credentials").asJtonObject();
     final boolean credentialsDirty = config.remove("credentialsDirty").asBoolean();
 
     if (credentialsDirty) {
@@ -97,8 +97,8 @@ public class LocalFileSystemStorage implements Storage {
 
   @Override
   public JtonObject getCredentials() {
-    final JtonObject credentials = readJSONFile(credentialsFile, credentialsBackupFile).asJsonObject();
-    return credentials.isJsonObject() ? credentials : new JtonObject();
+    final JtonObject credentials = readJSONFile(credentialsFile, credentialsBackupFile).asJtonObject();
+    return credentials.isJtonObject() ? credentials : new JtonObject();
   }
 
   @Override

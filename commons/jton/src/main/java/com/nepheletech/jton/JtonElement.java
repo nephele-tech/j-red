@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
-import com.nepheletech.jton.AbstractJsonPrimitive;
+import com.nepheletech.jton.AbstractJtonPrimitive;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
@@ -33,7 +33,7 @@ import com.nepheletech.jton.internal.Streams;
 import com.nepheletech.jton.stream.JsonWriter;
 
 /**
- * A class representing an element of Json. It could either be a
+ * A class representing an element of Jton. It could either be a
  * {@link JtonObject}, a {@link JtonArray}, a {@link JtonPrimitive} or a
  * {@link JtonNull}.
  *
@@ -54,14 +54,14 @@ public abstract class JtonElement {
    *
    * @return true if this element is of type {@link JtonArray}, false otherwise.
    */
-  public boolean isJsonArray() { return this instanceof JtonArray; }
+  public boolean isJtonArray() { return this instanceof JtonArray; }
 
   /**
-   * provides check for verifying if this element is a Json object or not.
+   * provides check for verifying if this element is a Jton object or not.
    *
    * @return true if this element is of type {@link JtonObject}, false otherwise.
    */
-  public boolean isJsonObject() { return this instanceof JtonObject; }
+  public boolean isJtonObject() { return this instanceof JtonObject; }
 
   /**
    * provides check for verifying if this element is a primitive or not.
@@ -69,7 +69,7 @@ public abstract class JtonElement {
    * @return true if this element is of type {@link JtonPrimitive}, false
    *         otherwise.
    */
-  public boolean isJsonPrimitive() { return this instanceof AbstractJsonPrimitive; }
+  public boolean isJtonPrimitive() { return this instanceof AbstractJtonPrimitive; }
 
   /**
    * provides check for verifying if this element is a transient or not.
@@ -77,7 +77,7 @@ public abstract class JtonElement {
    * @return true if this element is of type {@link JtonTransient}, false
    *         otherwise.
    */
-  public boolean isJsonTransient() { return this instanceof JtonTransient; }
+  public boolean isJtonTransient() { return this instanceof JtonTransient; }
 
   /**
    * provides check for verifying if this element represents a null value or not.
@@ -85,109 +85,109 @@ public abstract class JtonElement {
    * @return true if this element is of type {@link JtonNull}, false otherwise.
    * @since 1.2
    */
-  public boolean isJsonNull() { return this instanceof JtonNull; }
+  public boolean isJtonNull() { return this instanceof JtonNull; }
 
   /**
    * convenience method to get this element as a {@link JtonObject}. If the
    * element is of some other type, a {@link IllegalStateException} will result.
    * Hence it is best to use this method after ensuring that this element is of
-   * the desired type by calling {@link #isJsonObject()} first.
+   * the desired type by calling {@link #isJtonObject()} first.
    *
    * @return get this element as a {@link JtonObject}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JtonObject asJsonObject() {
-    if (isJsonObject()) { return (JtonObject) this; }
-    throw new IllegalStateException("Not a JSON Object: " + this);
+  public JtonObject asJtonObject() {
+    if (isJtonObject()) { return (JtonObject) this; }
+    throw new IllegalStateException("Not a Jton Object: " + this);
   }
 
-  public JtonObject asJsonObject(final JtonObject defaultValue) {
-    return isJsonObject() ? asJsonObject() : defaultValue;
+  public JtonObject asJtonObject(final JtonObject defaultValue) {
+    return isJtonObject() ? asJtonObject() : defaultValue;
   }
 
-  public JtonObject asJsonObject(final boolean create) {
-    return isJsonObject() ? asJsonObject() : create ? new JtonObject() : null;
+  public JtonObject asJtonObject(final boolean create) {
+    return isJtonObject() ? asJtonObject() : create ? new JtonObject() : null;
   }
 
   /**
    * convenience method to get this element as a {@link JtonArray}. If the element
    * is of some other type, a {@link IllegalStateException} will result. Hence it
    * is best to use this method after ensuring that this element is of the desired
-   * type by calling {@link #isJsonArray()} first.
+   * type by calling {@link #isJtonArray()} first.
    *
    * @return get this element as a {@link JtonArray}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JtonArray asJsonArray() {
-    if (isJsonArray()) { return (JtonArray) this; }
-    throw new IllegalStateException("Not a JSON Array: " + this);
+  public JtonArray asJtonArray() {
+    if (isJtonArray()) { return (JtonArray) this; }
+    throw new IllegalStateException("Not a Jton Array: " + this);
   }
 
-  public JtonArray asJsonArray(final JtonArray defaultValue) {
-    return isJsonArray() ? asJsonArray() : defaultValue;
+  public JtonArray asJtonArray(final JtonArray defaultValue) {
+    return isJtonArray() ? asJtonArray() : defaultValue;
   }
 
-  public JtonArray asJsonArray(final boolean create) {
-    return isJsonArray() ? asJsonArray() : create ? new JtonArray() : null;
+  public JtonArray asJtonArray(final boolean create) {
+    return isJtonArray() ? asJtonArray() : create ? new JtonArray() : null;
   }
 
   /**
    * convenience method to get this element as a {@link JtonPrimitive}. If the
    * element is of some other type, a {@link IllegalStateException} will result.
    * Hence it is best to use this method after ensuring that this element is of
-   * the desired type by calling {@link #isJsonPrimitive()} first.
+   * the desired type by calling {@link #isJtonPrimitive()} first.
    *
    * @return get this element as a {@link JtonPrimitive}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JtonPrimitive asJsonPrimitive() {
-    if (isJsonPrimitive()) { return (JtonPrimitive) this; }
-    throw new IllegalStateException("Not a JSON Primitive: " + this);
+  public JtonPrimitive asJtonPrimitive() {
+    if (isJtonPrimitive()) { return (JtonPrimitive) this; }
+    throw new IllegalStateException("Not a Jton Primitive: " + this);
   }
 
-  public JtonPrimitive asJsonPrimitive(final JtonPrimitive defaultValue) {
-    return isJsonPrimitive() ? asJsonPrimitive() : defaultValue;
+  public JtonPrimitive asJtonPrimitive(final JtonPrimitive defaultValue) {
+    return isJtonPrimitive() ? asJtonPrimitive() : defaultValue;
   }
 
-  public JtonPrimitive asJsonPrimitive(final Object value) {
-    return isJsonPrimitive() ? asJsonPrimitive() : value != null ? new JtonPrimitive(value) : null;
+  public JtonPrimitive asJtonPrimitive(final Object value) {
+    return isJtonPrimitive() ? asJtonPrimitive() : value != null ? new JtonPrimitive(value) : null;
   }
 
   /**
    * convenience method to get this element as a {@link JtonTransient}. If the
    * element is of some other type, a {@link IllegalStateException} will result.
    * Hence it is best to use this method after ensuring that this element is of
-   * the desired type by calling {@link #isJsonTransient()} first.
+   * the desired type by calling {@link #isJtonTransient()} first.
    *
    * @return get this element as a {@link JtonTransient}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JtonTransient asJsonTransient() {
-    if (isJsonTransient()) { return (JtonTransient) this; }
-    throw new IllegalStateException("Not a JSON Transient: " + this);
+  public JtonTransient asJtonTransient() {
+    if (isJtonTransient()) { return (JtonTransient) this; }
+    throw new IllegalStateException("Not a Jton Transient: " + this);
   }
 
-  public JtonTransient asJsonTransient(final JtonTransient defaultValue) {
-    return isJsonTransient() ? asJsonTransient() : defaultValue;
+  public JtonTransient asJtonTransient(final JtonTransient defaultValue) {
+    return isJtonTransient() ? asJtonTransient() : defaultValue;
   }
 
-  public JtonTransient asJsonTransient(final Object value) {
-    return isJsonTransient() ? asJsonTransient() : value != null ? new JtonTransient(value) : null;
+  public JtonTransient asJtonTransient(final Object value) {
+    return isJtonTransient() ? asJtonTransient() : value != null ? new JtonTransient(value) : null;
   }
 
   /**
    * convenience method to get this element as a {@link JtonNull}. If the element
    * is of some other type, a {@link IllegalStateException} will result. Hence it
    * is best to use this method after ensuring that this element is of the desired
-   * type by calling {@link #isJsonNull()} first.
+   * type by calling {@link #isJtonNull()} first.
    *
    * @return get this element as a {@link JtonNull}.
    * @throws IllegalStateException if the element is of another type.
    * @since 1.2
    */
-  public JtonNull asJsonNull() {
-    if (isJsonNull()) { return (JtonNull) this; }
-    throw new IllegalStateException("Not a JSON Null: " + this);
+  public JtonNull asJtonNull() {
+    if (isJtonNull()) { return (JtonNull) this; }
+    throw new IllegalStateException("Not a Jton Null: " + this);
   }
 
   /**
@@ -206,7 +206,7 @@ public abstract class JtonElement {
 
   public boolean asBoolean(boolean defaultValue) {
     try {
-      return isJsonPrimitive() ? asBoolean() : defaultValue;
+      return isJtonPrimitive() ? asBoolean() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -214,7 +214,7 @@ public abstract class JtonElement {
 
   public Boolean asBoolean(Boolean defaultValue) {
     try {
-      return isJsonPrimitive() ? asBoolean() : defaultValue;
+      return isJtonPrimitive() ? asBoolean() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -250,7 +250,7 @@ public abstract class JtonElement {
 
   public String asString(String defaultValue) {
     try {
-      final String value = isJsonPrimitive() ? asString() : null;
+      final String value = isJtonPrimitive() ? asString() : null;
       return (value != null && !value.isEmpty()) ? value : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
@@ -273,7 +273,7 @@ public abstract class JtonElement {
 
   public double asDouble(final double defaultValue) {
     try {
-      return isJsonPrimitive() ? asDouble() : defaultValue;
+      return isJtonPrimitive() ? asDouble() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -281,7 +281,7 @@ public abstract class JtonElement {
 
   public Double asDouble(final Double defaultValue) {
     try {
-      return isJsonPrimitive() ? asDouble() : defaultValue;
+      return isJtonPrimitive() ? asDouble() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -303,7 +303,7 @@ public abstract class JtonElement {
 
   public float asFloat(final float defaultValue) {
     try {
-      return isJsonPrimitive() ? asFloat() : defaultValue;
+      return isJtonPrimitive() ? asFloat() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -311,7 +311,7 @@ public abstract class JtonElement {
 
   public Float asFloat(final Float defaultValue) {
     try {
-      return isJsonPrimitive() ? asFloat() : defaultValue;
+      return isJtonPrimitive() ? asFloat() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -333,7 +333,7 @@ public abstract class JtonElement {
 
   public long asLong(long defaultValue) {
     try {
-      return isJsonPrimitive() ? asLong() : defaultValue;
+      return isJtonPrimitive() ? asLong() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -341,7 +341,7 @@ public abstract class JtonElement {
 
   public Long asLong(Long defaultValue) {
     try {
-      return isJsonPrimitive() ? asLong() : defaultValue;
+      return isJtonPrimitive() ? asLong() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -363,7 +363,7 @@ public abstract class JtonElement {
 
   public int asInt(final int defaultValue) {
     try {
-      return isJsonPrimitive() ? asInt() : defaultValue;
+      return isJtonPrimitive() ? asInt() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -371,7 +371,7 @@ public abstract class JtonElement {
 
   public Integer asInt(final Integer defaultValue) {
     try {
-      return isJsonPrimitive() ? asInt() : defaultValue;
+      return isJtonPrimitive() ? asInt() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -394,7 +394,7 @@ public abstract class JtonElement {
 
   public byte asByte(final byte defaultValue) {
     try {
-      return isJsonPrimitive() ? asByte() : defaultValue;
+      return isJtonPrimitive() ? asByte() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -402,7 +402,7 @@ public abstract class JtonElement {
 
   public Byte asByte(final Byte defaultValue) {
     try {
-      return isJsonPrimitive() ? asByte() : defaultValue;
+      return isJtonPrimitive() ? asByte() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -425,7 +425,7 @@ public abstract class JtonElement {
 
   public char asCharacter(final char defaultValue) {
     try {
-      return isJsonPrimitive() ? asCharacter() : defaultValue;
+      return isJtonPrimitive() ? asCharacter() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -433,7 +433,7 @@ public abstract class JtonElement {
 
   public Character asCharacter(final Character defaultValue) {
     try {
-      return isJsonPrimitive() ? asCharacter() : defaultValue;
+      return isJtonPrimitive() ? asCharacter() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -457,7 +457,7 @@ public abstract class JtonElement {
 
   public BigDecimal asBigDecimal(BigDecimal defaultValue) {
     try {
-      return isJsonPrimitive() ? asBigDecimal() : defaultValue;
+      return isJtonPrimitive() ? asBigDecimal() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -481,7 +481,7 @@ public abstract class JtonElement {
 
   public BigInteger asBigInteger(BigInteger defaultValue) {
     try {
-      return isJsonPrimitive() ? asBigInteger() : defaultValue;
+      return isJtonPrimitive() ? asBigInteger() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -503,7 +503,7 @@ public abstract class JtonElement {
 
   public short asShort(short defaultValue) {
     try {
-      return isJsonPrimitive() ? asShort() : defaultValue;
+      return isJtonPrimitive() ? asShort() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -511,7 +511,7 @@ public abstract class JtonElement {
 
   public Short asShort(Short defaultValue) {
     try {
-      return isJsonPrimitive() ? asShort() : defaultValue;
+      return isJtonPrimitive() ? asShort() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -523,7 +523,7 @@ public abstract class JtonElement {
 
   public Date asDate(Date defaultValue) {
     try {
-      return isJsonPrimitive() ? asDate() : defaultValue;
+      return isJtonPrimitive() ? asDate() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -535,7 +535,7 @@ public abstract class JtonElement {
 
   public java.sql.Date asSqlDate(java.sql.Date defaultValue) {
     try {
-      return isJsonPrimitive() ? asSqlDate() : defaultValue;
+      return isJtonPrimitive() ? asSqlDate() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -547,7 +547,7 @@ public abstract class JtonElement {
 
   public java.sql.Time asSqlTime(java.sql.Time defaultValue) {
     try {
-      return isJsonPrimitive() ? asSqlTime() : defaultValue;
+      return isJtonPrimitive() ? asSqlTime() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
@@ -559,7 +559,7 @@ public abstract class JtonElement {
 
   public java.sql.Timestamp asSqlTimestamp(java.sql.Timestamp defaultValue) {
     try {
-      return isJsonPrimitive() ? asSqlTimestamp() : defaultValue;
+      return isJtonPrimitive() ? asSqlTimestamp() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }

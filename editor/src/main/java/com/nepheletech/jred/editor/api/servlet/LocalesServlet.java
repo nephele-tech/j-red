@@ -2,8 +2,11 @@ package com.nepheletech.jred.editor.api.servlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -12,8 +15,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nepheletech.jton.JtonObject;
+import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
+
+import com.google.common.base.Predicate;
+import com.google.common.io.Resources;
+import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.JtonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/locales/*" })
@@ -30,12 +43,52 @@ public class LocalesServlet extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     final String bundle = getBundle(req);
     final String lng = getLocale(req);
-    
+
     final File file = new File(getDir(req, lng), bundle + ".json");
     logger.fine(() -> String.format("bundle: %s, lng: %s, file: %s", bundle, lng, file));
 
     if (file.exists() && file.isFile()) {
-      HttpServletUtil.sendJSON(res, JsonParser.parse(new String(Files.readAllBytes(file.toPath()), "UTF-8")));
+      final JtonObject data = JsonParser
+          .parse(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8))
+          .asJtonObject(true);
+
+      if (DEFAULT_BUNDLE_VALUE.equals(bundle)) {
+        final Predicate<String> filter = new FilterBuilder().include(".*\\.json");
+        final Reflections r = new Reflections(new ConfigurationBuilder()
+            .filterInputsBy(filter)
+            .setScanners(new ResourcesScanner())
+            .setUrls(ClasspathHelper.forPackage(Node.class.getPackage().getName() + ".locales")));
+        final Set<String> resourceSet = r.getResources(Pattern.compile(".*"));
+        resourceSet.forEach(resourceName -> {
+          if (resourceName.contains(DEFAULT_LNG_VALUE)) {
+            try {
+              data.putAll(JsonParser
+                  .parse(Resources.toString(Resources.getResource(resourceName), StandardCharsets.UTF_8))
+                  .asJtonObject(true));
+            } catch (JsonSyntaxException | IOException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+          }
+        });
+
+        if (!lng.equals(DEFAULT_LNG_VALUE)) {
+          resourceSet.forEach(resourceName -> {
+            if (resourceName.contains(lng)) {
+              try {
+                data.putAll(JsonParser
+                    .parse(Resources.toString(Resources.getResource(resourceName), StandardCharsets.UTF_8))
+                    .asJtonObject(true));
+              } catch (JsonSyntaxException | IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+              }
+            }
+          });
+        }
+      }
+
+      HttpServletUtil.sendJSON(res, data);
     } else {
       // TODO third party nodes...
       HttpServletUtil.sendJSON(res, new JtonObject());

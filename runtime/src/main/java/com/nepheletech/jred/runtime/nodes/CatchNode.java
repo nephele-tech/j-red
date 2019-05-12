@@ -15,7 +15,7 @@ public final class CatchNode extends AbstractNode {
   public CatchNode(Flow flow, JtonObject config) {
     super(flow, config);
 
-    final JtonArray scope = config.getAsJsonArray("scope", false);
+    final JtonArray scope = config.getAsJtonArray("scope", false);
     if (scope != null) {
       this.scope = new HashSet<>();
       scope.forEach(elem -> this.scope.add(elem.asString()));

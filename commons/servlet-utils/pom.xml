@@ -9,7 +9,7 @@
   <dependencies>
     <dependency>
       <groupId>com.nepheletech</groupId>
-      <artifactId>nephele-jton</artifactId>
+      <artifactId>jton</artifactId>
       <version>${project.version}</version>
     </dependency>
 

@@ -57,7 +57,7 @@ public final class FlowsManager {
       final JtonObject config = flowsRuntime.getStorage().getFlows();
       // ---
       logger.debug("loaded flow revision: {}", config.getAsString("rev"));
-      credentials.load(config.getAsJsonObject("credentials"));
+      credentials.load(config.getAsJtonObject("credentials"));
       // TODO events.emit("runtime-event",{id:"runtime-state",retain:true});
       return config;
       // ---
@@ -133,7 +133,7 @@ public final class FlowsManager {
       isLoad = true;
       final JtonObject __config = loadFlows();
       // --- Future
-      config = __config.getAsJsonArray("flows").deepCopy();
+      config = __config.getAsJtonArray("flows").deepCopy();
       newFlowConfig = FlowUtil.parseConfig(config.deepCopy());
       type = "full";
       flowRevision = __config.asString("rev"); // Future return
@@ -148,10 +148,10 @@ public final class FlowsManager {
 
       // Now the flows have been compared, remove any credentials from newFlowConfig
       // so they don't cause false-positive diffs the next time a flow is deployed
-      final JtonObject allNewNodes = newFlowConfig.getAsJsonObject("allNodes");
+      final JtonObject allNewNodes = newFlowConfig.getAsJtonObject("allNodes");
       for (JtonElement value : allNewNodes.values()) {
-        if (value.asJsonObject().has("credentials")) {
-          value.asJsonObject().remove("credentials");
+        if (value.asJtonObject().has("credentials")) {
+          value.asJtonObject().remove("credentials");
         }
       }
 
@@ -254,7 +254,7 @@ public final class FlowsManager {
     // If there are missing types, report them, emit the necessary runtime event
     // and return
     final JtonElement missingTypes = activeFlowConfig.get("missingTypes");
-    if (missingTypes.isJsonArray() && missingTypes.asJsonArray().size() > 0) {
+    if (missingTypes.isJtonArray() && missingTypes.asJtonArray().size() > 0) {
       throw new UnsupportedOperationException("TODO: missing types");
     }
 
@@ -280,11 +280,11 @@ public final class FlowsManager {
       }
 
       // Check each flow in the active configuration
-      final JtonObject flows = activeFlowConfig.getAsJsonObject("flows", false);
+      final JtonObject flows = activeFlowConfig.getAsJtonObject("flows", false);
       if (flows != null) {
         for (Entry<String, JtonElement> entry : flows.entrySet()) {
           final String id = entry.getKey();
-          final JtonObject flow = entry.getValue().asJsonObject();
+          final JtonObject flow = entry.getValue().asJtonObject();
           if (!flow.getAsBoolean("disabled", false) && !activeFlows.containsKey(id)) {
             // This flow is not disabled, nor is it currently active, so create it
             activeFlows.put(id, new FlowImpl(flowAPI, activeFlowConfig, flow));
@@ -299,10 +299,10 @@ public final class FlowsManager {
 
       // Update the global flow
       activeFlows.get("global").update(activeFlowConfig, activeFlowConfig);
-      final JtonObject flows = activeFlowConfig.getAsJsonObject("flows", false);
+      final JtonObject flows = activeFlowConfig.getAsJtonObject("flows", false);
       if (flows != null) {
         for (String id : flows.keySet()) {
-          final JtonObject flow = flows.get(id).asJsonObject();
+          final JtonObject flow = flows.get(id).asJtonObject();
           if (!flow.getAsBoolean("disabled", false)) {
             if (activeFlows.containsKey(id)) {
               // This flow exists and is not disabled, so update it
@@ -385,11 +385,11 @@ public final class FlowsManager {
 
     started = false;
 
-    final JtonArray addedList = diff.get("added").asJsonArray();
-    final JtonArray changedList = diff.get("changed").asJsonArray();
-    final JtonArray removedList = diff.get("removed").asJsonArray();
+    final JtonArray addedList = diff.get("added").asJtonArray();
+    final JtonArray changedList = diff.get("changed").asJtonArray();
+    final JtonArray removedList = diff.get("removed").asJtonArray();
     // final JtonArray rewiredList = diff.get("rewired").asJsonArray();
-    final JtonArray linkedList = diff.get("linked").asJsonArray();
+    final JtonArray linkedList = diff.get("linked").asJtonArray();
 
     JtonArray stopList = null;
 

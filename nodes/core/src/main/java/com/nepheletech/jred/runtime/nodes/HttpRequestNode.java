@@ -162,7 +162,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
       String clSet = "Content-Length";
       
       if (msg.has("headers")) {
-        final JtonObject headers = msg.getAsJsonObject("headers", true);
+        final JtonObject headers = msg.getAsJtonObject("headers", true);
         if (headers.has("x-node-red-request-node")) {
           @SuppressWarnings("unused")
           final JtonElement headerHash = headers.get("x-node-red-request-node");
@@ -186,7 +186,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
             // we add those fields later...
             continue;
           }
-          if (value.isJsonPrimitive()) {
+          if (value.isJtonPrimitive()) {
             requestBuilder.addHeader(name, value.asString());
           }
         }
@@ -200,11 +200,11 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
 
       final BasicCookieStore cookieStore = new BasicCookieStore();
       if (msg.has("cookies")) {
-        final JtonObject cookies = msg.getAsJsonObject("cookies", true);
+        final JtonObject cookies = msg.getAsJtonObject("cookies", true);
         for (Entry<String, JtonElement> e : cookies.entrySet()) {
           final String key = e.getKey();
           final JtonElement value = e.getValue();
-          if (value.isJsonPrimitive()) {
+          if (value.isJtonPrimitive()) {
             cookieStore.addCookie(new BasicClientCookie(key, value.asString()));
           } else {
             cookieStore.addCookie(new BasicClientCookie(key, value.toString()));
@@ -249,12 +249,12 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
 
       // payload
 
-      if (!"GET".equals(method) && !"HEAD".equals(method) && !msg.get("payload").isJsonNull()) {
+      if (!"GET".equals(method) && !"HEAD".equals(method) && !msg.get("payload").isJtonNull()) {
         HttpEntity entity;
 
         final JtonElement payload = msg.get("payload");
         final String contentType = JsonUtil.getProperty(msg, "headers." + ctSet).asString(null);
-        if (payload.isJsonPrimitive()) {
+        if (payload.isJtonPrimitive()) {
           if (contentType == null) {
             entity = new StringEntity(payload.asString(), ContentType.TEXT_PLAIN);
           } else {
@@ -373,29 +373,29 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
 
   private String jsonToURLEncoding(String prefix, JtonElement json) throws UnsupportedEncodingException {
     final StringBuilder sb = new StringBuilder("");
-    if (json.isJsonNull()) {
+    if (json.isJtonNull()) {
       // do nothing
-    } else if (json.isJsonPrimitive()) {
-      final JtonPrimitive _value = json.asJsonPrimitive();
-      if (!_value.isJsonTransient()) {
+    } else if (json.isJtonPrimitive()) {
+      final JtonPrimitive _value = json.asJtonPrimitive();
+      if (!_value.isJtonTransient()) {
         final String key = prefix != null ? URLEncoder.encode(prefix, "UTF-8") : DEFAULT_VALUE_NAME;
         final String val = URLEncoder.encode(json.asString(""), "UTF-8");
         sb.append(key).append("=").append(val).append("&");
       }
-    } else if (json.isJsonObject()) {
+    } else if (json.isJtonObject()) {
       if (null != prefix) {
         final String key = URLEncoder.encode(prefix, "UTF-8");
         final String val = URLEncoder.encode(json.toString(), "UTF-8");
         sb.append(key).append("=").append(val).append("&");
       } else {
-        for (Entry<String, JtonElement> entry : json.asJsonObject().entrySet()) {
+        for (Entry<String, JtonElement> entry : json.asJtonObject().entrySet()) {
           final String key = entry.getKey();
           final JtonElement value = entry.getValue();
           sb.append(jsonToURLEncoding(key, value));
         }
       }
-    } else if (json.isJsonArray()) {
-      for (JtonElement value : json.asJsonArray()) {
+    } else if (json.isJtonArray()) {
+      for (JtonElement value : json.asJtonArray()) {
         String key = prefix != null ? prefix : DEFAULT_ARRAY_NAME;
         sb.append(jsonToURLEncoding(key, value));
       }

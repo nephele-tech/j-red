@@ -32,7 +32,7 @@ import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
 /**
- * A class representing an array type in Json. An array is a list of
+ * A class representing an array type in Jton. An array is a list of
  * {@link JtonElement}s each of which can be of a different type. This is an
  * ordered list, meaning that the order in which elements are added is
  * preserved.
@@ -44,7 +44,7 @@ public final class JtonArray extends JtonElement implements List<JtonElement> {
   private final List<JtonElement> elements;
 
   /**
-   * Creates an empty JsonArray.
+   * Creates an empty JtonArray.
    */
   public JtonArray() {
     elements = new ArrayList<JtonElement>();
@@ -237,36 +237,36 @@ public final class JtonArray extends JtonElement implements List<JtonElement> {
   
   // ---
 
-  public JtonObject getAsJsonObject(int i) {
-    return get(i).asJsonObject();
+  public JtonObject getAsJtonObject(int i) {
+    return get(i).asJtonObject();
   }
   
-  public JtonObject getAsJsonObject(int i, JtonObject defaultValue) {
-    return get(i).asJsonObject(defaultValue);
+  public JtonObject getAsJtonObject(int i, JtonObject defaultValue) {
+    return get(i).asJtonObject(defaultValue);
   }
   
-  public JtonObject getAsJsonObject(int i, boolean create) {
-    return get(i).asJsonObject(create);
+  public JtonObject getAsJtonObject(int i, boolean create) {
+    return get(i).asJtonObject(create);
   }
   
-  public boolean isJsonObject(int i) {
-    return get(i).isJsonObject();
+  public boolean isJtonObject(int i) {
+    return get(i).isJtonObject();
   }
 
-  public JtonArray getAsJsonArray(int i) {
-    return get(i).asJsonArray();
+  public JtonArray getAsJtonArray(int i) {
+    return get(i).asJtonArray();
   }
 
-  public JtonArray getAsJsonArray(int i, JtonArray defaultValue) {
-    return get(i).asJsonArray(defaultValue);
+  public JtonArray getAsJtonArray(int i, JtonArray defaultValue) {
+    return get(i).asJtonArray(defaultValue);
   }
 
-  public JtonArray getAsJsonArray(int i, boolean create) {
-    return get(i).asJsonArray(create);
+  public JtonArray getAsJtonArray(int i, boolean create) {
+    return get(i).asJtonArray(create);
   }
 
-  public boolean isJsonArray(int i) {
-    return get(i).isJsonArray();
+  public boolean isJtonArray(int i) {
+    return get(i).isJtonArray();
   }
 
   public byte getAsByte(int i) {
@@ -616,8 +616,8 @@ public final class JtonArray extends JtonElement implements List<JtonElement> {
   public static JtonArray concat(JtonElement... elements) {
     final JtonArray concat = new JtonArray();
     for (JtonElement e : elements) {
-      if (e.isJsonArray()) {
-        concat.addAll(e.asJsonArray());
+      if (e.isJtonArray()) {
+        concat.addAll(e.asJtonArray());
       } else {
         concat.push(e);
       }

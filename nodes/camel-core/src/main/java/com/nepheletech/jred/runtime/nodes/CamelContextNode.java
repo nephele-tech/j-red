@@ -47,7 +47,7 @@ public class CamelContextNode extends AbstractConfigurationNode
     if (camelContext != null) {
       try {
         camelContext.stop();
-        camelContext.removeRouteDefinitions(camelContext.getRouteDefinitions());
+        //camelContext.removeRouteDefinitions(camelContext.getRouteDefinitions());
         // TODO camelContext registry RESET
       } catch (Exception e) {
         // TODO Auto-generated catch block

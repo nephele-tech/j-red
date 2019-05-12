@@ -47,7 +47,7 @@ public final class Credentials {
    * @return the credentials
    */
   public JtonObject get(String id) {
-    return credentialCache.getAsJsonObject(id, true); // TODO false
+    return credentialCache.getAsJtonObject(id, true); // TODO false
   }
 
   /**
@@ -59,7 +59,7 @@ public final class Credentials {
   public void clean(JtonArray config) {
     final HashSet<String> existingIds = new HashSet<>();
     config.forEach(_n -> {
-      final JtonObject n = _n.asJsonObject();
+      final JtonObject n = _n.asJtonObject();
       final String nId = n.getAsString("id");
       existingIds.add(nId);
       if (n.has("credentials")) {
@@ -95,12 +95,12 @@ public final class Credentials {
     
     final String nodeID = node.getAsString("id");
     
-    final JtonObject newCreds = node.getAsJsonObject("credentials", false);
+    final JtonObject newCreds = node.getAsJtonObject("credentials", false);
     
     if (newCreds != null) {
       node.remove("credentials");
       
-      final JtonObject savedCredentials = credentialCache.getAsJsonObject(nodeID, true);
+      final JtonObject savedCredentials = credentialCache.getAsJtonObject(nodeID, true);
       for (String cred : newCreds.keySet()) {
         final String value = newCreds.getAsString(cred, null);
         if (StringUtils.trimToNull(value) == null) {

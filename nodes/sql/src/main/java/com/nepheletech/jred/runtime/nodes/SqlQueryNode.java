@@ -32,7 +32,7 @@ public class SqlQueryNode extends AbstractNode {
     logger.trace(">>> trace: id={}, msg={}", getId(), msg);
 
     final NepheleDao dao = msg.has("dao")
-        ? (NepheleDao) msg.getAsJsonTransient("data").getValue()
+        ? (NepheleDao) msg.getAsJtonTransient("data").getValue()
         : ((DataSourceNode) getFlow().getNode(dataSource)).getDao();
 
     Runnable decorated = CircuitBreaker.decorateRunnable(circuitBreaker, () -> {
@@ -46,7 +46,7 @@ public class SqlQueryNode extends AbstractNode {
 
         final JtonArray payload = new JtonArray();
         final String[] queries = sql.split(";");
-        final JtonObject namedParams = msg.getAsJsonObject("payload", false);
+        final JtonObject namedParams = msg.getAsJtonObject("payload", false);
         for (String query : queries) {
           query = StringUtils.trimToNull(query);
           if (query != null) {

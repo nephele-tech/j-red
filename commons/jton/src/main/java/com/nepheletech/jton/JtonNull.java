@@ -20,7 +20,7 @@ import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
 
 /**
- * A class representing a Json {@code null} value.
+ * A class representing a Jton {@code null} value.
  *
  * @author Inderjeet Singh
  * @author Joel Leitch
@@ -28,14 +28,14 @@ import com.nepheletech.jton.JtonNull;
  */
 public final class JtonNull extends JtonElement {
   /**
-   * singleton for JsonNull
+   * singleton for JtonNull
    *
    * @since 1.8
    */
   public static final JtonNull INSTANCE = new JtonNull();
 
   /**
-   * Creates a new JsonNull object.
+   * Creates a new JtonNull object.
    * Deprecated since Gson version 1.8. Use {@link #INSTANCE} instead
    */
   @Deprecated
@@ -53,7 +53,7 @@ public final class JtonNull extends JtonElement {
   }
 
   /**
-   * All instances of JsonNull have the same hash code since they are indistinguishable
+   * All instances of JtonNull have the same hash code since they are indistinguishable
    */
   @Override
   public int hashCode() {
@@ -61,7 +61,7 @@ public final class JtonNull extends JtonElement {
   }
 
   /**
-   * All instances of JsonNull are the same
+   * All instances of JtonNull are the same
    */
   @Override
   public boolean equals(Object other) {

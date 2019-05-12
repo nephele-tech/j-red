@@ -23,7 +23,7 @@ public class SwitchNode extends AbstractNode {
   public SwitchNode(Flow flow, JtonObject config) {
     super(flow, config);
     
-    this.rules = config.getAsJsonArray("rules", true);
+    this.rules = config.getAsJtonArray("rules", true);
     this.property = config.getAsString("property");
     this.propertyType = config.getAsString("propertyType", "msg");
 
@@ -36,10 +36,10 @@ public class SwitchNode extends AbstractNode {
     }
 
     for (JtonElement _rule : rules) {
-      if (_rule.isJsonObject()) {
-        final JtonObject rule = _rule.asJsonObject();
+      if (_rule.isJtonObject()) {
+        final JtonObject rule = _rule.asJtonObject();
 
-        if (!rule.has("vt") || !rule.get("vt").isJsonPrimitive()) {
+        if (!rule.has("vt") || !rule.get("vt").isJtonPrimitive()) {
           if (!Double.isNaN(rule.get("v").asDouble(Double.NaN))) {
             rule.set("vt", "num");
           } else {
@@ -56,7 +56,7 @@ public class SwitchNode extends AbstractNode {
           }
         }
         if (rule.get("v2") != JtonNull.INSTANCE) {
-          if (!rule.has("v2t") || !rule.isJsonPrimitive("v2t")) {
+          if (!rule.has("v2t") || !rule.isJtonPrimitive("v2t")) {
             if (!Double.isNaN(rule.getAsDouble("v2"))) {
               rule.set("v2t", "num");
             } else {
@@ -96,10 +96,10 @@ public class SwitchNode extends AbstractNode {
     boolean elseFlag = true;
 
     for (JtonElement _rule : rules) {
-      if (!_rule.isJsonObject()) {
+      if (!_rule.isJtonObject()) {
         continue;
       }
-      JtonObject rule = _rule.asJsonObject();
+      JtonObject rule = _rule.asJtonObject();
 
       JtonElement test = prop;
 
@@ -167,11 +167,11 @@ public class SwitchNode extends AbstractNode {
         Boolean value = test.asBoolean(false);
         result = test != null ? value == Boolean.FALSE : false;
       } else if ("null".equals(t)) {
-        result = test.isJsonNull();
+        result = test.isJtonNull();
       } else if ("nnull".equals(t)) {
-        result = !test.isJsonNull();
+        result = !test.isJtonNull();
       } else if ("else".equals(t)) {
-        result = test.asJsonPrimitive().asBoolean();
+        result = test.asJtonPrimitive().asBoolean();
       }
 
       if (result) {
@@ -189,7 +189,7 @@ public class SwitchNode extends AbstractNode {
   }
 
   private double toDouble(JtonElement value) {
-    return value.asJsonPrimitive().asDouble(Double.NaN);
+    return value.asJtonPrimitive().asDouble(Double.NaN);
   }
 
   private boolean isOneNaN(double a1, double a2) {
