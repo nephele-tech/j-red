@@ -24,6 +24,14 @@ import com.nepheletech.messagebus.Subscription;
 public abstract class AbstractNode implements Node {
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+  private final class JRedRuntimeException extends RuntimeException {
+    private static final long serialVersionUID = -9218815348162921335L;
+
+    JRedRuntimeException(Throwable t) {
+      super(t);
+    }
+  }
+
   private final String id;
   private final String type;
   private final String z;
@@ -57,21 +65,21 @@ public abstract class AbstractNode implements Node {
 
     flow.setup(this);
 
-    updateWires(config.getAsJsonArray("wires", true));
+    updateWires(config.getAsJtonArray("wires", true));
 
     if (this instanceof NodesStartedEventListener) {
       nodesStartedSubscription = MessageBus
           .subscribe(NodesStartedEvent.class, new MessageBusListener<NodesStartedEvent>() {
-        @Override
-        public void messageSent(String topic, NodesStartedEvent message) {
-          try {
-            ((NodesStartedEventListener) AbstractNode.this).onNodesStarted(message);
-          } catch (Exception e) {
-            logger.error("Unhandled exception", e);
-            logger.debug(e.getMessage(), e);
-          }
-        }
-      });
+            @Override
+            public void messageSent(String topic, NodesStartedEvent message) {
+              try {
+                ((NodesStartedEventListener) AbstractNode.this).onNodesStarted(message);
+              } catch (Exception e) {
+                logger.error("Unhandled exception", e);
+                logger.debug(e.getMessage(), e);
+              }
+            }
+          });
     } else {
       nodesStartedSubscription = null;
     }
@@ -79,16 +87,16 @@ public abstract class AbstractNode implements Node {
     if (this instanceof NodesStoppedEventListener) {
       nodesStoppedSubscription = MessageBus
           .subscribe(NodesStoppedEvent.class, new MessageBusListener<NodesStoppedEvent>() {
-        @Override
-        public void messageSent(String topic, NodesStoppedEvent message) {
-          try {
-            ((NodesStoppedEventListener) AbstractNode.this).onNodesStopped(message);
-          } catch (Exception e) {
-            logger.error("Unhandled exception", e);
-            logger.debug(e.getMessage(), e);
-          }
-        }
-      });
+            @Override
+            public void messageSent(String topic, NodesStoppedEvent message) {
+              try {
+                ((NodesStoppedEventListener) AbstractNode.this).onNodesStopped(message);
+              } catch (Exception e) {
+                logger.error("Unhandled exception", e);
+                logger.debug(e.getMessage(), e);
+              }
+            }
+          });
     } else {
       nodesStoppedSubscription = null;
     }
@@ -121,16 +129,16 @@ public abstract class AbstractNode implements Node {
 
     int wc = 0;
     for (final JtonElement w : this.wires) {
-      wc += w.asJsonArray().size();
+      wc += w.asJtonArray().size();
     }
 
     this._wireCount = wc;
     if (wc == 0) {
       // With nothing wired to the node, no-op send
     } else {
-      if (this.wires.size() == 1 && this.wires.get(0).asJsonArray().size() == 1) {
+      if (this.wires.size() == 1 && this.wires.get(0).asJtonArray().size() == 1) {
         // Single wire, so we can shortcut the send when a single message is sent
-        this._wire = this.wires.getAsJsonArray(0).getAsString(0);
+        this._wire = this.wires.getAsJtonArray(0).getAsString(0);
       }
     }
   }
@@ -187,16 +195,16 @@ public abstract class AbstractNode implements Node {
     Node node = null;
 
     if (_msg == null
-        || !(_msg.isJsonObject() || _msg.isJsonArray())) {
+        || !(_msg.isJtonObject() || _msg.isJtonArray())) {
       return;
-    } else if (!_msg.isJsonArray()) {
+    } else if (!_msg.isJtonArray()) {
       if (this._wire != null) {
         //@formatter:off
         // A single message and a single wire on output 0
         // TODO: pre-load flows.get calls - cannot do in constructor as not all nodes
         //       are defined at that point
         //@formatter:on
-        final JtonObject msg = _msg.asJsonObject();
+        final JtonObject msg = _msg.asJtonObject();
         if (!msg.has("_msgid")) {
           msg.set("_msgid", UUID.randomUUID().toString());
         }
@@ -212,7 +220,7 @@ public abstract class AbstractNode implements Node {
     }
 
     // Note: msg is an array of arrays
-    final JtonArray msg = _msg.asJsonArray();
+    final JtonArray msg = _msg.asJtonArray();
 
     final int numOutputs = this.wires.size();
 
@@ -225,11 +233,11 @@ public abstract class AbstractNode implements Node {
     // for each output of node eg. [msgs to output 0, msgs to output 1, ...]
     boolean msgSent = false;
     for (int i = 0, imax = numOutputs; i < imax; i++) {
-      final JtonArray wires = this.wires.get(i).asJsonArray(); // wires leaving output 1
-      if (i < msg.asJsonArray().size()) {
-        JtonElement msgs = msg.asJsonArray().get(i); // msgs going to output i
-        if (!msgs.isJsonNull() && !msgs.isJsonPrimitive()) {
-          if (!msgs.isJsonArray()) {
+      final JtonArray wires = this.wires.get(i).asJtonArray(); // wires leaving output 1
+      if (i < msg.asJtonArray().size()) {
+        JtonElement msgs = msg.asJtonArray().get(i); // msgs going to output i
+        if (!msgs.isJtonNull() && !msgs.isJtonPrimitive()) {
+          if (!msgs.isJtonArray()) {
             msgs = new JtonArray().push(msgs);
           }
           int k = 0, kmax;
@@ -238,17 +246,17 @@ public abstract class AbstractNode implements Node {
             node = flow.getNode(wires.get(j).asString()); // node at end of wire
             if (node != null) {
               // for each msg to send eg. [[m1, m2, ...], ...]
-              for (k = 0, kmax = msgs.asJsonArray().size(); k < kmax; k++) {
-                final JtonElement m = msgs.asJsonArray().get(k);
-                if (m.isJsonObject()) {
+              for (k = 0, kmax = msgs.asJtonArray().size(); k < kmax; k++) {
+                final JtonElement m = msgs.asJtonArray().get(k);
+                if (m.isJtonObject()) {
                   if (sentMessageId == null) {
-                    sentMessageId = m.asJsonObject().get("_msgid").asString();
+                    sentMessageId = m.asJtonObject().get("_msgid").asString();
                   }
                   if (msgSent) {
                     final JtonElement clonedMsg = m.deepCopy();
-                    sendEvents.add(new SendEvent(node, clonedMsg.asJsonObject()));
+                    sendEvents.add(new SendEvent(node, clonedMsg.asJtonObject()));
                   } else {
-                    sendEvents.add(new SendEvent(node, m.asJsonObject()));
+                    sendEvents.add(new SendEvent(node, m.asJtonObject()));
                     msgSent = false;
                   }
                 }
@@ -293,9 +301,12 @@ public abstract class AbstractNode implements Node {
     // this.metric("receive",msg);
     try {
       onMessage(msg);
+    } catch (JRedRuntimeException e) {
+      throw e;
     } catch (RuntimeException e) {
-      e.printStackTrace();
+      //e.printStackTrace();
       error(e, msg);
+      throw new JRedRuntimeException(e);
     }
   }
 
