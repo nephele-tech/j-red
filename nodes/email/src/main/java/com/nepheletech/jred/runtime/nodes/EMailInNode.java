@@ -2,12 +2,14 @@ package com.nepheletech.jred.runtime.nodes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -96,7 +98,15 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
         } else if (value instanceof Iterable) {
           setHeader(headers, key, (Iterable<?>) value);
         } else {
-          headers.set(key, e.getValue(), false);
+          if (key.equals("Subject")) {
+            try {
+              headers.set(key, MimeUtility.decodeText((String)e.getValue()));
+            } catch (UnsupportedEncodingException e1) {
+              headers.set(key, e.getValue(), false);
+            }
+          } else {
+            headers.set(key, e.getValue(), false);
+          }
         }
       } catch (IllegalArgumentException ex) {
         logger.info("--------------------------------------------------> {}={}",
@@ -112,10 +122,10 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
       _attachment.set("contentType", attachment.getContentType());
       attachments.set(a.getKey(), _attachment);
     });
-
+    
     final JtonObject msg = new JtonObject()
         .set("headers", headers)
-        .set("topic", headers.get("Subject"))
+        .set("topic", MimeUtility.decodeText(headers.getAsString("Subject", "")))
         .set("from", headers.get("From"));
 
     final Object body = message.getBody();
