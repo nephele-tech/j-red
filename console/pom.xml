@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-catalina</artifactId>
-			<version>9.0.14</version>
+			<version>${tomcat.version}</version>
 			<scope>compile</scope>
 		</dependency>
 
@@ -106,6 +106,50 @@
 					<release>${java.version}</release>
 				</configuration>
 			</plugin>
+      
+      <plugin>
+       <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>${docker-maven-plugin.version}</version>
+        <configuration>
+          <images>
+            <image>
+              <alias>${project.artifactId}</alias>
+              <name>${docker.repository}:${project.artifactId}-${build.version}</name>
+              <registry>${docker.registry}</registry>
+              <build>
+                <from>tomcat:${tomcat.version}-jre8</from>
+                <assembly>
+                  <mode>dir</mode>
+                  <!-- <targetDir>/opt/${project.artifactId}</targetDir> -->
+                  <targetDir>/usr/local/tomcat</targetDir>
+                  <descriptor>assembly.xml</descriptor>
+                </assembly>
+                <env>
+                  <M2_HOME>/opt/apache-maven-3.6.1</M2_HOME>
+                  <MAVEN_HOME>/opt/apache-maven-3.6.1</MAVEN_HOME>
+                  <PATH>/opt/apache-maven-3.6.1/bin:$PATH</PATH>
+                </env>
+                <runCmds>
+                  <runCmd><![CDATA[apt-get update && apt-get install -y curl wget]]></runCmd>
+                  <runCmd><![CDATA[cd /opt && wget http://apache.claz.org/maven/maven-3/3.6.1/binaries/apache-maven-3.6.1-bin.zip && unzip apache-maven-3.6.1-bin.zip]]></runCmd>
+                  <runCmd><![CDATA[chmod +x ./catalina-run.sh]]></runCmd>
+                  <!-- Maven repository cache -->
+                  <runCmd><![CDATA[mkdir -p ~/.m2/repository/com && mv nepheletech ~/.m2/repository/com]]></runCmd>
+                </runCmds>
+                <cmd><![CDATA[./catalina-run.sh]]></cmd>
+              </build>
+              <run>
+                <ports>
+                  <port>8888:8080</port>
+                </ports>
+                <env>
+                </env>
+              </run>
+            </image>
+          </images>
+        </configuration>
+       </plugin>
 		</plugins>
 	</build>
 </project>
