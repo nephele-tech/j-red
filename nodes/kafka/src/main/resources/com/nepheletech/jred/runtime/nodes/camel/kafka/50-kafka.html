@@ -1,3 +1,19 @@
+<!--
+  Copyright NepheleTech and other contributors, http://www.nepheletech.com
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
 <script type="text/x-red" data-template-name="kafka in">
     <div class="form-row">
         <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
@@ -44,6 +60,7 @@ RED.nodes.registerType('kafka in',{
 });
 </script>
 
+
 <script type="text/x-red" data-template-name="kafka out">
     <div class="form-row">
         <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
@@ -84,4 +101,28 @@ RED.nodes.registerType('kafka out',{
         return this.name?"node_label_italic":"";
     }
 });
+</script>
+
+<!--
+  Copyright NepheleTech and other contributors, http://www.nepheletech.com
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-help-name="kafka in">
+<p>Apache Camel Kafka In node.</p>
+</script>
+
+<script type="text/x-red" data-help-name="kafka">
+<p>Apache Camel Kafka Out node.</p>
 </script>
