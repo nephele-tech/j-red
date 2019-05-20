@@ -5,7 +5,7 @@ J-RED consists of J-RED Console, a [JavaEE-based](http://www.oracle.com/technetw
 [](https://en.wikipedia.org/wiki/images/jred-console.png)
 ###### Figure 1. The VeraCloud _Tempo_ flow editor - showing the node palette (left), workspace (centre), info/debug sidebar (right).
 
-[[https://en.wikipedia.org/wiki/images/jred-images.png]]
+![[https://en.wikipedia.org/wiki/images/jred-images.png]]
 ###### Figure 1. The VeraCloud _Tempo_ flow editor - showing the node palette (left), workspace (centre), info/debug sidebar (right).
 
 ## Quick start
