@@ -40,6 +40,11 @@
       <artifactId>jred-email-nodes</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.nepheletech</groupId>
+      <artifactId>jred-ftp-nodes</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
 		<!-- SLF4J -->
 
@@ -218,6 +223,44 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			
+			<plugin>
+			 <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>${docker-maven-plugin.version}</version>
+        <configuration>
+          <images>
+            <image>
+              <alias>${project.artifactId}</alias>
+              <name>${docker.repository}:${project.artifactId}-${build.version}</name>
+              <registry>${docker.registry}</registry>
+              <build>
+                <from>tomcat:${tomcat.version}-jre8-slim</from>
+                <assembly>
+                  <mode>dir</mode>
+                  <!-- <targetDir>/opt/${project.artifactId}</targetDir> -->
+                  <targetDir>/usr/local/tomcat</targetDir>
+                  <descriptor>assembly.xml</descriptor>
+                </assembly>
+                <env>
+                  
+                </env>
+                <runCmds>
+                  <runCmd><![CDATA[chmod +x ./catalina-run.sh]]></runCmd>
+                </runCmds>
+                <cmd><![CDATA[./catalina-run.sh]]></cmd>
+              </build>
+              <run>
+                <ports>
+                  <port>8888:8080</port>
+                </ports>
+                <env>
+                </env>
+              </run>
+            </image>
+          </images>
+        </configuration>
 			</plugin>
 		</plugins>
 	</build>
