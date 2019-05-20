@@ -250,7 +250,7 @@ public abstract class AbstractNode implements Node {
                 final JtonElement m = msgs.asJtonArray().get(k);
                 if (m.isJtonObject()) {
                   if (sentMessageId == null) {
-                    sentMessageId = m.asJtonObject().get("_msgid").asString();
+                    sentMessageId = m.asJtonObject().getAsString("_msgid", null);
                   }
                   if (msgSent) {
                     final JtonElement clonedMsg = m.deepCopy();
@@ -271,12 +271,24 @@ public abstract class AbstractNode implements Node {
       sentMessageId = UUID.randomUUID().toString();
     }
     // this.metric
+    
+    JRedRuntimeException exception = null;
 
     for (SendEvent ev : sendEvents) {
       if (!ev.m.has("_msgid")) {
         ev.m.set("_msgid", sentMessageId);
       }
-      ev.n.receive(ev.m);
+      try {
+        ev.n.receive(ev.m);
+      } catch(JRedRuntimeException e) {
+        if (exception == null) {
+          exception = e;
+        }
+      }
+    }
+    
+    if (exception != null) {
+      throw exception;
     }
   }
 
