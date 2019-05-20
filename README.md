@@ -1,12 +1,16 @@
 # J-RED
 
-J-RED consists of a [JavaEE-based](http://www.oracle.com/technetwork/java/javaee/overview/index.html) runtime deployed as a [Web Application Resource (WAR)](https://en.wikipedia.org/wiki/WAR_(file_format)), and a browser-based flow editor. The flow editor derives from [Node-RED](https://nodered.org), but, unlike Node-RED, the runtime and all J-RED nodes are implemented in Java.
+J-RED consists of J-RED Console, a [JavaEE-based](http://www.oracle.com/technetwork/java/javaee/overview/index.html) app deployed as a [Web Application Resource (WAR)](https://en.wikipedia.org/wiki/WAR_(file_format)), and a browser-based flow editor (J-RED Editor). The flow editor derives from [Node-RED](https://nodered.org), but, unlike Node-RED, the runtime and all nodes are implemented in Java.
 
-## Installation
+## Quick start
 
-Before you can install J-RED WAR, you must have a working installation of a JavaEE container like [Apache Tomcat](https://tomcat.apache.org/download-90.cgi).
+To run J-RED Console container:
 
-Download the latest release of [J-RED](https://github.com/nephele-tech/j-red/releases), rename it to `jred-editor.war`, and copy it to `$CATALINA_BASE/webapps` folder. Start Tomcat and point a local browser at `http://localhost:8080/jred-editor`.
+```
+docker run -it -p 8888:8080 --name my-jred-console ntechnology/jred-console
+```
+
+This command will download the latest `ntechnology/jred-console` container from [DockerHub](https://cloud.docker.com/repository/docker/ntechnology/jred-console) and run an instance of it with the name `my-jred-console` and with port `8888` exposed. In the terminal window you will see J-RED Console startup logs. Once started you can then browse to `http://localhost:8888` to access the JRED Console.
 
 ## Getting started
 
