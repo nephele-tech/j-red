@@ -13,5 +13,6 @@
     <module>camel-core</module>
     <module>email</module>
     <module>kafka</module>
+    <module>ftp</module>
   </modules>
 </project>
