@@ -3,7 +3,7 @@
 J-RED consists of J-RED Console, a [JavaEE-based](http://www.oracle.com/technetwork/java/javaee/overview/index.html) app deployed as a [Web Application Resource (WAR)](https://en.wikipedia.org/wiki/WAR_(file_format)), and a browser-based flow editor (J-RED Editor). The flow editor derives from [Node-RED](https://nodered.org), but, unlike Node-RED, the runtime and all nodes are implemented in Java.
 
 ![](https://github.com/nephele-tech/j-red/wiki/images/jred-console.png)
-###### Figure 1. The JRED Console - showing workspaces (flow editor instances).
+###### Figure 1. The JRED Console - showing workspaces.
 
 ![](https://github.com/nephele-tech/j-red/wiki/images/jred-editor.png)
 ###### Figure 2. The JRED Editor - showing the node palette (left), workspace (centre), info/debug sidebar (right).
