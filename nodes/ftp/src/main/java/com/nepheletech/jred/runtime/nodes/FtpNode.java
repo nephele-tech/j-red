@@ -47,31 +47,7 @@ public class FtpNode extends AbstractCamelNode implements HasCredentials {
   private String password;
 
   private String privateKey = "-----BEGIN RSA PRIVATE KEY-----\n" +
-      "MIIEpAIBAAKCAQEAwp3ma51hBq5IUKVsPPtALnpzSI4lBxcl74d0B1YRVo5e03q6\n" +
-      "vfBrrAxFdbfL2shq9SoC/WrtJ8dc34QUH+ba0S3SPm4QlEaKeG2K9nzPJ40lSEKf\n" +
-      "nP/WZCfDmDmskNptZNz8KFrYAgOvn1eUlhCRSqc0YnRBH2OHtzHRFIz4hcHk0EKu\n" +
-      "DAMZbjlk7botI3mdlNDUUFihZTGlXbl0uJpAFJv+oDTOAGlfwEj/iusVSvTHl3eR\n" +
-      "y6Pzdy7GQwgFHTd9m1b0NJaBK5vz9Qbbg5FmUCPAbTAH5E/rct7sWDie80cKxe/s\n" +
-      "YzcOb10mDhMq8SN6OPYGpERmHKAsvjtOWvCUYQIDAQABAoIBAF+jVO6hgmLUFrl6\n" +
-      "8XvuRJYSmsCXCd84Iu5Y9E3+n7qXcEYg09Ava9o6lY/J6KX1Q4qDQMDkYPLhZ+R3\n" +
-      "daRPwEx3ZhBD6mXTXIzd2CJVJz/afu3Jv8JZfzPszpPqE8GDdarRZiE2s1waD54Q\n" +
-      "XfZ44c176aRQWQhh0vnVw1eEB0VDLQMiIHxq5sT7ctc/wfD0lbVPMjBkysCe0SIq\n" +
-      "EEwvq9YE9Uy3eJXXxzDihvbRqtTrXONGTaBiXo6ltDh0UKyoxPlgXSTfvBA2stqM\n" +
-      "bfHUNIiXukha9MYUC7dXowlIsT9pXQ7Ky0Po8FoK0S2KJHW0U48FkXKe5tcLyi9d\n" +
-      "G77Q3zkCgYEA9qXH4R+x9tgiFLDrl0iUVDFM2ps/QWO35KpOZDsrKEJZ8GFaTv7d\n" +
-      "tYVbsetbKq01LsKLm2BsOvvnHd9smEQ3KrpDzXvb+jysWm6aPUJxoi+QTGfCTMTB\n" +
-      "ZMDmKCADSx4TMsmPqiJ35bdbJo5DhyL6qENK0U+XltH0iDo+EOcaMGcCgYEAyf8N\n" +
-      "21qWhNnEAteZBEZHuD5zbhDODwcbVqfZ4iFjArpDHDzwjT1py3N2Fn7S6XeHZnqQ\n" +
-      "3KCaHqHACzk8UQDMKpv5EzB+ngRkR7CfU+o13GmblfpaoP7E7fikWM7C5FNov1PM\n" +
-      "ZOuMrpG7nAJFzqKDnhc8VZXqj36qrdKLkB70d/cCgYBVG4NLBTrNaGrqJNpGS38T\n" +
-      "Rie0zxkWoSgVOUbvgxMzQyHxtkYJOBycxDWNwR6mLTpKtkqiBLWT7NQlFLFOIUu/\n" +
-      "7KH0x6ZyRHlcgwmp1cGMK0lpc+wxvTrWX1GLyvAX/Xq2baKrHFWu6IQFW9WlTcac\n" +
-      "RQwOCZ7PJgdw8lf0USpSRQKBgQDIBtwv9brL/+FMdzc9tmLbHmyr99Q1qXH3E+x9\n" +
-      "M1aaotxGIEqNct1K7SFpEVnGe+kHICRHdnpoDwDfnGQQStvi7eVujT01OWAcZdjA\n" +
-      "/lMr2yCJGguZFfDpPqlwj/8Kn1ZA8Licz2zWidXgnZeHEgOID7ZdgkFuq55U1wQB\n" +
-      "ScYI7QKBgQCELwiCG1sXL5J7DBBRVX29yddW/CVHvkAFG2a1Vq+F7zxW86Swu1qk\n" +
-      "oGTBMG4e1z6Eh9EyFd2cuZBSxwpJyxlLSqhiXeXzn/JYba/6F+iSnTtDuuIsplea\n" +
-      "Dhom49G+CjG0jmU++jOBVpnYqveJ0n5deLWFws53YZM6T1/rg/UJ7g==\n" +
+  // TODO
       "-----END RSA PRIVATE KEY-----";
 
   public FtpNode(Flow flow, JtonObject config) {
