@@ -235,8 +235,8 @@ public abstract class AbstractNode implements Node {
         node = flow.getNode(this._wire);
         if (node != null) {
           node.receive(msg);
-          return;
         }
+        return;
       } else {
         _msg = new JtonArray().push(_msg);
       }
