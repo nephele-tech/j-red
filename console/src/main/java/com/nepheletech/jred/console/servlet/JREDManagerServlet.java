@@ -194,23 +194,44 @@ public class JREDManagerServlet extends ManagerServlet {
     return baos.toString();
   }
 
-  protected String deploy(String workspace, StringManager smClient) {
+  protected synchronized String deploy(String workspace, StringManager smClient) {
     logger.trace(">>> deploy: {}", workspace);
 
-    final String mavenHome = getServletContext().getRealPath("/WEB-INF/template");
-
-    final String pomFile = getServletContext().getRealPath("/WEB-INF/template/pom.xml");
-    logger.debug("POM FILE: {}", pomFile);
-
-    InvocationRequest request = new DefaultInvocationRequest();
-    request.setPomFile(new File(pomFile));
-    request.setGoals(Arrays.asList("clean", "package", "install"));
-
-    Invoker invoker = new DefaultInvoker();
-    invoker.setMavenExecutable(new File("/Users/ggeorg/Applications/apache-maven-3.6.0/bin/mvn"));
-    invoker.setMavenHome(new File(mavenHome));
+    Path tmpDir = null;
 
     try {
+      tmpDir = Files.createTempDirectory(null);
+      
+      final File templateDir = new File(getServletContext().getRealPath("/WEB-INF/template"));
+      final File pomFile0 = new File(templateDir, "pom.xml");
+      if (pomFile0.exists()) {
+        logger.info("---POM file: {}", pomFile0);
+      } else {
+        logger.warn("---POM file does not exists: {}", pomFile0);
+      }
+      
+      FileUtils.copyDirectory(templateDir, tmpDir.toFile());
+
+      final File workingDirectory = tmpDir.toFile();
+      final File pomFile = new File(workingDirectory, "pom.xml");
+      if (pomFile.exists()) {
+        logger.info("POM file: {}", pomFile);
+      } else {
+        logger.warn("POM file does not exists: {}", pomFile);
+      }
+
+      InvocationRequest request = new DefaultInvocationRequest();
+      request.setBatchMode(true);
+      request.setPomFile(pomFile);
+      request.setGoals(Arrays.asList("clean", "package", "install"));
+
+      Invoker invoker = new DefaultInvoker();
+      // invoker.setMavenExecutable(new
+      // File("/Users/ggeorg/Applications/apache-maven-3.6.0/bin/mvn"));
+      // invoker.setMavenHome(new File(mavenHome));
+      invoker.setWorkingDirectory(workingDirectory);
+
+      @SuppressWarnings("unused")
       InvocationResult result = invoker.execute(request);
 
       String name = workspace.startsWith("/")
@@ -221,9 +242,9 @@ public class JREDManagerServlet extends ManagerServlet {
       logger.info("----------------------------- name={}", name);
 
       // Identify the appBase of the owning Host of this Context (if any)
-      File file = new File(host.getAppBase(), name + ".war");
-      logger.info("----------------------------- name={}", file);
-      if (file.exists()) { return smClient.getString("htmlManagerServlet.deployUploadWarExists", workspace); }
+      final File target = new File(host.getAppBase(), name + ".war");
+      logger.info("----------------------------- name={}", target);
+      if (target.exists()) { return smClient.getString("htmlManagerServlet.deployUploadWarExists", workspace); }
 
       if (host.findChild(name) != null && !isDeployed(name)) {
         return smClient.getString("htmlManagerServlet.deployUploadInServerXml", workspace);
@@ -234,9 +255,8 @@ public class JREDManagerServlet extends ManagerServlet {
       } else {
         addServiced(name);
         try {
-          String template = "/WEB-INF/template/target/jred-editor-template.war";
-          Path source = Paths.get(getServletContext().getRealPath(template));
-          Files.copy(source, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          File source = new File(workingDirectory, "target/jred-editor-template.war");
+          Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
           // Perform new deployment
           check(name);
         } finally {
@@ -249,6 +269,15 @@ public class JREDManagerServlet extends ManagerServlet {
       e.printStackTrace();
 
       return smClient.getString("htmlManagerServlet.deployUploadFail", e.getMessage());
+    } finally {
+      if (tmpDir != null) {
+        try {
+          FileUtils.deleteDirectory(tmpDir.toFile());
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
     }
 
     return "OK";
