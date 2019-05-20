@@ -10,7 +10,7 @@ To run J-RED Console container:
 docker run -it -p 8888:8080 --name my-jred-console ntechnology/jred-console
 ```
 
-This command will download the latest `ntechnology/jred-console` container from [DockerHub](https://cloud.docker.com/repository/docker/ntechnology/jred-console) and run an instance of it with the name `my-jred-console` and with port `8888` exposed. In the terminal window you will see J-RED Console startup logs. Once started you can then browse to `http://localhost:8888` to access the JRED Console.
+This command will download the latest `ntechnology/jred-console` container from [DockerHub](https://cloud.docker.com/repository/docker/ntechnology/jred-console) and run an instance of it with the name `my-jred-console` and with port `8888` exposed. In the terminal window you will see J-RED Console startup logs. Once started you can then browse to `http://localhost:8888` to access the JRED Console. Create a _New Workspacee_ and navigate to it...
 
 Hit `Ctrl-p` `Ctrl-q` to detach from the container. This leaves it running in the background.
 
