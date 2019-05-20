@@ -1,4 +1,5 @@
 <!--
+  Copyright NepheleTech and other contributors, http://www.nepheletech.com
   Copyright JS Foundation and other contributors, http://js.foundation
 
   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +17,6 @@
 
 <script type="text/x-red" data-template-name="http request">
     <div class="form-row">
-        <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
-        <input type="text" id="node-input-context">
-    </div>
-    <div class="form-row">
         <label for="node-input-method"><i class="fa fa-tasks"></i> <span data-i18n="httpin.label.method"></span></label>
         <select type="text" id="node-input-method" style="width:70%;">
         <option value="GET">GET</option>
@@ -29,9 +26,15 @@
         <option value="use" data-i18n="httpin.setby"></option>
         </select>
     </div>
+
     <div class="form-row">
         <label for="node-input-url"><i class="fa fa-globe"></i> <span data-i18n="httpin.label.url"></span></label>
         <input id="node-input-url" type="text" placeholder="http://">
+    </div>
+
+    <div class="form-row node-input-paytoqs-row">
+        <input type="checkbox" id="node-input-paytoqs" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-paytoqs" style="width: auto" data-i18n="httpin.label.paytoqs"></label>
     </div>
 
     <div class="form-row">
@@ -47,11 +50,19 @@
         <label for="node-input-useAuth" style="width: 70%;"><span data-i18n="httpin.basicauth"></span></label>
         <div style="margin-left: 20px" class="node-input-useAuth-row hide">
             <div class="form-row">
+                <label for="node-input-authType"><i class="fa fa-user-secret "></i> <span data-i18n="httpin.label.authType"></span></label>
+                <select type="text" id="node-input-authType" style="width:70%;">
+                    <option value="basic"  data-i18n="httpin.basic"></option>
+                    <option value="digest" data-i18n="httpin.digest"></option>
+                    <option value="bearer" data-i18n="httpin.bearer"></option>
+                </select>
+            </div>
+            <div class="form-row node-input-basic-row">
                 <label for="node-input-user"><i class="fa fa-user"></i> <span data-i18n="common.label.username"></span></label>
                 <input type="text" id="node-input-user">
             </div>
             <div class="form-row">
-                <label for="node-input-password"><i class="fa fa-lock"></i> <span data-i18n="common.label.password"></span></label>
+                <label for="node-input-password"> <i class="fa fa-lock"></i> <span data-i18n="common.label.password" id="node-span-password"></span><span data-i18n="httpin.label.bearerToken" id="node-span-token" style="display:none"></span></label>
                 <input type="password" id="node-input-password">
             </div>
         </div>
@@ -88,10 +99,11 @@
             name: {value:""},
             method:{value:"GET"},
             ret: {value:"txt"},
+            paytoqs: {value: false},
             url:{value:"",validate:function(v) { return (v.trim().length === 0) || (v.indexOf("://") === -1) || (v.trim().indexOf("http") === 0)} },
             tls: {type:"tls-config",required: false},
             proxy: {type:"http proxy",required: false},
-            context: {type:'camel context',required:true},
+            authType: {value: "basic"}
         },
         credentials: {
             user: {type:"text"},
@@ -100,7 +112,11 @@
         inputs:1,
         outputs:1,
         outputLabels: function(i) {
-            return ({txt:"UTF8 string", bin:"binary buffer", obj:"parsed JSON object"}[this.ret]);
+            return ({
+                txt: this._("httpin.label.utf8String"),
+                bin: this._("httpin.label.binaryBuffer"),
+                obj: this._("httpin.label.jsonObject")
+            }[this.ret]);
         },
         icon: "white-globe.png",
         label: function() {
@@ -113,10 +129,34 @@
             $("#node-input-useAuth").change(function() {
                 if ($(this).is(":checked")) {
                     $(".node-input-useAuth-row").show();
+                    // Nodes (< version 0.20.x) with credentials but without authentication type, need type 'basic'
+                    if (!$('#node-input-authType').val()) {
+                        $('#node-input-authType').val('basic');
+                    }
                 } else {
                     $(".node-input-useAuth-row").hide();
+                    $('#node-input-authType').val('');
                     $('#node-input-user').val('');
                     $('#node-input-password').val('');
+                }
+            });
+            $("#node-input-authType").change(function() {
+                if ($(this).val() == "basic" || $(this).val() == "digest") {
+                    $(".node-input-basic-row").show();
+                    $('#node-span-password').show();
+                    $('#node-span-token').hide();
+                } else if ($(this).val() == "bearer") {
+                    $(".node-input-basic-row").hide();
+                    $('#node-span-password').hide();
+                    $('#node-span-token').show();
+                    $('#node-input-user').val('');
+                }
+            });
+            $("#node-input-method").change(function() {
+                if ($(this).val() == "GET") {
+                    $(".node-input-paytoqs-row").show();
+                } else {
+                    $(".node-input-paytoqs-row").hide();
                 }
             });
             if (this.credentials.user || this.credentials.has_password) {
@@ -178,6 +218,23 @@
         }
     });
 </script>
+
+<!--
+  Copyright NepheleTech and other contributors, http://www.nepheletech.com
+  Copyright JS Foundation and other contributors, http://js.foundation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
 
 <script type="text/x-red" data-help-name="http request">
     <p>Sends HTTP requests and returns the response.</p>
