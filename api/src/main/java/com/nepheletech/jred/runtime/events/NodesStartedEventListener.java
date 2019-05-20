@@ -17,6 +17,8 @@
  * along with this J-RED API; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+package com.nepheletech.jred.runtime.events;
+
 public interface NodesStartedEventListener {
   void onNodesStarted(NodesStartedEvent event) throws Exception;
 }

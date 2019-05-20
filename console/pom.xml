@@ -115,8 +115,9 @@
           <images>
             <image>
               <alias>${project.artifactId}</alias>
-              <name>${docker.repository}:${project.artifactId}-${build.version}</name>
-              <registry>${docker.registry}</registry>
+              <name>${docker.username}/${project.artifactId}</name>
+              <!-- <name>${docker.username}/${project.artifactId}:${build.version}</name> -->
+              <!-- <registry>${docker.registry}</registry>  -->
               <build>
                 <from>tomcat:${tomcat.version}-jre8</from>
                 <assembly>
