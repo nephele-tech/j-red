@@ -32,6 +32,8 @@ import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
+import com.nepheletech.messagebus.MessageBus;
+import com.nepheletech.messagebus.MessageBusListener;
 
 public class FunctionNode extends AbstractNode {
   private static final Logger logger = LoggerFactory.getLogger(FunctionNode.class);
@@ -43,7 +45,7 @@ public class FunctionNode extends AbstractNode {
   private final int outputs;
 
   private ScriptEvaluator<JtonElement> se = null;
-  private Runnable stopHandler = null;
+  private Runnable closeHandler = null;
 
   public FunctionNode(Flow flow, JtonObject config) {
     super(flow, config);
@@ -62,6 +64,7 @@ public class FunctionNode extends AbstractNode {
     }
 
     imports.add(JtonElement.class.getPackage().getName() + ".*");
+    imports.add(MessageBusListener.class.getPackage().getName() + ".*");
 
     // create script evaluator
 
@@ -84,22 +87,22 @@ public class FunctionNode extends AbstractNode {
     }
   }
 
-  public Runnable getStopHandler() { return stopHandler; }
+  public Runnable getCloseHandler() { return closeHandler; }
 
-  public void setStopHandler(Runnable stopHandler) { this.stopHandler = stopHandler; }
+  public void setCloseHandler(Runnable closeHandler) { this.closeHandler = closeHandler; }
 
   @Override
   protected void onClosed(boolean removed) {
     logger.trace(">>> onClosed");
 
-    if (stopHandler != null) {
+    if (closeHandler != null) {
       try {
-        stopHandler.run();
+        closeHandler.run();
       } catch (Exception e) {
         e.printStackTrace();
         // TODO report error
       }
-      stopHandler = null;
+      closeHandler = null;
     }
   }
 
@@ -108,10 +111,11 @@ public class FunctionNode extends AbstractNode {
     logger.trace(">>> onMessage: msg={}", msg);
 
     try {
+      final JtonElement ret = se.evaluate(new Object[] { this, msg, logger });
       if (outputs > 1) {
-        send(se.evaluate(new Object[] { this, msg, logger }).asJtonArray(null));
+        send((ret != null) ? ret.asJtonArray(null) : null);
       } else {
-        send(se.evaluate(new Object[] { this, msg, logger }).asJtonObject(null));
+        send((ret != null) ? ret : null);
       }
     } catch (ScriptException e) {
       final JtonArray sourceCode = new JtonArray()

@@ -182,6 +182,10 @@ public abstract class AbstractNode implements Node {
         }
       }
     }
+    
+    if (this.hasSubscribers) {
+      MessageBus.sendMessage(topicPrefix.concat("#closed"), removed);
+    }
 
     onClosed(removed);
   }
