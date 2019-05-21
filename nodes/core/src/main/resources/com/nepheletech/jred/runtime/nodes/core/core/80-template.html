@@ -185,19 +185,18 @@
     <p>By default this uses the <i><a href="http://mustache.github.io/mustache.5.html" target="_blank">mustache</a></i>
     format, but this can be switched off if required.</p>
     <p>For example, when a template of:
-    <pre>Hello {{payload.name}}. Today is {{date}}</pre>
+    <pre>Hello {{payload.name.asString}}. Today is {{date.asString}}</pre>
     <p>receives a message containing:
     <pre>{
-  date: "Monday"
+  date: "Monday",
   payload: {
-    name: "Fred",
+    name: "Fred"
   }
 }</pre>
     <p>The resulting property will be:
     <pre>Hello Fred. Today is Monday</pre>
     <p>It is possible to use a property from the flow context or global context. Just use <code>{{flow.name}}</code> or
-    <code>{{global.name}}</code>, or for persistable store <code>store</code> use <code>{{flow[store].name}}</code> or
-    <code>{{global[store].name}}</code>.
+    <code>{{global.name}}</code><!-- TODO: persistable store ... -->.
     <p><b>Note: </b>By default, <i>mustache</i> will escape any HTML entities in the values it substitutes.
        To prevent this, use <code>{{{triple}}}</code> braces.
 </script>
