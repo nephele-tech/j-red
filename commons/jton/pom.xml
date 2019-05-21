@@ -28,6 +28,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>

@@ -34,6 +34,7 @@ import com.nepheletech.jton.JsonUtil;
 import com.nepheletech.messagebus.MessageBus;
 
 public final class JRedUtil {
+  @SuppressWarnings("unused")
   private static final Logger logger = LoggerFactory.getLogger(JRedUtil.class);
 
   private JRedUtil() {}
