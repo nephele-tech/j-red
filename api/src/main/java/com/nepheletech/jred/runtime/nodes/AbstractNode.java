@@ -21,6 +21,7 @@ package com.nepheletech.jred.runtime.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -182,7 +183,7 @@ public abstract class AbstractNode implements Node {
         }
       }
     }
-    
+
     if (this.hasSubscribers) {
       MessageBus.sendMessage(topicPrefix.concat("#closed"), removed);
     }
@@ -294,7 +295,7 @@ public abstract class AbstractNode implements Node {
       sentMessageId = UUID.randomUUID().toString();
     }
     // this.metric
-    
+
     JRedRuntimeException exception = null;
 
     for (SendEvent ev : sendEvents) {
@@ -303,16 +304,14 @@ public abstract class AbstractNode implements Node {
       }
       try {
         ev.n.receive(ev.m);
-      } catch(JRedRuntimeException e) {
+      } catch (JRedRuntimeException e) {
         if (exception == null) {
           exception = e;
         }
       }
     }
-    
-    if (exception != null) {
-      throw exception;
-    }
+
+    if (exception != null) { throw exception; }
   }
 
   private final class SendEvent {
@@ -339,7 +338,7 @@ public abstract class AbstractNode implements Node {
     } catch (JRedRuntimeException e) {
       throw e;
     } catch (RuntimeException e) {
-      //e.printStackTrace();
+      // e.printStackTrace();
       error(e, msg);
       throw new JRedRuntimeException(e);
     }
@@ -355,7 +354,7 @@ public abstract class AbstractNode implements Node {
   public void status(JtonObject status) {
     logger.trace(">>> status: {}", status);
 
-    flow.handleStatus(this, status, null, false);
+    flow.handleStatus(this, status != null ? status : new JtonObject(), null, false);
   }
 
   @Override
@@ -363,22 +362,18 @@ public abstract class AbstractNode implements Node {
     status(new JtonObject().set("text", text));
   }
 
-  private static final int OFF = 1;
-  private static final int FATAL = 10;
-  private static final int ERROR = 20;
-  private static final int WARN = 30;
-  private static final int INFO = 40;
-  private static final int DEBUG = 50;
-  private static final int TRACE = 60;
-  private static final int AUDIT = 98;
-  private static final int METRIC = 99;
+  protected static final int OFF = 1;
+  protected static final int FATAL = 10;
+  protected static final int ERROR = 20;
+  protected static final int WARN = 30;
+  protected static final int INFO = 40;
+  protected static final int DEBUG = 50;
+  protected static final int TRACE = 60;
+  protected static final int AUDIT = 98;
+  protected static final int METRIC = 99;
 
   protected void log(JtonObject msg) {
     log_helper(INFO, msg);
-  }
-
-  protected void warn(JtonObject msg) {
-    log_helper(WARN, msg);
   }
 
   /**
@@ -402,17 +397,6 @@ public abstract class AbstractNode implements Node {
    * @param logMessage
    * @param msg
    */
-  //@formatter:on
-  /*
-   * protected void error(String logMessage, JsonObject msg) { if (logMessage ==
-   * null) { throw new IllegalArgumentException("`logMessage` is null"); } if (msg
-   * == null) { throw new IllegalArgumentException("Message is null"); }
-   * 
-   * error0(logMessage, msg.deepCopy() .set("error", new JsonObject()
-   * .set("message", logMessage))); }
-   */
-//@formatter:off
-
   private void error0(Throwable logMessage, JtonObject msg) {
     boolean handled = false;
     if (msg != null) {
@@ -423,7 +407,7 @@ public abstract class AbstractNode implements Node {
       if (rootCause == null) {
         rootCause = logMessage;
       }
-      
+
       log_helper(ERROR, new JtonObject()
           .set("message", rootCause.toString())
           .set("stack", JRedUtil.stackTrace(rootCause))
@@ -431,17 +415,7 @@ public abstract class AbstractNode implements Node {
     }
   }
 
-  protected void debug(JtonObject msg) {
-    log_helper(DEBUG, msg);
-  }
-
-  protected void trace(JtonObject msg) {
-    log_helper(TRACE, msg);
-  }
-  
-  private void log_helper(int level, Object msg) {
-    logger.trace(">>> log_helper: level={}, msg={}", level, msg);
-
+  protected void log_helper(int level, Object msg) {
     final JtonObject o = new JtonObject()
         .set("id", getAlias() != null ? getAlias() : getId())
         .set("type", getType())
@@ -464,28 +438,28 @@ public abstract class AbstractNode implements Node {
 
     switch (level) {
     case FATAL:
-      LoggerFactory.getLogger(getClass()).error(o.toString());
+      logger.error(Objects.toString(msg));
       break;
     case ERROR:
-      LoggerFactory.getLogger(getClass()).error(o.toString());
+      logger.error(Objects.toString(msg));
       break;
     case WARN:
-      LoggerFactory.getLogger(getClass()).warn(o.toString());
+      logger.warn(Objects.toString(msg));
       break;
     case INFO:
-      LoggerFactory.getLogger(getClass()).info(o.toString());
+      logger.info(Objects.toString(msg));
       break;
     case DEBUG:
-      LoggerFactory.getLogger(getClass()).debug(o.toString());
+      logger.debug(Objects.toString(msg));
       break;
     case TRACE:
-      LoggerFactory.getLogger(getClass()).trace(o.toString());
+      logger.trace(Objects.toString(msg));
       break;
     case AUDIT:
-      LoggerFactory.getLogger(getClass()).trace(o.toString());
+      logger.trace(Objects.toString(msg));
       break;
     case METRIC:
-      LoggerFactory.getLogger(getClass()).trace(o.toString());
+      logger.trace(Objects.toString(msg));
       break;
     }
 

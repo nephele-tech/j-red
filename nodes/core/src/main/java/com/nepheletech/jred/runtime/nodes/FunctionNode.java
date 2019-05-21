@@ -29,11 +29,10 @@ import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jfc.ScriptEvaluator;
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.messagebus.MessageBus;
-import com.nepheletech.messagebus.MessageBusListener;
 
 public class FunctionNode extends AbstractNode {
   private static final Logger logger = LoggerFactory.getLogger(FunctionNode.class);
@@ -41,11 +40,23 @@ public class FunctionNode extends AbstractNode {
   private static final String IMPORT = "//@import ";
   private static final int IMPORT_LEN = IMPORT.length();
 
+  private final JtonObject nodeContext = new JtonObject();
+
   private final String func;
+  @SuppressWarnings("unused")
   private final int outputs;
 
   private ScriptEvaluator<JtonElement> se = null;
   private Runnable closeHandler = null;
+
+  // TODO package protect
+  public final class Env {
+    public JtonElement get(String key) {
+      return getFlow().getSetting(key);
+    }
+  }
+
+  public final Env env = new Env();
 
   public FunctionNode(Flow flow, JtonObject config) {
     super(flow, config);
@@ -64,20 +75,23 @@ public class FunctionNode extends AbstractNode {
     }
 
     imports.add(JtonElement.class.getPackage().getName() + ".*");
-    imports.add(MessageBusListener.class.getPackage().getName() + ".*");
+    imports.add(JRedUtil.class.getName());
 
     // create script evaluator
 
     final String[] _imports = imports.toArray(new String[imports.size()]);
-    final String[] parameterNames = new String[] { "node", "msg", "logger" };
+    final String[] parameterNames = new String[] { "node", "msg", "env", 
+        "context", "flow", "global" };
     final Class<?>[] parameterTypes = new Class<?>[] {
-        FunctionNode.class, JtonObject.class, Logger.class
+        FunctionNode.class, JtonObject.class, Env.class, 
+        JtonObject.class, JtonObject.class, JtonObject.class
     };
     final Class<?>[] throwTypes = new Class<?>[] {
         Exception.class
     };
 
-    se = new ScriptEvaluator<>(_imports, func, JtonElement.class, parameterNames, parameterTypes, throwTypes,
+    se = new ScriptEvaluator<>(_imports, func,
+        JtonElement.class, parameterNames, parameterTypes, throwTypes,
         getName() != null ? getName() : getId());
 
     try {
@@ -104,6 +118,8 @@ public class FunctionNode extends AbstractNode {
       }
       closeHandler = null;
     }
+
+    status(new JtonObject());
   }
 
   @Override
@@ -111,12 +127,8 @@ public class FunctionNode extends AbstractNode {
     logger.trace(">>> onMessage: msg={}", msg);
 
     try {
-      final JtonElement ret = se.evaluate(new Object[] { this, msg, logger });
-      if (outputs > 1) {
-        send((ret != null) ? ret.asJtonArray(null) : null);
-      } else {
-        send((ret != null) ? ret : null);
-      }
+      send(se.evaluate(new Object[] { this, msg, this.env,
+          this.nodeContext, this.getFlowContext(), this.getGlobalContext() }));
     } catch (ScriptException e) {
       final JtonArray sourceCode = new JtonArray()
           .push("// JFunction1.java");
@@ -128,5 +140,42 @@ public class FunctionNode extends AbstractNode {
       // ---
       throw new RuntimeException(e);
     }
+  }
+
+  public void trace(JtonObject msg) {
+    log_helper(TRACE, msg);
+  }
+
+  public void trace(String messafe) {
+    log_helper(TRACE, messafe);
+  }
+
+  public void debug(JtonObject msg) {
+    log_helper(DEBUG, msg);
+  }
+
+  public void debug(String messafe) {
+    log_helper(DEBUG, messafe);
+  }
+
+  @Override
+  public void log(JtonObject msg) {
+    log_helper(INFO, msg);
+  }
+
+  public void warn(JtonObject msg) {
+    log_helper(WARN, msg);
+  }
+
+  public void warn(String messafe) {
+    log_helper(WARN, messafe);
+  }
+
+  public void error(JtonObject msg) {
+    log_helper(ERROR, msg);
+  }
+
+  public void error(String messafe) {
+    log_helper(ERROR, messafe);
   }
 }

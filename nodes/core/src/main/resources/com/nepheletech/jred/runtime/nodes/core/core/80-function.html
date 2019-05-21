@@ -1,4 +1,5 @@
 <!--
+  Copyright NepheleTech and other contributors, http://www.nepheletech.com
   Copyright JS Foundation and other contributors, http://js.foundation
 
   Licensed under the Apache License, Version 2.0 (the "License");
@@ -67,7 +68,6 @@
 
             this.editor = RED.editor.createEditor({
                 id: 'node-input-func-editor',
-                //mode: 'ace/mode/nrjavascript',
                 mode: "ace/mode/java",
                 value: $("#node-input-func").val(),
                 globals: {
@@ -90,7 +90,6 @@
                 url:"functions", // where to get the data from
                 type:"function", // the type of object the library is for
                 editor:this.editor, // the field name the main text body goes to
-                //mode:"ace/mode/nrjavascript",
                 mode: "ace/mode/java",
                 fields:['name','outputs']
             });
@@ -103,7 +102,6 @@
                     value: value,
                     width: "Infinity",
                     cursor: that.editor.getCursorPosition(),
-                    //mode: "ace/mode/nrjavascript",
                     mode: "ace/mode/java",
                     complete: function(v,cursor) {
                         that.editor.setValue(v, -1);
@@ -119,7 +117,7 @@
             var annot = this.editor.getSession().getAnnotations();
             this.noerr = 0;
             $("#node-input-noerr").val(0);
-            for (var k=0; k < annot.length; k++) {
+            for (var k=0; k < annot.length; k++) {// XXX not working for Java
                 //console.log(annot[k].type,":",annot[k].text, "on line", annot[k].row);
                 if (annot[k].type === "error") {
                     $("#node-input-noerr").val(annot.length);
@@ -149,6 +147,7 @@
 </script>
 
 <!--
+  Copyright NepheleTech and other contributors, http://www.nepheletech.com
   Copyright JS Foundation and other contributors, http://js.foundation
 
   Licensed under the Apache License, Version 2.0 (the "License");
@@ -165,14 +164,14 @@
 -->
 
 <script type="text/x-red" data-help-name="function">
-    <p>A JavaScript function block to run against the messages being received by the node.</p>
-    <p>The messages are passed in as a JavaScript object called <code>msg</code>.</p>
+    <p>A Java function block to run against the messages being received by the node.</p>
+    <p>The messages are passed in as a JtonObject object called <code>msg</code>.</p>
     <p>By convention it will have a <code>msg.payload</code> property containing
        the body of the message.</p>
     <p>The function is expected to return a message object (or multiple message objects), but can choose
-       to return nothing in order to halt a flow.</p>
+       to return <code>null</code> in order to halt a flow.</p>
     <h3>Details</h3>
-    <p>See the <a target="_blank" href="http://nodered.org/docs/writing-functions.html">online documentation</a>
+    <p>See the <a target="_blank" href="https://github.com/nephele-tech/j-red/wiki/FunctionNode">online documentation</a>
     for more information on writing functions.</p>
     <h4>Sending messages</h4>
     <p>The function can either return the messages it wants to pass on to the next nodes
@@ -184,25 +183,26 @@
     </ul>
     <p>If any element of the array is itself an array of messages, multiple
           messages are sent to the corresponding output.</p>
-    <p>If null is returned, either by itself or as an element of the array, no
+    <p>If <code>null</code> is returned, either by itself or as an element of the array, no
           message is passed on.</p>
     <h4>Logging and Error Handling</h4>
     <p>To log any information, or report an error, the following functions are available:</p>
       <ul>
-          <li><code>node.log("Log message")</code></li>
+          <li><code>node.info("Log message")</code></li>
           <li><code>node.warn("Warning")</code></li>
           <li><code>node.error("Error")</code></li>
       </ul>
     </p>
     <p>The Catch node can also be used to handle errors. To invoke a Catch node,
-    pass <code>msg</code> as a second argument to <code>node.error</code>:</p>
-    <pre>node.error("Error",msg);</pre>
+       simple throw any kind of Java <code>RuntimeException</code>:</p>
+    <pre>throw new RuntimeException("Error...");</pre>
     <h4>Accessing Node Information</h4>
     <p>In the function block, id and name of the node can be referenced using the following properties:</p>
     <ul>
-        <li><code>node.id</code> - id of the node</li>
-        <li><code>node.name</code> - name of the node</li>
+        <li><code>node.getId()</code> - id of the node</li>
+        <li><code>node.getName()</code> - name of the node</li>
     </ul>
     <h4>Using environment variables</h4>
-    <p>Environment variables can be accessed using <code>env.get("MY_ENV_VAR")</code>.</p>
+    <p>Environment variables can be accessed using:</p>
+    <pre>JtonElement val = env.get("MY_ENV_VAR")</pre>
 </script>
