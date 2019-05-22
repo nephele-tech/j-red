@@ -26,16 +26,16 @@ import com.jayway.jsonpath.spi.mapper.MappingException;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import com.nepheletech.jton.Gson;
 import com.nepheletech.jton.JtonElement;
-import com.nepheletech.jton.jsonpath.NepheleMappingProvider;
+import com.nepheletech.jton.jsonpath.JtonMappingProvider;
 import com.nepheletech.jton.reflect.TypeToken;
 
-public class NepheleMappingProvider implements MappingProvider {
+public class JtonMappingProvider implements MappingProvider {
 
-  private static final Logger logger = LoggerFactory.getLogger(NepheleMappingProvider.class);
+  private static final Logger logger = LoggerFactory.getLogger(JtonMappingProvider.class);
 
   private final Callable<Gson> factory;
 
-  public NepheleMappingProvider(final Gson gson) {
+  public JtonMappingProvider(final Gson gson) {
     this(new Callable<Gson>() {
       @Override
       public Gson call() {
@@ -44,11 +44,11 @@ public class NepheleMappingProvider implements MappingProvider {
     });
   }
 
-  public NepheleMappingProvider(Callable<Gson> factory) {
+  public JtonMappingProvider(Callable<Gson> factory) {
     this.factory = factory;
   }
 
-  public NepheleMappingProvider() {
+  public JtonMappingProvider() {
     super();
     try {
       Class.forName(Gson.class.getName());

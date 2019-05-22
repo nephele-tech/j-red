@@ -7,18 +7,18 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
-import com.nepheletech.jton.jsonpath.NepheleJsonProvider;
-import com.nepheletech.jton.jsonpath.NepheleMappingProvider;
+import com.nepheletech.jton.jsonpath.JtonProvider;
+import com.nepheletech.jton.jsonpath.JtonMappingProvider;
 
-public final class NepheleJsonPath {
+public final class JtonPath {
 
-  private NepheleJsonPath() {
+  private JtonPath() {
   }
 
   public static void configure() {
     Configuration.setDefaults(new Configuration.Defaults() {
-      private final JsonProvider jsonProvider = new NepheleJsonProvider();
-      private final MappingProvider mappingProvider = new NepheleMappingProvider();
+      private final JsonProvider jsonProvider = new JtonProvider();
+      private final MappingProvider mappingProvider = new JtonMappingProvider();
 
       @Override
       public JsonProvider jsonProvider() {

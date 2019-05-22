@@ -34,15 +34,14 @@ import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JsonParser;
 import com.nepheletech.jton.JtonPrimitive;
 
-public class NepheleJsonProvider extends AbstractJsonProvider {
-  private static final JsonParser PARSER = new JsonParser();
+public class JtonProvider extends AbstractJsonProvider {
   private final Gson gson;
 
   /**
    * Initializes the {@code GsonJsonProvider} using the default {@link Gson}
    * object.
    */
-  public NepheleJsonProvider() {
+  public JtonProvider() {
     this(new Gson());
   }
 
@@ -52,7 +51,7 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
    *
    * @param gson the customized Gson object.
    */
-  public NepheleJsonProvider(final Gson gson) {
+  public JtonProvider(final Gson gson) {
     this.gson = gson;
   }
 
@@ -122,14 +121,14 @@ public class NepheleJsonProvider extends AbstractJsonProvider {
 
   @Override
   public Object parse(final String json) throws InvalidJsonException {
-    return PARSER.parse(json);
+    return JsonParser.parse(json);
   }
 
   @Override
   public Object parse(final InputStream jsonStream, final String charset) throws InvalidJsonException {
 
     try {
-      return PARSER.parse(new InputStreamReader(jsonStream, charset));
+      return JsonParser.parse(new InputStreamReader(jsonStream, charset));
     } catch (UnsupportedEncodingException e) {
       throw new JsonPathException(e);
     }
