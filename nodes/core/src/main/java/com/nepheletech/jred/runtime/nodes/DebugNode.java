@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 import org.apache.commons.codec.binary.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
@@ -34,7 +32,6 @@ import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
 public final class DebugNode extends AbstractNode {
-  private final Logger logger = LoggerFactory.getLogger(DebugNode.class);
 
   private boolean active;
 
@@ -44,18 +41,20 @@ public final class DebugNode extends AbstractNode {
   private final String complete;
   private final int severity;
 
-  private final String preparedEditExpression = null;
+  private final String preparedEditExpression;
 
   public DebugNode(Flow flow, JtonObject config) {
     super(flow, config);
 
-    final String targetType = config.get("targetType").asString("msg");
+    final String targetType = config.getAsString("targetType", "msg");
     final boolean hasEditExpression = "jsonpath".equals(targetType);
-    final String editExpression = hasEditExpression ? config.get("complete").asString() : null;
-    final String complete = hasEditExpression ? null : config.get("complete").asString("payload");
+    
+    final String editExpression = hasEditExpression ? config.getAsString("complete") : null;
+    final String complete = hasEditExpression ? null : config.getAsString("complete", "payload");
+    
     this.complete = "false".equals(complete) ? "payload" : complete;
     this.console = config.get("console").asBoolean(false);
-    this.tostatus = !"true".contentEquals(this.complete) && config.getAsBoolean("tostatus", false);
+    this.tostatus = !"true".equals(this.complete) && config.getAsBoolean("tostatus", false);
     this.tosidebar = config.get("tosidebar").asBoolean(true);
     this.severity = config.get("severity").asInt(40);
     this.active = config.get("active").asBoolean(true);
@@ -66,9 +65,11 @@ public final class DebugNode extends AbstractNode {
       // TODO clear status
     }
 
-    // TODO editExpression
-
-    logger.trace(">>> created");
+    if (editExpression != null) {
+      preparedEditExpression = editExpression;
+    } else {
+      preparedEditExpression = null;
+    }
   }
 
   public boolean isActive() { return active; }
@@ -148,7 +149,16 @@ public final class DebugNode extends AbstractNode {
   private void prepareValue(JtonObject msg, BiConsumer<Throwable, JtonObject> done) {
     // Either apply the jsonpath expression or...
     if (preparedEditExpression != null) {
-      // TODO
+      JtonElement value = JRedUtil.evaluateJsonPathExpression(msg, preparedEditExpression);
+      done.accept(null, new JtonObject()
+          //.set("id", Optional.ofNullable(getAlias()).orElse(getId()))
+          .set("id", getId())
+          .set("z", getZ())
+          .set("name", getName())
+          .set("topic", msg.get("topic"))
+          //.set("property", property)
+          .set("msg", value)
+          .set("_path", msg.get("_path")));
     } else {
       // Extract the required message property
       String property = "payload";
