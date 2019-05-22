@@ -119,7 +119,7 @@ public class FunctionNodeTest extends NodeTest {
 
   FunctionNode create(Flow flow, JtonObject config) {
     return new FunctionNode(flow, config
-        .set("type", "convert")
+        .set("type", "function")
         .set("z", flow.hashCode()));
   }
 }
