@@ -531,7 +531,7 @@ public class JsonWriter implements Closeable, Flushable {
       throw new IllegalArgumentException("Numeric values must be finite, but was " + value);
     } else if (lenient
         && (string.equals("-Infinity") || string.equals("Infinity") || string.equals("NaN"))) {
-      string = "\"" + string + "\"";
+      string = "\"" + string + "\"";  // Issue: #1 (ggeorg)
     }
     beforeValue();
     out.append(string);

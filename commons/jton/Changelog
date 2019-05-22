@@ -1,0 +1,1 @@
+- Double.NaN in JTON serialization throws JavaScript exception #1
