@@ -66,8 +66,8 @@
         label: function() {
             var suffix = "";
             if (this.console === true || this.console === "true") { suffix = " ⇲"; }
-            if (this.targetType === "jsonata") {
-                return (this.name || "JSONata") + suffix;
+            if (this.targetType === "jsonpath") {
+                return (this.name || "JsonPath") + suffix;
             }
             if (this.complete === true || this.complete === "true") {
                 return (this.name||"msg") + suffix;
@@ -291,12 +291,12 @@
             };
             $("#node-input-typed-complete").typedInput({
                 default: "msg",
-                types:['msg', fullType, "jsonata"],
+                types:['msg', fullType, "jsonpath"],
                 typeField: $("#node-input-targetType")
             });
-            if (this.targetType === "jsonata") {
+            if (this.targetType === "jsonpath") {
                 var property = this.complete || "";
-                $("#node-input-typed-complete").typedInput('type','jsonata');
+                $("#node-input-typed-complete").typedInput('type','jsonpath');
                 $("#node-input-typed-complete").typedInput('value',property);
             } else if ((this.targetType === "full") || this.complete === "true" || this.complete === true) {
                 // show complete message object
@@ -356,7 +356,7 @@
 -->
 
 <script type="text/x-red" data-help-name="debug">
-    <p>Displays selected message properties in the debug sidebar tab and optionally the runtime log. By default it displays <code>msg.payload</code>, but can be configured to display any property, the full message or the result of a JSONata expression.</p>
+    <p>Displays selected message properties in the debug sidebar tab and optionally the runtime log. By default it displays <code>msg.payload</code>, but can be configured to display any property, the full message or the result of a JsonPath expression.</p>
     <h3>Details</h3>
     <p>The debug sidebar provides a structured view of the messages it is sent, making it easier to understand their structure.</p>
     <p>JavaScript objects and arrays can be collapsed and expanded as required. Buffer objects can be displayed as raw data or as a string if possible.</p>

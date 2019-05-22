@@ -50,7 +50,7 @@ public final class DebugNode extends AbstractNode {
     super(flow, config);
 
     final String targetType = config.get("targetType").asString("msg");
-    final boolean hasEditExpression = "jsonata".equals(targetType);
+    final boolean hasEditExpression = "jsonpath".equals(targetType);
     final String editExpression = hasEditExpression ? config.get("complete").asString() : null;
     final String complete = hasEditExpression ? null : config.get("complete").asString("payload");
     this.complete = "false".equals(complete) ? "payload" : complete;
@@ -146,7 +146,7 @@ public final class DebugNode extends AbstractNode {
   }
 
   private void prepareValue(JtonObject msg, BiConsumer<Throwable, JtonObject> done) {
-    // Either apply the jsonata expression or...
+    // Either apply the jsonpath expression or...
     if (preparedEditExpression != null) {
       // TODO
     } else {

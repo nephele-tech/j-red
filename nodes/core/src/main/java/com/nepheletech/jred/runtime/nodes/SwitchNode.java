@@ -49,9 +49,9 @@ public class SwitchNode extends AbstractNode {
     this.checkAll = config.getAsBoolean("checkall", true);
     this.valid = true;
 
-    if ("jsonata".equals(propertyType)) {
+    if ("jsonpath".equals(propertyType)) {
       this.valid = false;
-      throw new UnsupportedOperationException("jsonata is not supported yet");
+      throw new UnsupportedOperationException("jsonpath is not supported yet");
     }
 
     for (JtonElement _rule : rules) {
@@ -69,9 +69,9 @@ public class SwitchNode extends AbstractNode {
         if ("num".equals(vt)) {
           if (Double.isNaN(rule.getAsDouble("v", Double.NaN))) {
             rule.set("v", rule.getAsDouble("v"));
-          } else if ("jsonata".equals(vt)) {
+          } else if ("jsonpath".equals(vt)) {
             this.valid = false;
-            throw new UnsupportedOperationException("jsonata is not supported yet");
+            throw new UnsupportedOperationException("jsonpath is not supported yet");
           }
         }
         if (rule.get("v2") != JtonNull.INSTANCE) {
@@ -86,9 +86,9 @@ public class SwitchNode extends AbstractNode {
           if ("num".equals(v2t)) {
             if (Double.isNaN(rule.getAsDouble("v2"))) {
               rule.set("v2", rule.getAsDouble("v2"));
-            } else if ("jsonata".equals(vt)) {
+            } else if ("jsonpath".equals(vt)) {
               this.valid = false;
-              throw new UnsupportedOperationException("jsonata is not supported yet");
+              throw new UnsupportedOperationException("jsonpath is not supported yet");
             }
           }
         }
@@ -106,8 +106,8 @@ public class SwitchNode extends AbstractNode {
 
     JtonElement prop;
 
-    if ("jsonata".equals(this.propertyType)) {
-      throw new UnsupportedOperationException("jsonata is not supported yet");
+    if ("jsonpath".equals(this.propertyType)) {
+      throw new UnsupportedOperationException("jsonpath is not supported yet");
     } else {
       prop = JRedUtil.evaluateNodeProperty(property, propertyType, this, msg);
     }
@@ -127,8 +127,8 @@ public class SwitchNode extends AbstractNode {
       String vt = rule.getAsString("vt");
       if ("prev".equals(vt)) {
         v1 = JtonNull.INSTANCE;
-      } else if ("jsonata".equals(vt)) {
-        throw new UnsupportedOperationException("jsonata");
+      } else if ("jsonpath".equals(vt)) {
+        throw new UnsupportedOperationException("jsonpath");
       } else {
         v1 = JRedUtil.evaluateNodeProperty(rule.getAsString("v", ""), vt, this, msg);
       }
@@ -136,8 +136,8 @@ public class SwitchNode extends AbstractNode {
       String v2t = rule.getAsString("v2t", null);
       if ("prev".equals(v2t)) {
         v2 = JtonNull.INSTANCE;
-      } else if ("jsonata".equals(v2t)) {
-        throw new UnsupportedOperationException("jsonata");
+      } else if ("jsonpath".equals(v2t)) {
+        throw new UnsupportedOperationException("jsonpath");
       } else {
         v2 = JRedUtil.evaluateNodeProperty(rule.getAsString("v2", ""), v2t, this, msg);
       }
