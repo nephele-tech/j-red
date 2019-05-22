@@ -17,6 +17,7 @@ package com.nepheletech.jton.internal;
 
 import java.io.ObjectStreamException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * This class holds a number value that is lazily converted to a specific number
@@ -62,6 +63,14 @@ public final class LazilyParsedNumber extends Number {
   @Override
   public double doubleValue() {
     return Double.parseDouble(value);
+  }
+
+  public BigInteger toBigInteger() {
+    return new BigInteger(value);
+  }
+
+  public BigDecimal toBigDecimal() {
+    return new BigDecimal(value);
   }
 
   private String cachedString = null;

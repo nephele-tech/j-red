@@ -25,9 +25,6 @@ import java.util.TimeZone;
 
 import javax.xml.bind.DatatypeConverter;
 
-import com.nepheletech.jton.AbstractJtonPrimitive;
-import com.nepheletech.jton.JtonElement;
-import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.jton.internal.$Gson$Preconditions;
 import com.nepheletech.jton.internal.LazilyParsedNumber;
 
@@ -53,10 +50,11 @@ public abstract class AbstractJtonPrimitive extends JtonElement {
   }
 
   protected void setValue(Object primitive, boolean jsonTransient) {
+    if (primitive == null) { throw new IllegalArgumentException("primitive can't be null"); }
+
     if (primitive instanceof Character) {
       // convert characters to strings since in JSON, characters are represented as a
-      // single
-      // character string
+      // single character string
       char c = ((Character) primitive).charValue();
       this.value = String.valueOf(c);
     } else {
@@ -88,24 +86,6 @@ public abstract class AbstractJtonPrimitive extends JtonElement {
       // Check to see if the value as a String is "true" in any case.
       return Boolean.parseBoolean(asString());
     }
-  }
-
-  /**
-   * Check whether this primitive contains a Number.
-   *
-   * @return true if this primitive contains a Number, false otherwise.
-   */
-  public boolean isNumber() { return value instanceof Number; }
-
-  /**
-   * convenience method to get this element as a Number.
-   *
-   * @return get this element as a Number.
-   * @throws NumberFormatException if the value contained is not a valid Number.
-   */
-  @Override
-  public Number asNumber() {
-    return value instanceof String ? new LazilyParsedNumber((String) value) : (Number) value;
   }
 
   /**
@@ -146,26 +126,31 @@ public abstract class AbstractJtonPrimitive extends JtonElement {
   }
 
   /**
-   * convenience method to get this element as a primitive double.
+   * Check whether this primitive contains a Number.
    *
-   * @return get this element as a primitive double.
-   * @throws NumberFormatException if the value contained is not a valid double.
+   * @return true if this primitive contains a Number, false otherwise.
    */
-  @Override
-  public double asDouble() {
-    return isNumber() ? asNumber().doubleValue() : Double.parseDouble(asString());
-  }
+  public boolean isNumber() { return value instanceof Number; }
 
   /**
-   * convenience method to get this element as a {@link BigDecimal}.
+   * convenience method to get this element as a Number.
    *
-   * @return get this element as a {@link BigDecimal}.
-   * @throws NumberFormatException if the value contained is not a valid
-   *                               {@link BigDecimal}.
+   * @return get this element as a Number.
+   * @throws NumberFormatException if the value contained is not a valid Number.
    */
   @Override
-  public BigDecimal asBigDecimal() {
-    return value instanceof BigDecimal ? (BigDecimal) value : new BigDecimal(value.toString());
+  public Number asNumber() {
+    if (isNumber()) {
+      return (Number) value;
+    } else if (isBoolean()) {
+      return ((Boolean) value) ? 1 : 0;
+    } else if (value instanceof Date) {
+      return ((Date) value).getTime();
+    } else if (value instanceof byte[]) {
+      throw new NumberFormatException("Can't convert byte array to Number");
+    } else {
+      return new LazilyParsedNumber(value.toString());
+    }
   }
 
   /**
@@ -177,30 +162,69 @@ public abstract class AbstractJtonPrimitive extends JtonElement {
    */
   @Override
   public BigInteger asBigInteger() {
-    return value instanceof BigInteger ? (BigInteger) value : new BigInteger(value.toString());
+    if (value instanceof BigInteger) {
+      return (BigInteger) value;
+    } else if (value instanceof LazilyParsedNumber) {
+      return ((LazilyParsedNumber) value).toBigInteger();
+    } else if (value instanceof Number) {
+      return asBigDecimal().toBigInteger();
+    } else if (value instanceof Boolean) {
+      return ((Boolean) value) ? BigInteger.ONE : BigInteger.ZERO;
+    } else if (value instanceof Date) {
+      return BigInteger.valueOf(((Date) value).getTime());
+    } else {
+      return new BigInteger(value.toString());
+    }
   }
 
   /**
-   * convenience method to get this element as a float.
+   * convenience method to get this element as a {@link BigDecimal}.
    *
-   * @return get this element as a float.
-   * @throws NumberFormatException if the value contained is not a valid float.
+   * @return get this element as a {@link BigDecimal}.
+   * @throws NumberFormatException if the value contained is not a valid
+   *                               {@link BigDecimal}.
    */
   @Override
-  public float asFloat() {
-    return isNumber() ? asNumber().floatValue() : Float.parseFloat(asString());
+  public BigDecimal asBigDecimal() {
+    if (value instanceof BigDecimal) {
+      return (BigDecimal) value;
+    } else if (value instanceof BigInteger) {
+      return new BigDecimal((BigInteger) value);
+    } else if (value instanceof Byte) {
+      return new BigDecimal((Byte) value);
+    } else if (value instanceof Short) {
+      return new BigDecimal((Short) value);
+    } else if (value instanceof Integer) {
+      return new BigDecimal((Integer) value);
+    } else if (value instanceof Long) {
+      return new BigDecimal((Long) value);
+    } else if (value instanceof Float) {
+      return new BigDecimal((Float) value);
+    } else if (value instanceof Double) {
+      return new BigDecimal((Double) value);
+    } else if (value instanceof LazilyParsedNumber) {
+      return ((LazilyParsedNumber) value).toBigDecimal();
+    } else if (value instanceof Boolean) {
+      return ((Boolean) value) ? BigDecimal.ONE : BigDecimal.ZERO;
+    } else if (value instanceof Date) {
+      return new BigDecimal(((Date) value).getTime());
+    } else if (value instanceof byte[]) {
+      throw new NumberFormatException("Can't convert byte array to BigDecimal");
+    } else {
+      return new BigDecimal(value.toString());
+    }
   }
 
   /**
-   * convenience method to get this element as a primitive long.
+   * convenience method to get this element as a primitive byte.
    *
-   * @return get this element as a primitive long.
-   * @throws NumberFormatException if the value contained is not a valid long.
+   * @return get this element as a primitive byte.
+   * @throws NumberFormatException if the value contained is not a valid byte
+   *                               value.
    */
   @Override
-  public long asLong() {
-    return isNumber() ? asNumber().longValue()
-        : value instanceof Date ? ((Date) value).getTime() : Long.parseLong(asString());
+  public byte asByte() {
+    return isNumber() ? ((Number) value).byteValue() : asNumber().byteValue();
   }
 
   /**
@@ -212,24 +236,57 @@ public abstract class AbstractJtonPrimitive extends JtonElement {
    */
   @Override
   public short asShort() {
-    return isNumber() ? asNumber().shortValue() : Short.parseShort(asString());
+    return isNumber() ? ((Number) value).shortValue() : asNumber().shortValue();
   }
 
   /**
    * convenience method to get this element as a primitive integer.
    *
    * @return get this element as a primitive integer.
-   * @throws NumberFormatException if the value contained is not a valid integer.
+   * @throws NumberFormatException if the value contained is not a valid integer
+   *                               value.
    */
   @Override
   public int asInt() {
-    return isNumber() ? asNumber().intValue() : Integer.parseInt(asString());
+    return isNumber() ? ((Number) value).intValue() : asNumber().intValue();
   }
 
+  /**
+   * convenience method to get this element as a primitive long.
+   *
+   * @return get this element as a primitive long.
+   * @throws NumberFormatException if the value contained is not a valid long
+   *                               value.
+   */
   @Override
-  public byte asByte() {
-    return isNumber() ? asNumber().byteValue() : Byte.parseByte(asString());
+  public long asLong() {
+    return isNumber() ? ((Number) value).longValue() : asNumber().longValue();
   }
+
+  /**
+   * convenience method to get this element as a primitive float.
+   *
+   * @return get this element as a primitive float.
+   * @throws NumberFormatException if the value contained is not a valid float
+   *                               value.
+   */
+  @Override
+  public float asFloat() {
+    return isNumber() ? ((Number) value).floatValue() : asNumber().floatValue();
+  }
+
+  /**
+   * convenience method to get this element as a primitive double.
+   *
+   * @return get this element as a primitive double.
+   * @throws NumberFormatException if the value contained is not a valid double.
+   */
+  @Override
+  public double asDouble() {
+    return isNumber() ? ((Number) value).doubleValue() : asNumber().doubleValue();
+  }
+
+  // --
 
   @Override
   public char asCharacter() {
@@ -263,7 +320,7 @@ public abstract class AbstractJtonPrimitive extends JtonElement {
         : isString() ? new java.sql.Timestamp(DatatypeConverter.parseDateTime(asString()).getTime().getTime())
             : new java.sql.Timestamp(asLong(0L));
   }
-  
+
   /**
    * Check whether this primitive contains a buffer (byte array).
    *
@@ -278,8 +335,7 @@ public abstract class AbstractJtonPrimitive extends JtonElement {
    */
   @Override
   public byte[] asBytes() {
-    return value instanceof byte[] ? (byte[]) value : 
-      Base64.getDecoder().decode(asString());
+    return value instanceof byte[] ? (byte[]) value : Base64.getDecoder().decode(asString());
   }
 
   private static boolean isPrimitiveOrString(Object target) {
@@ -289,6 +345,7 @@ public abstract class AbstractJtonPrimitive extends JtonElement {
     for (Class<?> standardPrimitive : PRIMITIVE_TYPES) {
       if (standardPrimitive.isAssignableFrom(classOfPrimitive)) { return true; }
     }
+
     return false;
   }
 

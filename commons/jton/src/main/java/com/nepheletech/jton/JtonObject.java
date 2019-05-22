@@ -265,6 +265,10 @@ public final class JtonObject extends JtonElement implements Map<String, JtonEle
   }
 
   // ---
+  
+  public Number getAsNumber(String memberName) {
+    return getAsJtonPrimitive(memberName).asNumber();
+  }
 
   public BigDecimal getAsBigDecimal(String memberName) {
     return getAsJtonPrimitive(memberName).asBigDecimal();
