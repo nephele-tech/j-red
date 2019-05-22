@@ -30,6 +30,7 @@ import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.jton.JtonTransient;
 import com.nepheletech.jton.internal.Streams;
+import com.nepheletech.jton.jsonpath.JtonPath;
 import com.nepheletech.jton.stream.JsonWriter;
 
 /**
@@ -37,10 +38,19 @@ import com.nepheletech.jton.stream.JsonWriter;
  * {@link JtonObject}, a {@link JtonArray}, a {@link JtonPrimitive} or a
  * {@link JtonNull}.
  *
+ * @author ggeorg
  * @author Inderjeet Singh
  * @author Joel Leitch
  */
 public abstract class JtonElement {
+
+  /**
+   * Initialize JsonPath to use JTON objects.
+   */
+  static {
+    JtonPath.configure();
+  }
+
   /**
    * Returns a deep copy of this element. Immutable elements like primitives and
    * nulls are not copied.
