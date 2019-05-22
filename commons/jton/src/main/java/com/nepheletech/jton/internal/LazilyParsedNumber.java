@@ -65,7 +65,11 @@ public final class LazilyParsedNumber extends Number {
 
   @Override
   public String toString() {
-    return value;
+    try {
+      return new BigDecimal(value).toString();
+    } catch (NumberFormatException nfe) {
+      return Double.toString(Double.NaN);
+    }
   }
 
   /**
