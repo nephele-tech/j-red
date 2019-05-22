@@ -24,12 +24,12 @@ import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
+import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JsonUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonParser;
 import com.nepheletech.jton.JtonPrimitive;
-import com.nepheletech.jton.JsonUtil;
 
 public class ChangeNode extends AbstractNode {
   private static final Logger logger = LoggerFactory.getLogger(ChangeNode.class);
@@ -77,7 +77,11 @@ public class ChangeNode extends AbstractNode {
       final String rule_to = rule.getAsString("to", null);
       final String rule_tot = rule.getAsString("tot", null);
       if ("num".equals(rule_tot)) {
-        rule.set("to", rule.get("to").asNumber());
+        try {
+          rule.set("to", rule.getAsNumber("to"));
+        } catch(NumberFormatException e) {
+          rule.set("to", Double.NaN);
+        }
       } else if ("json".equals(rule_tot) || "bin".equals(rule_tot)) {
         try {
           // check this is parsable JSON
@@ -171,8 +175,8 @@ public class ChangeNode extends AbstractNode {
       value = JRedUtil.getObjectProperty(getContext(rule_tot), value.asString());
     } else if ("date".equals(rule_tot)) {
       value = new JtonPrimitive(System.currentTimeMillis());
-    } else if ("jsonata".equals(rule_tot)) {
-      value = JRedUtil.evaluateJSONataExpression(msg, value.asString());
+    } else if ("jsonpath".equals(rule_tot)) {
+      value = JRedUtil.evaluateJsonPathExpression(msg, value.asString());
     }
 
     String fromType = null;
