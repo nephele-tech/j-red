@@ -26,21 +26,16 @@ import javax.servlet.annotation.WebListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jred.runtime.FlowsRuntime;
-import com.nepheletech.jred.runtime.storage.Storage;
-import com.nepheletech.jton.jsonpath.NepheleJsonPath;
 import com.nepheletech.jred.editor.nodes.NodeRegistry;
 import com.nepheletech.jred.runtime.DefaultFlowsRuntime;
+import com.nepheletech.jred.runtime.FlowsRuntime;
 import com.nepheletech.jred.runtime.storage.LocalFileSystemStorage;
+import com.nepheletech.jred.runtime.storage.Storage;
 import com.nepheletech.messagebus.MessageBus;
 
 @WebListener
 public class ContextListener implements ServletContextListener {
   private static final Logger logger = LoggerFactory.getLogger(ContextListener.class);
-
-  static {
-    NepheleJsonPath.configure();
-  }
 
   public void contextInitialized(ServletContextEvent sce) {
     final ServletContext servletContext = sce.getServletContext();
