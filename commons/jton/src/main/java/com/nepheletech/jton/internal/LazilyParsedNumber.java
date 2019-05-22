@@ -19,7 +19,8 @@ import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 
 /**
- * This class holds a number value that is lazily converted to a specific number type
+ * This class holds a number value that is lazily converted to a specific number
+ * type
  *
  * @author Inderjeet Singh
  */
@@ -63,19 +64,28 @@ public final class LazilyParsedNumber extends Number {
     return Double.parseDouble(value);
   }
 
+  private String cachedString = null;
+
   @Override
   public String toString() {
-    try {
-      return new BigDecimal(value).toString();
-    } catch (NumberFormatException nfe) {
-      return Double.toString(Double.NaN);
+    if (cachedString == null) {
+      synchronized (this) {
+        if (cachedString == null) {
+          try {
+            cachedString = new BigDecimal(value).toString();
+          } catch (NumberFormatException nfe) {
+            cachedString = Double.toString(Double.NaN);
+          }
+        }
+      }
     }
+    return cachedString;
   }
 
   /**
-   * If somebody is unlucky enough to have to serialize one of these, serialize
-   * it as a BigDecimal so that they won't need Gson on the other side to
-   * deserialize it.
+   * If somebody is unlucky enough to have to serialize one of these, serialize it
+   * as a BigDecimal so that they won't need Gson on the other side to deserialize
+   * it.
    */
   private Object writeReplace() throws ObjectStreamException {
     return new BigDecimal(value);
@@ -88,9 +98,7 @@ public final class LazilyParsedNumber extends Number {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
+    if (this == obj) { return true; }
     if (obj instanceof LazilyParsedNumber) {
       LazilyParsedNumber other = (LazilyParsedNumber) obj;
       return value == other.value || value.equals(other.value);
