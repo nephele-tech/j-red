@@ -24,13 +24,13 @@ import org.slf4j.LoggerFactory;
 
 import com.jayway.jsonpath.JsonPath;
 import com.nepheletech.jred.runtime.nodes.Node;
+import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JsonUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonParser;
 import com.nepheletech.jton.JtonPrimitive;
-import com.nepheletech.jton.JsonUtil;
 import com.nepheletech.messagebus.MessageBus;
 
 public final class JRedUtil {
@@ -82,8 +82,8 @@ public final class JRedUtil {
       return getObjectProperty(node.getContext(type), value);
     } else if ("bool".equals(type)) {
       return new JtonPrimitive(Boolean.valueOf(value));
-    } else if ("jsonata".equals(type)) {
-      return evaluateJSONataExpression(msg, value);
+    } else if ("jsonpath".equals(type)) {
+      return evaluateJsonPathExpression(msg, value);
     } else if ("env".equals(type)) {
       if (node != null) {
         return node.getFlow().getSetting(value);
@@ -192,14 +192,21 @@ public final class JRedUtil {
   }
 
   /**
-   * Evaluate a JSONata expression.
+   * Evaluate a JsonPath expression.
    * 
    * @param msg  the message object to evaluate against
-   * @param expr the JSONata expression
+   * @param expr the JsonPath expression
    * @return the result of the expression
    */
-  public static JtonElement evaluateJSONataExpression(JtonObject msg, String expr) {
-    return JsonPath.read(msg, expr);
+  public static JtonElement evaluateJsonPathExpression(JtonObject msg, String expr) {
+    try {
+      return JsonPath.read(msg, expr);
+    } catch (RuntimeException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("JsonPath expr failed: " + expr, e);
+      }
+      return JtonNull.INSTANCE;
+    }
   }
 
   /**
