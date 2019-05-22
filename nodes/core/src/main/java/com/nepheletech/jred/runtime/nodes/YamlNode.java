@@ -33,9 +33,9 @@ public class YamlNode extends AbstractNode {
 
     final JtonElement value = JRedUtil.getMessageProperty(msg, property);
     if (value.isJtonPrimitive() && value.asJtonPrimitive().isString()) {
-      JRedUtil.setMessageproperty(msg, property, yaml2jton(value.asString()), false);
+      JRedUtil.setMessageProperty(msg, property, yaml2jton(value.asString()), false);
     } else {
-      JRedUtil.setMessageproperty(msg, property, new JtonPrimitive(jton2yaml(value)), false);
+      JRedUtil.setMessageProperty(msg, property, new JtonPrimitive(jton2yaml(value)), false);
     }
 
     send(msg);

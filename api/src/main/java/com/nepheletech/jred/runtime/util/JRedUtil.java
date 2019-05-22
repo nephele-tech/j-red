@@ -111,11 +111,21 @@ public final class JRedUtil {
             : JtonPrimitive.create(value);
 
     if ("msg".equals(type)) {
-      setMessageproperty(msg, prop, _value, true);
+      setMessageProperty(msg, prop, _value, true);
     } else if ("flow".equals(type)) {
       setObjectProperty(node.getFlowContext(), prop, _value, true);
     } else if ("global".equals(type)) {
       setObjectProperty(node.getGlobalContext(), prop, _value, true);
+    }
+  }
+  
+  public static void deleteNodeProperty(String prop, String type, Node node, JtonObject msg) {
+    if ("msg".equals(type)) {
+      deleteMessageProperty(msg, prop);
+    } else if ("flow".equals(type)) {
+      deleteObjectProperty(node.getFlowContext(), prop);
+    } else if ("global".equals(type)) {
+      deleteObjectProperty(node.getGlobalContext(), prop);
     }
   }
 
@@ -161,11 +171,25 @@ public final class JRedUtil {
    * @param value         the value to set
    * @param createMissing whether to create missing parent properties
    */
-  public static void setMessageproperty(JtonObject msg, String prop, JtonElement value, boolean createMissing) {
+  public static void setMessageProperty(JtonObject msg, String prop, JtonElement value, boolean createMissing) {
     if (prop.indexOf("msg.") == 0) {
       prop = prop.substring(4);
     }
     setObjectProperty(msg, prop, value, createMissing);
+  }
+
+  /**
+   * Unlike {@link #removeObjectProperty(JtonObject, String)}, this function will
+   * strip `msg.` from the front of the property expression if present.
+   * 
+   * @param msg  the message object
+   * @param prop the property expression
+   */
+  public static void deleteMessageProperty(JtonObject msg, String prop) {
+    if (prop.indexOf("msg.") == 0) {
+      prop = prop.substring(4);
+    }
+    deleteObjectProperty(msg, prop);
   }
 
   /**
@@ -189,6 +213,16 @@ public final class JRedUtil {
    */
   public static void setObjectProperty(final JtonObject msg, String prop, JtonElement value, boolean createMissing) {
     JsonUtil.setProperty(msg, prop, value, createMissing);
+  }
+
+  /**
+   * Delete a property of an object.
+   * 
+   * @param msg  the object
+   * @param prop the property expression
+   */
+  public static void deleteObjectProperty(final JtonObject msg, String prop) {
+    JsonUtil.deleteProperty(msg, prop);
   }
 
   /**

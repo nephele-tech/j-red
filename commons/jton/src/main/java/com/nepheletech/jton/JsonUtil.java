@@ -109,8 +109,59 @@ public final class JsonUtil {
         for (int idx = array.size() - 1; idx < index; idx++) {
           array.push(JtonNull.INSTANCE);
         }
-        
+
         e.asJtonArray().set(index, value);
+      } else {
+        throw new IllegalArgumentException("expecting array index: " + lastPath);
+      }
+    }
+  }
+
+  /**
+   * Delete a property of an object.
+   * 
+   * @param msg  the object
+   * @param prop the property expression
+   */
+  public static void deleteProperty(final JtonObject msg, String prop) {
+    if (msg == null) { throw new IllegalArgumentException("'msg' is null"); }
+    if (prop == null) { throw new IllegalArgumentException("'prop' is null"); }
+    deleteProperty(msg, parsePath(prop));
+  }
+
+  public static void deleteProperty(JtonObject msg, List<String> path) {
+    JtonElement e = msg;
+
+    final String lastPath = path.get(path.size() - 1);
+
+    for (int i = 0, n = path.size() - 1; i < n; i++) {
+      String prop = path.get(i);
+
+      if (e.isJtonObject()) {
+        e = e.asJtonObject().get(prop);
+      } else if (e.isJtonArray()) {
+        if (prop.startsWith("[")) {
+          e = e.asJtonArray().get(Integer.parseInt(prop.substring(1).trim()));
+        } else {
+          throw new IllegalArgumentException("expecting array index: " + prop);
+        }
+      }
+
+      if (e.isJtonNull() || e.isJtonPrimitive()) { return; }
+    }
+
+    if (e.isJtonObject()) {
+      e.asJtonObject().remove(lastPath);
+    } else if (e.isJtonArray()) {
+      if (lastPath.startsWith("[")) {
+        final JtonArray array = e.asJtonArray();
+        final int index = Integer.parseInt(lastPath.substring(1).trim());
+
+        for (int idx = array.size() - 1; idx < index; idx++) {
+          array.push(JtonNull.INSTANCE);
+        }
+
+        e.asJtonArray().remove(index);
       } else {
         throw new IllegalArgumentException("expecting array index: " + lastPath);
       }

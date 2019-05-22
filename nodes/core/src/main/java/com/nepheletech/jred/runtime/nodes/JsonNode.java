@@ -50,7 +50,7 @@ public class JsonNode extends AbstractNode {
       if (value.isJtonPrimitive() && value.asJtonPrimitive().isString()) {
         if ("".equals(action) || "obj".equals(action)) {
           try {
-            JRedUtil.setMessageproperty(msg, property, JsonParser.parse(value.asString()), false);
+            JRedUtil.setMessageProperty(msg, property, JsonParser.parse(value.asString()), false);
           } catch (JsonSyntaxException e) {
             error(e, msg);
           }
@@ -59,7 +59,7 @@ public class JsonNode extends AbstractNode {
       } else {
         if ("".equals(action) || "str".equals(action)) {
           // TODO Buffer
-          JRedUtil.setMessageproperty(msg, property,
+          JRedUtil.setMessageProperty(msg, property,
               JtonPrimitive.create(pretty ? value.toString("   ") : value.toString()), false);
         }
         send(msg);

@@ -197,9 +197,9 @@ public class ChangeNode extends AbstractNode {
 
     if ("msg".equals(rule_pt)) {
       if ("delete".equals(rule_t)) {
-        JRedUtil.setMessageproperty(msg, property, null, false);
+        JRedUtil.deleteMessageProperty(msg, property);
       } else if ("set".equals(rule_t)) {
-        JRedUtil.setMessageproperty(msg, property, value, true);
+        JRedUtil.setMessageProperty(msg, property, value, true);
       } else if ("change".equals(rule_t)) {
         final JtonPrimitive current = JsonUtil.getProperty(msg, property).asJtonPrimitive(false);
         if (current != null) {
@@ -231,7 +231,7 @@ public class ChangeNode extends AbstractNode {
       }
       if (target != null) {
         if ("delete".equals(rule_t)) {
-          JsonUtil.setProperty(target, property, null, false);
+          JRedUtil.deleteObjectProperty(target, property);
         } else if ("set".equals(rule_t)) {
           JsonUtil.setProperty(target, property, value, true);
         } else if ("change".equals(rule_t)) {

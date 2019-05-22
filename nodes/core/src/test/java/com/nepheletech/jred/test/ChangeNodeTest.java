@@ -133,6 +133,33 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
+  @Test
+  public void deleteProperty() {
+    ChangeNode node = create(new JtonObject()
+        .set("rules", new JtonArray()
+            .push(new JtonObject()
+                .set("t", "delete")
+                .set("p", "Address.Street")
+                .set("pt", "msg"))));
+
+    JtonObject msg = new JtonObject()
+        .set("_msgid", 1)
+        .set("Address", new JtonObject()
+            .set("Street", "Hursley Park")
+            .set("City", "Winchester")
+            .set("Postcode", "SO21 2JN"));
+
+    JtonObject expected = msg.deepCopy();
+    expected.getAsJtonObject("Address")
+        .remove("Street");
+
+    node.on("#send", (topic, message) -> {
+      Assert.assertEquals(message.toString(), expected.toString());
+    });
+
+    node.receive(msg);
+  }
+
   ChangeNode create(JtonObject config) {
     return create(createFlow(), config
         .set("id", UUID.randomUUID().toString()));
