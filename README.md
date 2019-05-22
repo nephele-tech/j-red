@@ -29,7 +29,7 @@ docker attach my-jred-console
 To stop the container:
 
 ```
-docker stop my-jred-container
+docker stop my-jred-console
 ```
 
 To start the container
