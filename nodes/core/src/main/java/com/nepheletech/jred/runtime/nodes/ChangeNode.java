@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JsonParser;
-import com.nepheletech.jton.JsonUtil;
+import com.nepheletech.jton.JtonUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
@@ -201,25 +201,25 @@ public class ChangeNode extends AbstractNode {
       } else if ("set".equals(rule_t)) {
         JRedUtil.setMessageProperty(msg, property, value, true);
       } else if ("change".equals(rule_t)) {
-        final JtonPrimitive current = JsonUtil.getProperty(msg, property).asJtonPrimitive(false);
+        final JtonPrimitive current = JtonUtil.getProperty(msg, property).asJtonPrimitive(false);
         if (current != null) {
           if (current.isString()) {
             if (("num".equals(fromType) || "bool".equals(fromType) || "str".equals(fromType))
                 && current.asString().equals(fromValue.asString())) {
               // str representation of exact from number/boolean
               // only replace if they match exactly
-              JsonUtil.setProperty(msg, property, value, true);
+              JtonUtil.setProperty(msg, property, value, true);
             } else {
               // TODO regular expression
               throw new UnsupportedOperationException();
             }
           } else if (current.isNumber() && "num".equals(fromType)) {
             if (current.asNumber().equals(fromValue.asNumber())) {
-              JsonUtil.setProperty(msg, property, value, true);
+              JtonUtil.setProperty(msg, property, value, true);
             }
           } else if (current.isBoolean() && "bool".equals(fromType)) {
             if (current.asBoolean() == fromValue.asBoolean()) {
-              JsonUtil.setProperty(msg, property, value, true);
+              JtonUtil.setProperty(msg, property, value, true);
             }
           }
         }
@@ -233,26 +233,26 @@ public class ChangeNode extends AbstractNode {
         if ("delete".equals(rule_t)) {
           JRedUtil.deleteObjectProperty(target, property);
         } else if ("set".equals(rule_t)) {
-          JsonUtil.setProperty(target, property, value, true);
+          JtonUtil.setProperty(target, property, value, true);
         } else if ("change".equals(rule_t)) {
-          final JtonPrimitive current = JsonUtil.getProperty(target, property).asJtonPrimitive(null);
+          final JtonPrimitive current = JtonUtil.getProperty(target, property).asJtonPrimitive(null);
           if (current != null) {
             if (current.isString()) {
               if (("num".equals(fromType) || "bool".equals(fromType) || "str".equals(fromType))
                   && current.asString().equals(fromValue.asString())) {
                 // str representation of exact from number/boolean
                 // only replace if they match exactly
-                JsonUtil.setProperty(target, property, value, true);
+                JtonUtil.setProperty(target, property, value, true);
               } else {
                 throw new UnsupportedOperationException(); // XXX
               }
             } else if (current.isNumber() && "num".equals(fromType)) {
               if (current.asNumber().equals(fromValue.asNumber())) {
-                JsonUtil.setProperty(target, property, value, true);
+                JtonUtil.setProperty(target, property, value, true);
               }
             } else if (current.isBoolean() && "bool".equals(fromType)) {
               if (current.asBoolean() == fromValue.asBoolean()) {
-                JsonUtil.setProperty(target, property, value, true);
+                JtonUtil.setProperty(target, property, value, true);
               }
             }
           }

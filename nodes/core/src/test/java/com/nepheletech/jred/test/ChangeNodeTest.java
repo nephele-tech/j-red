@@ -159,6 +159,73 @@ public class ChangeNodeTest extends NodeTest {
 
     node.receive(msg);
   }
+  
+  @Test
+  public void deleteIndex() {System.out.println(">>>>>>>> deleteIndex");
+    ChangeNode node = create(new JtonObject()
+        .set("rules", new JtonArray()
+            .push(new JtonObject()
+                .set("t", "delete")
+                .set("p", "Phone[1]")
+                .set("pt", "msg"))));
+
+    JtonObject msg = new JtonObject()
+        .set("_msgid", 1)
+        .set("Phone", new JtonArray()
+            .push(new JtonObject()
+                .set("type", "home")
+                .set("number", "0203 544 1234"))
+            .push(new JtonObject()
+                .set("type", "office")
+                .set("number", "01962 001234"))
+            .push(new JtonObject()
+                .set("type", "mobile")
+                .set("number", "077 7700 1234")));
+
+    JtonObject expected = msg.deepCopy();
+    expected.getAsJtonArray("Phone")
+        .remove(1);
+
+    node.on("#send", (topic, message) -> {
+      Assert.assertEquals(message.toString(), expected.toString());
+    });
+
+    node.receive(msg);
+  }
+  
+  @Test
+  public void deleteIndex4() {System.out.println(">>>>>>>> deleteIndex4");
+    ChangeNode node = create(new JtonObject()
+        .set("rules", new JtonArray()
+            .push(new JtonObject()
+                .set("t", "delete")
+                .set("p", "Phone[4]")
+                .set("pt", "msg"))));
+
+    JtonObject msg = new JtonObject()
+        .set("_msgid", 1)
+        .set("Phone", new JtonArray()
+            .push(new JtonObject()
+                .set("type", "home")
+                .set("number", "0203 544 1234"))
+            .push(new JtonObject()
+                .set("type", "office")
+                .set("number", "01962 001234"))
+            .push(new JtonObject()
+                .set("type", "mobile")
+                .set("number", "077 7700 1234")));
+
+    JtonObject expected = msg.deepCopy();
+
+    node.on("#send", (topic, message) -> {
+      
+      System.out.println(message);
+      
+      Assert.assertEquals(message.toString(), expected.toString());
+    });
+
+    node.receive(msg);
+  }
 
   ChangeNode create(JtonObject config) {
     return create(createFlow(), config

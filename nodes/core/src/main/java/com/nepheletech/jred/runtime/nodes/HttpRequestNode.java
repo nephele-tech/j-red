@@ -68,7 +68,7 @@ import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JsonParser;
 import com.nepheletech.jton.JtonPrimitive;
-import com.nepheletech.jton.JsonUtil;
+import com.nepheletech.jton.JtonUtil;
 
 public class HttpRequestNode extends AbstractNode implements HasCredentials {
 
@@ -272,7 +272,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
         HttpEntity entity;
 
         final JtonElement payload = msg.get("payload");
-        final String contentType = JsonUtil.getProperty(msg, "headers." + ctSet).asString(null);
+        final String contentType = JtonUtil.getProperty(msg, "headers." + ctSet).asString(null);
         if (payload.isJtonPrimitive()) {
           if (contentType == null) {
             entity = new StringEntity(payload.asString(), ContentType.TEXT_PLAIN);

@@ -1,14 +1,8 @@
 package com.nepheletech.jton;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import com.nepheletech.jton.JtonArray;
-import com.nepheletech.jton.JtonElement;
-import com.nepheletech.jton.JtonNull;
-import com.nepheletech.jton.JtonObject;
-
-public final class JsonUtil {
+public final class JtonUtil {
 
   /**
    * Gets a property of an object.
@@ -23,11 +17,11 @@ public final class JsonUtil {
     return getProperty(msg, parsePath(expr));
   }
 
-  public static JtonElement getProperty(JtonObject root, List<String> path) {
+  public static JtonElement getProperty(JtonObject root, String[] path) {
     JtonElement e = root;
 
-    for (int i = 0, n = path.size(); i < n; i++) {
-      String prop = path.get(i);
+    for (int i = 0, n = path.length; i < n; i++) {
+      String prop = path[i];
 
       if (e.isJtonObject()) {
         e = e.asJtonObject().get(prop);
@@ -59,13 +53,13 @@ public final class JsonUtil {
     setObjectProperty(msg, parsePath(prop), value, createMissing);
   }
 
-  public static void setObjectProperty(JtonObject msg, List<String> path, JtonElement value, boolean createMissing) {
+  public static void setObjectProperty(JtonObject msg, String[] path, JtonElement value, boolean createMissing) {
     JtonElement e = msg;
 
-    final String lastPath = path.get(path.size() - 1);
+    final String lastPath = path[path.length - 1];
 
-    for (int i = 0, n = path.size() - 1; i < n; i++) {
-      String prop = path.get(i);
+    for (int i = 0, n = path.length - 1; i < n; i++) {
+      String prop = path[i];
 
       JtonElement parent = e;
 
@@ -81,7 +75,7 @@ public final class JsonUtil {
 
       if (createMissing
           && (e.isJtonNull() || e.isJtonPrimitive())) {
-        final String nextProp = path.get(i + 1);
+        final String nextProp = path[i + 1];
         if (parent.isJtonObject()) {
           if (nextProp.startsWith("[")) {
             parent.asJtonObject().set(prop, e = new JtonArray());
@@ -120,34 +114,40 @@ public final class JsonUtil {
   /**
    * Delete a property of an object.
    * 
-   * @param msg  the object
+   * @param obj  the object
    * @param prop the property expression
    */
-  public static void deleteProperty(final JtonObject msg, String prop) {
-    if (msg == null) { throw new IllegalArgumentException("'msg' is null"); }
+  public static void deleteProperty(final JtonObject obj, String prop) {
+    if (obj == null) { throw new IllegalArgumentException("'obj' is null"); }
     if (prop == null) { throw new IllegalArgumentException("'prop' is null"); }
-    deleteProperty(msg, parsePath(prop));
+    deleteProperty(obj, parsePath(prop));
   }
 
-  public static void deleteProperty(JtonObject msg, List<String> path) {
-    JtonElement e = msg;
+  public static void deleteProperty(JtonObject obj, String[] path) {
+    JtonElement e = obj;
 
-    final String lastPath = path.get(path.size() - 1);
+    final String lastPath = path[path.length - 1];
 
-    for (int i = 0, n = path.size() - 1; i < n; i++) {
-      String prop = path.get(i);
+    for (int i = 0, n = path.length - 1; i < n; i++) {
+      final String prop = path[i];
 
       if (e.isJtonObject()) {
         e = e.asJtonObject().get(prop);
       } else if (e.isJtonArray()) {
         if (prop.startsWith("[")) {
-          e = e.asJtonArray().get(Integer.parseInt(prop.substring(1).trim()));
+          final JtonArray array = e.asJtonArray();
+          final int index = Integer.parseInt(prop.substring(1).trim());
+          if (index >= 0 && index < array.size()) {
+            e = array.get(index);
+          } else {
+            return;
+          }
         } else {
-          throw new IllegalArgumentException("expecting array index: " + prop);
+          return;
         }
+      } else {
+        return;
       }
-
-      if (e.isJtonNull() || e.isJtonPrimitive()) { return; }
     }
 
     if (e.isJtonObject()) {
@@ -156,19 +156,16 @@ public final class JsonUtil {
       if (lastPath.startsWith("[")) {
         final JtonArray array = e.asJtonArray();
         final int index = Integer.parseInt(lastPath.substring(1).trim());
-
-        for (int idx = array.size() - 1; idx < index; idx++) {
-          array.push(JtonNull.INSTANCE);
+        if (index >= 0 && index < array.size()) {
+          array.remove(index);
         }
-
-        e.asJtonArray().remove(index);
       } else {
-        throw new IllegalArgumentException("expecting array index: " + lastPath);
+        return;
       }
     }
   }
 
-  public static List<String> parsePath(String path) {
+  public static String[] parsePath(String path) {
     if (path == null) { throw new IllegalArgumentException("path is null."); }
 
     final ArrayList<String> keys = new ArrayList<String>();
@@ -260,10 +257,10 @@ public final class JsonUtil {
       keys.add(identifierBuilder.toString().trim());
     }
 
-    return keys;
+    return keys.toArray(new String[keys.size()]);
   }
 
   // ---
 
-  private JsonUtil() {}
+  private JtonUtil() {}
 }

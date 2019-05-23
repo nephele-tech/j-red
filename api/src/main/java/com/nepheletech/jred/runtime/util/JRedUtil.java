@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.jayway.jsonpath.JsonPath;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jton.JsonParser;
-import com.nepheletech.jton.JsonUtil;
+import com.nepheletech.jton.JtonUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
@@ -200,7 +200,7 @@ public final class JRedUtil {
    * @return the object property, or undefined if it does not exist
    */
   public static JtonElement getObjectProperty(JtonObject msg, String expr) {
-    return JsonUtil.getProperty(msg, expr);
+    return JtonUtil.getProperty(msg, expr);
   }
 
   /**
@@ -212,7 +212,7 @@ public final class JRedUtil {
    * @param createMissing whether to create parent properties
    */
   public static void setObjectProperty(final JtonObject msg, String prop, JtonElement value, boolean createMissing) {
-    JsonUtil.setProperty(msg, prop, value, createMissing);
+    JtonUtil.setProperty(msg, prop, value, createMissing);
   }
 
   /**
@@ -222,7 +222,7 @@ public final class JRedUtil {
    * @param prop the property expression
    */
   public static void deleteObjectProperty(final JtonObject msg, String prop) {
-    JsonUtil.deleteProperty(msg, prop);
+    JtonUtil.deleteProperty(msg, prop);
   }
 
   /**

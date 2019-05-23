@@ -26,7 +26,7 @@ import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonUtil;
+import com.nepheletech.jton.JtonUtil;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 
@@ -80,7 +80,7 @@ public class HttpInNode extends AbstractNode implements NodesStartedEventListene
 
     // TODO uploads...
 
-    logger.info("-------------------------{}", JsonUtil.getProperty(msg, "req._pathInfo"));
+    logger.info("-------------------------{}", JtonUtil.getProperty(msg, "req._pathInfo"));
 
     send(msg);
   }

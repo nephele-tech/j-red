@@ -19,7 +19,7 @@
  */
 package com.nepheletech.dao;
 
-import static com.nepheletech.jton.JsonUtil.getProperty;
+import static com.nepheletech.jton.JtonUtil.getProperty;
 
 import java.util.List;
 
