@@ -159,9 +159,9 @@ public class ChangeNodeTest extends NodeTest {
 
     node.receive(msg);
   }
-  
+
   @Test
-  public void deleteIndex() {System.out.println(">>>>>>>> deleteIndex");
+  public void deleteIndex() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
             .push(new JtonObject()
@@ -192,9 +192,9 @@ public class ChangeNodeTest extends NodeTest {
 
     node.receive(msg);
   }
-  
+
   @Test
-  public void deleteIndex4() {System.out.println(">>>>>>>> deleteIndex4");
+  public void deleteIndex4() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
             .push(new JtonObject()
@@ -218,10 +218,67 @@ public class ChangeNodeTest extends NodeTest {
     JtonObject expected = msg.deepCopy();
 
     node.on("#send", (topic, message) -> {
-      
-      System.out.println(message);
-      
       Assert.assertEquals(message.toString(), expected.toString());
+    });
+
+    node.receive(msg);
+  }
+
+  @Test
+  public void deleteArrayIndex2() {
+    ChangeNode node = create(new JtonObject()
+        .set("rules", new JtonArray()
+            .push(new JtonObject()
+                .set("t", "delete")
+                .set("p", "array[2]")
+                .set("pt", "msg"))));
+
+    JtonObject msg = new JtonObject()
+        .set("_msgid", 1)
+        .set("array", new JtonArray()
+            .push(1)
+            .push(2)
+            .push(3)
+            .push(4)
+            .push(5)
+            .push(6)
+            .push(7)
+            .push(8)
+            .push(9)
+            .push(0));
+
+    node.on("#send", (String topic, JtonObject message) -> {
+      Assert.assertEquals(message.getAsJtonArray("array").size(), 9);
+    });
+
+    node.receive(msg);
+  }
+
+  @Test
+  public void deleteArrayProp() {
+    ChangeNode node = create(new JtonObject()
+        .set("rules", new JtonArray()
+            .push(new JtonObject()
+                .set("t", "delete")
+                .set("p", "array.lala")
+                .set("pt", "msg"))));
+
+    JtonObject msg = new JtonObject()
+        .set("_msgid", 1)
+        .set("array", new JtonArray()
+            .push(1)
+            .push(2)
+            .push(3)
+            .push(4)
+            .push(5)
+            .push(6)
+            .push(7)
+            .push(8)
+            .push(9)
+            .push(0));
+
+    node.on("#send", (String topic, JtonObject message) -> {
+      Assert.assertEquals(message.getAsJtonArray("array").size(), 10);
     });
 
     node.receive(msg);

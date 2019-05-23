@@ -29,4 +29,16 @@ public class JtonUtilTests {
     Assert.assertEquals(o.getAsJtonArray("array").size(), 0);
   }
 
+  @Test
+  public void removeArrayProp() {
+    JtonObject o = new JtonObject()
+        .set("array", new JtonArray()
+            .push(0)
+            .push(1)
+            .push(2));
+
+    JtonUtil.deleteProperty(o, "array.lala");
+
+    Assert.assertEquals(o.getAsJtonArray("array").size(), 3);
+  }
 }
