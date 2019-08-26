@@ -10,11 +10,11 @@
 	<artifactId>jred-editor</artifactId>
 	<packaging>war</packaging>
 	<dependencies>
-    <dependency>
-      <groupId>com.nepheletech</groupId>
-      <artifactId>servlet-utils</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>servlet-utils</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.nepheletech</groupId>
 			<artifactId>jred-runtime</artifactId>
@@ -25,26 +25,31 @@
 			<artifactId>jred-core-nodes</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-    <dependency>
-      <groupId>com.nepheletech</groupId>
-      <artifactId>jred-sql-nodes</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.nepheletech</groupId>
-      <artifactId>jred-kafka-nodes</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.nepheletech</groupId>
-      <artifactId>jred-email-nodes</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.nepheletech</groupId>
-      <artifactId>jred-ftp-nodes</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>jred-sql-nodes</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>jred-kafka-nodes</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>jred-email-nodes</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>jred-ftp-nodes</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>logging</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 
 		<!-- SLF4J -->
 
@@ -54,16 +59,16 @@
 			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>jul-to-slf4j</artifactId>
-		    <version>${slf4j.version}</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>${slf4j.version}</version>
 		</dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
-    </dependency>
-    
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+
 
 		<!-- JavaEE Parts -->
 
@@ -108,7 +113,7 @@
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
-			<version>RELEASE</version>
+			<version>0.9.11</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -168,7 +173,7 @@
 							<outputDirectory>${basedir}/target/${project.artifactId}/debug/view</outputDirectory>
 							<resources>
 								<resource>
-									<directory>node-red/node-red-${node-red.version}/packages/node_modules/@node-red/nodes/core/core/lib/debug</directory>
+									<directory>node-red/node-red-${node-red.version}/packages/node_modules/@node-red/nodes/core/common/lib/debug</directory>
 									<filtering>false</filtering>
 								</resource>
 							</resources>
@@ -224,43 +229,43 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
-			 <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <version>${docker-maven-plugin.version}</version>
-        <configuration>
-          <images>
-            <image>
-              <alias>${project.artifactId}</alias>
-              <name>${docker.repository}:${project.artifactId}-${build.version}</name>
-              <registry>${docker.registry}</registry>
-              <build>
-                <from>tomcat:${tomcat.version}-jre8-slim</from>
-                <assembly>
-                  <mode>dir</mode>
-                  <!-- <targetDir>/opt/${project.artifactId}</targetDir> -->
-                  <targetDir>/usr/local/tomcat</targetDir>
-                  <descriptor>assembly.xml</descriptor>
-                </assembly>
-                <env>
-                  
-                </env>
-                <runCmds>
-                  <runCmd><![CDATA[chmod +x ./catalina-run.sh]]></runCmd>
-                </runCmds>
-                <cmd><![CDATA[./catalina-run.sh]]></cmd>
-              </build>
-              <run>
-                <ports>
-                  <port>8888:8080</port>
-                </ports>
-                <env>
-                </env>
-              </run>
-            </image>
-          </images>
-        </configuration>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker-maven-plugin.version}</version>
+				<configuration>
+					<images>
+						<image>
+							<alias>${project.artifactId}</alias>
+							<name>${docker.repository}:${project.artifactId}-${build.version}</name>
+							<registry>${docker.registry}</registry>
+							<build>
+								<from>tomcat:${tomcat.version}-jre8-slim</from>
+								<assembly>
+									<mode>dir</mode>
+									<!-- <targetDir>/opt/${project.artifactId}</targetDir> -->
+									<targetDir>/usr/local/tomcat</targetDir>
+									<descriptor>assembly.xml</descriptor>
+								</assembly>
+								<env>
+
+								</env>
+								<runCmds>
+									<runCmd><![CDATA[chmod +x ./catalina-run.sh]]></runCmd>
+								</runCmds>
+								<cmd><![CDATA[./catalina-run.sh]]></cmd>
+							</build>
+							<run>
+								<ports>
+									<port>8888:8080</port>
+								</ports>
+								<env>
+								</env>
+							</run>
+						</image>
+					</images>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
