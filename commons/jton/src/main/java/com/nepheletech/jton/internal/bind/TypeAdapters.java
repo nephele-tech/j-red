@@ -756,7 +756,8 @@ public final class TypeAdapters {
       } else if (value.isJtonObject()) {
         out.beginObject();
         for (Map.Entry<String, JtonElement> e : value.asJtonObject().entrySet()) {
-          if (!e.getValue().isJtonTransient()) { // ggeorg
+          if (!(e.getValue().isJtonPrimitive() 
+              && e.getValue().asJtonPrimitive().isJtonTransient())) { // ggeorg
             out.name(e.getKey());
             write(out, e.getValue());
           }

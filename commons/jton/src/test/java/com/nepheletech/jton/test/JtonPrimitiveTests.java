@@ -11,7 +11,7 @@ public class JtonPrimitiveTests {
 
   @Test(expected = IllegalArgumentException.class)
   public void nullValue() {
-    JtonPrimitive.create(null);
+    new JtonPrimitive(null, false);
   }
 
   @Test

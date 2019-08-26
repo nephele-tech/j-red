@@ -22,13 +22,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
-import com.nepheletech.jton.AbstractJtonPrimitive;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
-import com.nepheletech.jton.JtonTransient;
 import com.nepheletech.jton.internal.Streams;
 import com.nepheletech.jton.jsonpath.JtonPath;
 import com.nepheletech.jton.stream.JsonWriter;
@@ -79,15 +77,7 @@ public abstract class JtonElement {
    * @return true if this element is of type {@link JtonPrimitive}, false
    *         otherwise.
    */
-  public boolean isJtonPrimitive() { return this instanceof AbstractJtonPrimitive; }
-
-  /**
-   * provides check for verifying if this element is a transient or not.
-   *
-   * @return true if this element is of type {@link JtonTransient}, false
-   *         otherwise.
-   */
-  public boolean isJtonTransient() { return this instanceof JtonTransient; }
+  public boolean isJtonPrimitive() { return this instanceof JtonPrimitive; }
 
   /**
    * provides check for verifying if this element represents a null value or not.
@@ -159,30 +149,9 @@ public abstract class JtonElement {
     return isJtonPrimitive() ? asJtonPrimitive() : defaultValue;
   }
 
+  @Deprecated
   public JtonPrimitive asJtonPrimitive(final Object value) {
-    return isJtonPrimitive() ? asJtonPrimitive() : value != null ? new JtonPrimitive(value) : null;
-  }
-
-  /**
-   * convenience method to get this element as a {@link JtonTransient}. If the
-   * element is of some other type, a {@link IllegalStateException} will result.
-   * Hence it is best to use this method after ensuring that this element is of
-   * the desired type by calling {@link #isJtonTransient()} first.
-   *
-   * @return get this element as a {@link JtonTransient}.
-   * @throws IllegalStateException if the element is of another type.
-   */
-  public JtonTransient asJtonTransient() {
-    if (isJtonTransient()) { return (JtonTransient) this; }
-    throw new IllegalStateException("Not a Jton Transient: " + this);
-  }
-
-  public JtonTransient asJtonTransient(final JtonTransient defaultValue) {
-    return isJtonTransient() ? asJtonTransient() : defaultValue;
-  }
-
-  public JtonTransient asJtonTransient(final Object value) {
-    return isJtonTransient() ? asJtonTransient() : value != null ? new JtonTransient(value) : null;
+    return isJtonPrimitive() ? asJtonPrimitive() : value != null ? new JtonPrimitive(value, false) : null;
   }
 
   /**
@@ -242,6 +211,14 @@ public abstract class JtonElement {
    */
   public Number asNumber() {
     throw new UnsupportedOperationException(getClass().getSimpleName());
+  }
+
+  public Number asNumber(Number defaultValue) {
+    try {
+      return isJtonPrimitive() ? asNumber() : defaultValue;
+    } catch (RuntimeException e) {
+      return defaultValue;
+    }
   }
 
   /**

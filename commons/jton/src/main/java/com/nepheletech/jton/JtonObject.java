@@ -28,7 +28,6 @@ import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
-import com.nepheletech.jton.JtonTransient;
 import com.nepheletech.jton.internal.LinkedTreeMap;
 
 /**
@@ -162,7 +161,7 @@ public final class JtonObject extends JtonElement implements Map<String, JtonEle
   }
 
   private JtonElement createJtonElement(Object value, boolean jtonTransient) {
-    return value == null ? JtonNull.INSTANCE : jtonTransient ? new JtonTransient(value) : new JtonPrimitive(value);
+    return value == null ? JtonNull.INSTANCE : new JtonPrimitive(value, jtonTransient);
   }
 
   /**
@@ -234,6 +233,7 @@ public final class JtonObject extends JtonElement implements Map<String, JtonEle
     return get(memberName).asJtonPrimitive(defaultValue);
   }
 
+  @Deprecated
   public JtonPrimitive getAsJtonPrimitive(String memberName, Object value) {
     return get(memberName).asJtonPrimitive(value);
   }
@@ -242,32 +242,14 @@ public final class JtonObject extends JtonElement implements Map<String, JtonEle
     return get(memberName).isJtonPrimitive();
   }
 
-  /**
-   * Convenience method to get the specified member as a JtonTransient element.
-   *
-   * @param memberName name of the member being requested.
-   * @return the JtonTransient corresponding to the specified member.
-   */
-  public JtonTransient getAsJtonTransient(String memberName) {
-    return get(memberName).asJtonTransient();
-  }
-
-  public JtonTransient getAsJtonTransient(String memberName, JtonTransient defaultValue) {
-    return get(memberName).asJtonTransient(defaultValue);
-  }
-
-  public JtonTransient getAsJtonTransient(String memberName, Object value) {
-    return get(memberName).asJtonTransient(value);
-  }
-
-  public boolean isJtonTransient(String memberName) {
-    return get(memberName).isJtonTransient();
-  }
-
   // ---
   
   public Number getAsNumber(String memberName) {
     return getAsJtonPrimitive(memberName).asNumber();
+  }
+  
+  public Number getAsNumber(String memberName, Number defaultValue) {
+    return getAsJtonPrimitive(memberName).asNumber(defaultValue);
   }
 
   public BigDecimal getAsBigDecimal(String memberName) {
