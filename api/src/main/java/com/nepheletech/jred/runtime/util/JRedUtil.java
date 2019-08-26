@@ -108,7 +108,7 @@ public final class JRedUtil {
         ? (JtonElement) value
         : value == null
             ? JtonNull.INSTANCE
-            : JtonPrimitive.create(value);
+            : new JtonPrimitive(value, false);
 
     if ("msg".equals(type)) {
       setMessageProperty(msg, prop, _value, true);
@@ -118,7 +118,7 @@ public final class JRedUtil {
       setObjectProperty(node.getGlobalContext(), prop, _value, true);
     }
   }
-  
+
   public static void deleteNodeProperty(String prop, String type, Node node, JtonObject msg) {
     if ("msg".equals(type)) {
       deleteMessageProperty(msg, prop);
@@ -226,6 +226,15 @@ public final class JRedUtil {
   }
 
   /**
+   * 
+   * @param expr
+   * @return
+   */
+  public static JsonPath prepareJsonPathExpression(String expr) {
+    return JsonPath.compile(expr);
+  }
+
+  /**
    * Evaluate a JsonPath expression.
    * 
    * @param msg  the message object to evaluate against
@@ -238,6 +247,24 @@ public final class JRedUtil {
     } catch (RuntimeException e) {
       if (logger.isDebugEnabled()) {
         logger.debug("JsonPath expr failed: " + expr, e);
+      }
+      return JtonNull.INSTANCE;
+    }
+  }
+
+  /**
+   * Evaluate a JsonPath expression.
+   * 
+   * @param msg
+   * @param value
+   * @return
+   */
+  public static JtonElement evaluateJsonPathExpression(JtonObject msg, JsonPath jsonPath) {
+    try {
+      return jsonPath.read(msg);
+    } catch (RuntimeException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("JsonPath expr failed: " + jsonPath != null ? jsonPath.getPath() : null, e);
       }
       return JtonNull.INSTANCE;
     }
