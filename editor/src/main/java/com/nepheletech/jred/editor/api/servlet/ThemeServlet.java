@@ -8,20 +8,22 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.nepheletech.jred.editor.Constants;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.logging.Log;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/theme/*" })
 public class ThemeServlet extends HttpServlet implements Constants {
   private static final long serialVersionUID = 3329782740958432573L;
   
-  private static final Log LOG = Log.get(ThemeServlet.class);
+  private static final Logger logger = LoggerFactory.getLogger(ThemeServlet.class);
   
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-    LOG.t(">>> doGet: ", req.getRequestURI());
+    logger.trace(">>> doGet: {}", req.getRequestURI());
     
     if (HttpServletUtil.acceptsJSON(req)) {
       HttpServletUtil.sendJSON(res, new JtonObject()

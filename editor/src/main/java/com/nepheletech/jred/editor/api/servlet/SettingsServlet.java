@@ -27,6 +27,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.nepheletech.jred.editor.Constants;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonObject;
@@ -37,8 +40,12 @@ import com.nepheletech.servlet.utils.HttpServletUtil;
 public class SettingsServlet extends HttpServlet implements Constants {
   private static final long serialVersionUID = -5461293724531203226L;
 
+  private static final Logger logger = LoggerFactory.getLogger(SettingsServlet.class);
+
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    logger.trace(">>> doGet: {}", req.getRequestURI());
+
     if (HttpServletUtil.acceptsJSON(req)) {
       final String pathInfo = req.getPathInfo();
       final JtonObject result;

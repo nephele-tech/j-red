@@ -26,63 +26,70 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.nepheletech.jton.JsonParser;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/icons" })
 public class IconsServlet extends HttpServlet {
   private static final long serialVersionUID = 7211868867121781035L;
+  
+  private static final Logger logger = LoggerFactory.getLogger(IconsServlet.class);
 
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    logger.trace(">>> doGet: {}", req.getRequestURI());
+    
     if (HttpServletUtil.acceptsJSON(req)) {
       HttpServletUtil.sendJSON(res, JsonParser.parse("{\n" +
           "    \"node-red\": [\n" +
-          "    \"alert.svg\",\n" +
+          "    \"alert.png\",\n" +
           "    \"arduino.png\",\n" +
-          "    \"arrow-in.svg\",\n" +
-          "    \"batch.svg\",\n" +
+          "    \"arrow-in.png\",\n" +
+          "    \"batch.png\",\n" +
           "    \"bluetooth.png\",\n" +
-          "    \"bridge-dash.svg\",\n" +
-          "    \"bridge.svg\",\n" +
-          "    \"cog.svg\",\n" +
-          "    \"comment.svg\",\n" +
-          "    \"db.svg\",\n" +
-          "    \"debug.svg\",\n" +
-          "    \"envelope.svg\",\n" +
-          "    \"feed.svg\",\n" +
-          "    \"file.svg\",\n" +
-          "    \"function.svg\",\n" +
-          "    \"hash.svg\",\n" +
-          "    \"inject.svg\",\n" +
-          "    \"join.svg\",\n" +
-          "    \"leveldb.svg\",\n" +
-          "    \"light.svg\",\n" +
-          "    \"link-out.svg\",\n" +
+          "    \"bridge-dash.png\",\n" +
+          "    \"bridge.png\",\n" +
+          "    \"cog.png\",\n" +
+          "    \"comment.png\",\n" +
+          "    \"db.png\",\n" +
+          "    \"debug.png\",\n" +
+          "    \"envelope.png\",\n" +
+          "    \"feed.png\",\n" +
+          "    \"file.png\",\n" +
+          "    \"function.png\",\n" +
+          "    \"hash.png\",\n" +
+          "    \"inject.png\",\n" +
+          "    \"join.png\",\n" +
+          "    \"leveldb.png\",\n" +
+          "    \"light.png\",\n" +
+          "    \"link-out.png\",\n" +
           "    \"mongodb.png\",\n" +
-          "    \"mouse.svg\",\n" +
-          "    \"node-changed.svg\",\n" +
-          "    \"node-error.svg\",\n" +
-          "    \"parser-csv.svg\",\n" +
-          "    \"parser-html.svg\",\n" +
-          "    \"parser-json.svg\",\n" +
-          "    \"parser-xml.svg\",\n" +
-          "    \"parser-yaml.svg\",\n" +
-          "    \"range.svg\",\n" +
+          "    \"mouse.png\",\n" +
+          "    \"node-changed.png\",\n" +
+          "    \"node-error.png\",\n" +
+          "    \"parser-csv.png\",\n" +
+          "    \"parser-html.png\",\n" +
+          "    \"parser-json.png\",\n" +
+          "    \"parser-xml.png\",\n" +
+          "    \"parser-yaml.png\",\n" +
+          "    \"range.png\",\n" +
           "    \"redis.png\",\n" +
-          "    \"rpi.svg\",\n" +
-          "    \"serial.svg\",\n" +
-          "    \"sort.svg\",\n" +
-          "    \"split.svg\",\n" +
-          "    \"subflow.svg\",\n" +
-          "    \"swap.svg\",\n" +
-          "    \"switch.svg\",\n" +
-          "    \"template.svg\",\n" +
-          "    \"timer.svg\",\n" +
-          "    \"trigger.svg\",\n" +
-          "    \"twitter.svg\",\n" +
-          "    \"watch.svg\",\n" +
-          "    \"white-globe.svg\"\n" +
+          "    \"rpi.png\",\n" +
+          "    \"serial.png\",\n" +
+          "    \"sort.png\",\n" +
+          "    \"split.png\",\n" +
+          "    \"subflow.png\",\n" +
+          "    \"swap.png\",\n" +
+          "    \"switch.png\",\n" +
+          "    \"template.png\",\n" +
+          "    \"timer.png\",\n" +
+          "    \"trigger.png\",\n" +
+          "    \"twitter.png\",\n" +
+          "    \"watch.png\",\n" +
+          "    \"white-globe.png\"\n" +
           "  ],\n" +
           "  \"node-red-node-rbe\": [\n" +
           "    \"rbe.png\"\n" +

@@ -31,8 +31,8 @@
 <body spellcheck="false">
 <div id="red-ui-editor"></div>
 <script src="vendor/vendor.js"></script>
-<script src="red&#x2F;red.min.js"></script>
-<script src="red&#x2F;main.min.js"></script>
+<script src="red&#x2F;red.js"></script>
+<script src="red&#x2F;main.js"></script>
 
 </body>
 </html>
