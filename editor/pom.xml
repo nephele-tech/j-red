@@ -45,11 +45,6 @@
 			<artifactId>jred-ftp-nodes</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.nepheletech</groupId>
-			<artifactId>logging</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 
 		<!-- SLF4J -->
 
@@ -173,7 +168,7 @@
 							<outputDirectory>${basedir}/target/${project.artifactId}/debug/view</outputDirectory>
 							<resources>
 								<resource>
-									<directory>node-red/node-red-${node-red.version}/packages/node_modules/@node-red/nodes/core/common/lib/debug</directory>
+									<directory>node-red/node-red-${node-red.version}/packages/node_modules/@node-red/nodes/core/core/lib/debug</directory>
 									<filtering>false</filtering>
 								</resource>
 							</resources>
