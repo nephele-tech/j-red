@@ -110,7 +110,7 @@ public class Subflow extends FlowImpl {
         protected void onMessage(JtonObject msg) {
           if (msg.has("payload")) {
             final JtonElement payload = msg.get("payload");
-            if (payload.isJtonTransient() && payload.asJtonTransient().isString()) {
+            if (payload.isJtonPrimitive() && payload.asJtonPrimitive().isString()) {
               // if msg.payload is a String, use it as status text
             } else if (payload.isJtonObject()) {
               final JtonObject _payload = payload.asJtonObject();
