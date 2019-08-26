@@ -1,2 +1,3 @@
 - Replace JSONata with JSonPath #2
   https://github.com/nephele-tech/j-red/issues/2
+  Requires patching Node-RED editor: ui/typedInput.js.
