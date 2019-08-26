@@ -25,8 +25,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonElement;
@@ -35,8 +33,6 @@ import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 public class HttpResponseNode extends AbstractNode {
-  private static final Logger logger = LoggerFactory.getLogger(HttpResponseNode.class);
-
   private final int statusCode;
   private final JtonObject headers;
 
@@ -57,9 +53,9 @@ public class HttpResponseNode extends AbstractNode {
     logger.trace(">>> onMessage: msg={}", msg);
 
     final JtonElement _res = msg.remove("_res");
-    if (_res.isJtonTransient()
-        && _res.asJtonTransient().getValue() instanceof HttpServletResponse) {
-      final HttpServletResponse res = (HttpServletResponse) _res.asJtonTransient().getValue();
+    if (_res.isJtonPrimitive() && _res.asJtonPrimitive().isJtonTransient()
+        && _res.asJtonPrimitive().getValue() instanceof HttpServletResponse) {
+      final HttpServletResponse res = (HttpServletResponse) _res.asJtonPrimitive().getValue();
       final int statusCode = (this.statusCode == -1) ? msg.get("statusCode").asInt(200) : this.statusCode;
       final JtonObject headers = (this.headers == null || this.headers.size() == 0)
           ? msg.get("headers").asJtonObject(true)
