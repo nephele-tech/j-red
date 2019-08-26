@@ -10,7 +10,7 @@
 	<properties>
 		<java.version>8</java.version>
 		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-		<node-red.version>0.20.5</node-red.version>
+		<node-red.version>1.0.0-beta.3</node-red.version>
     <tomcat.version>9.0.19</tomcat.version>
 
 		<!-- logging -->
