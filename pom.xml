@@ -10,8 +10,8 @@
 	<properties>
 		<java.version>8</java.version>
 		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-		<node-red.version>1.0.0-beta.3</node-red.version>
-    <tomcat.version>9.0.19</tomcat.version>
+		<node-red.version>0.20.7</node-red.version>
+		<tomcat.version>9.0.19</tomcat.version>
 
 		<!-- logging -->
 		<slf4j.version>1.7.25</slf4j.version>
@@ -25,12 +25,12 @@
 		<websocket-api.version>1.1</websocket-api.version>
 
 		<jstl.version>1.2</jstl.version>
-		
-		<!-- io.fabric8: docker-maven-plugin  -->
+
+		<!-- io.fabric8: docker-maven-plugin -->
 		<docker-maven-plugin.version>0.26.1</docker-maven-plugin.version>
 		<build.version>${project.version}</build.version>
 		<docker.username>ntechnology</docker.username>
-    <docker.repository>ntechnology</docker.repository>
+		<docker.repository>ntechnology</docker.repository>
 	</properties>
 
 	<modules>
