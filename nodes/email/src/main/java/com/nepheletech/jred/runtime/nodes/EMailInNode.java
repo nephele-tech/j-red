@@ -205,7 +205,7 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
     final JtonArray _values = new JtonArray();
     for (Object v : values) {
       try {
-        _values.push(JtonPrimitive.create(v));
+        _values.push(new JtonPrimitive(v, false));
       } catch (IllegalArgumentException e) {
         logger.info("--------------------x------------------------------> {}={}",
             key, v.getClass());

@@ -12,7 +12,7 @@ import com.nepheletech.jton.JtonObject;
 
 public class ChangeNodeTest extends NodeTest {
 
-  @Test
+  //@Test
   public void setString() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
@@ -36,7 +36,7 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
-  @Test
+  //@Test
   public void setNum() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
@@ -60,7 +60,7 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
-  @Test
+  //@Test
   public void setNaN() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
@@ -84,7 +84,7 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
-  @Test
+  //@Test
   public void setBool() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
@@ -108,7 +108,7 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
-  @Test
+  //@Test
   public void setWithJsonPath() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
@@ -133,7 +133,7 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
-  @Test
+  //@Test
   public void deleteProperty() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
@@ -160,7 +160,7 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
-  @Test
+  //@Test
   public void deleteIndex() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
@@ -193,7 +193,7 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
-  @Test
+  //@Test
   public void deleteIndex4() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
@@ -224,7 +224,7 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
-  @Test
+  //@Test
   public void deleteArrayIndex2() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()
@@ -254,7 +254,7 @@ public class ChangeNodeTest extends NodeTest {
     node.receive(msg);
   }
 
-  @Test
+  //@Test
   public void deleteArrayProp() {
     ChangeNode node = create(new JtonObject()
         .set("rules", new JtonArray()

@@ -60,7 +60,7 @@ public class JsonNode extends AbstractNode {
         if ("".equals(action) || "str".equals(action)) {
           // TODO Buffer
           JRedUtil.setMessageProperty(msg, property,
-              JtonPrimitive.create(pretty ? value.toString("   ") : value.toString()), false);
+              new JtonPrimitive(pretty ? value.toString("   ") : value.toString()), false);
         }
         send(msg);
       }

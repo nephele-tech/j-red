@@ -19,17 +19,21 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JsonParser;
-import com.nepheletech.jton.JtonUtil;
+import com.nepheletech.jton.JsonSyntaxException;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.JtonUtil;
 
 public class ChangeNode extends AbstractNode {
   private static final Logger logger = LoggerFactory.getLogger(ChangeNode.class);
@@ -41,7 +45,7 @@ public class ChangeNode extends AbstractNode {
   public ChangeNode(Flow flow, JtonObject config) {
     super(flow, config);
 
-    this.rules = config.getAsJtonArray("rules");
+    this.rules = config.getAsJtonArray("rules", true);
 
     for (int i = 0, iMax = rules.size(); i < iMax; i++) {
       final JtonObject rule = rules.getAsJtonObject(i);
@@ -49,15 +53,15 @@ public class ChangeNode extends AbstractNode {
       if (!rule.has("pt")) {
         rule.set("pt", "msg");
       }
-      final String rule_t = rule.getAsString("t");
-      if ("change".equals(rule_t) && rule.has("re")) {
+      final String t = rule.getAsString("t");
+      if ("change".equals(t) && rule.has("re")) {
         rule.set("fromt", "re");
         rule.remove("re");
       }
-      if ("set".equals(rule_t) && !rule.has("tot")) {
-        final String rule_to = rule.getAsString("to");
-        if (rule_to.indexOf("msg.") == 0 && !rule.has("tot")) {
-          rule.set("to", rule_to.substring(4));
+      if ("set".equals(t) && !rule.has("tot")) {
+        final String to = rule.getAsString("to");
+        if (to.indexOf("msg.") == 0 && !rule.has("tot")) {
+          rule.set("to", to.substring(4));
           rule.set("tot", "msg");
         }
       }
@@ -68,173 +72,170 @@ public class ChangeNode extends AbstractNode {
         rule.set("fromt", "str");
       }
 
-      final String rule_fromt = rule.getAsString("fromt");
-      if ("change".equals(rule_t)
-          && !"msg".equals(rule_fromt) && !"flow".equals(rule_fromt) && !"global".equals(rule_fromt)) {
-        throw new UnsupportedOperationException();
+      final String fromt = rule.getAsString("fromt");
+      if ("change".equals(t)
+          && !"msg".equals(fromt) && !"flow".equals(fromt) && !"global".equals(fromt)) {
+        if ("re".equals(fromt)) {
+          try {
+            final String fromRE = rule.get("from").asString();
+            rule.set("fromRE", Pattern.compile(fromRE), true);
+          } catch (PatternSyntaxException e) {
+            valid = false;
+            throw new IllegalArgumentException("change.errors.invalid-fome", e); // FIXME
+          }
+        }
       }
 
-      final String rule_to = rule.getAsString("to", null);
-      final String rule_tot = rule.getAsString("tot", null);
-      if ("num".equals(rule_tot)) {
-        try {
-          rule.set("to", rule.getAsNumber("to"));
-        } catch(NumberFormatException e) {
-          rule.set("to", Double.NaN);
-        }
-      } else if ("json".equals(rule_tot) || "bin".equals(rule_tot)) {
+      final String to = rule.getAsString("to", null);
+      final String tot = rule.getAsString("tot", null);
+      if ("num".equals(tot)) {
+        rule.set("to", rule.getAsNumber("to"));
+      } else if ("json".equals(tot) || "bin".equals(tot)) {
         try {
           // check this is parsable JSON
-          JsonParser.parse(rule_to);
-        } catch (Exception e) {
+          JsonParser.parse(to);
+        } catch (JsonSyntaxException e) {
           valid = false;
-          throw new IllegalArgumentException("change.errors.invalid-json"); // FIXME
+          throw new IllegalArgumentException("change.errors.invalid-json", e); // FIXME
         }
-      } else if ("bool".equals(rule_tot)) {
-        rule.set("to", Boolean.valueOf(rule_to));
-      } else if ("jsonata".equals(rule_tot)) {
-        // do nothing... TODO can we validate the expression?
-      } else if ("env".equals(rule_tot)) {
-        rule.set("to", JRedUtil.evaluateNodeProperty(rule_to, "env", this, null));
+      } else if ("bool".equals(tot)) {
+        rule.set("to", rule.getAsBoolean("to"));
+      } else if ("jsonpath".equals(tot)) {
+        try {
+          rule.set("to", JRedUtil.prepareJsonPathExpression(to), true);
+        } catch (RuntimeException e) {
+          valid = false;
+          throw new IllegalArgumentException("change.errors.invalid-expr", e); // FIXME
+        }
+      } else if ("env".equals(tot)) {
+        rule.set("to", JRedUtil.evaluateNodeProperty(to, "env", this, null));
       }
     }
   }
 
   @Override
   protected void onMessage(JtonObject msg) {
-    logger.trace("onMessage: msg={}", msg);
+    logger.trace("onMessage: msg.keySet={}", msg.keySet());
 
     if (!valid) { return; }
 
+    // applyRules
+
     for (JtonElement _rule : rules) {
       final JtonObject r = _rule.asJtonObject();
-      final String r_t = r.getAsString("t");
-      if ("move".equals(r_t)) {
-        final String r_p = r.getAsString("p");
-        final String r_pt = r.getAsString("pt");
-        final String r_to = r.getAsString("to");
-        final String r_tot = r.getAsString("tot");
-        if (!r_tot.equals(r_pt) || r_p.indexOf(r_to) != -1) {
+      final String t = r.getAsString("t");
+      if ("move".equals(t)) {
+        final String p = r.getAsString("p");
+        final String pt = r.getAsString("pt");
+        final String to = r.getAsString("to");
+        final String tot = r.getAsString("tot");
+        if (!tot.equals(pt) || p.indexOf(to) != -1) {
           msg = applyRule(msg, new JtonObject()
               .set("t", "set")
-              .set("p", r_to)
-              .set("pt", r_tot)
-              .set("to", r_p)
-              .set("tot", r_pt));
+              .set("p", to)
+              .set("pt", tot)
+              .set("to", p)
+              .set("tot", pt));
           applyRule(msg, new JtonObject()
               .set("t", "delete")
-              .set("p", r_p)
-              .set("pt", r_pt));
+              .set("p", p)
+              .set("pt", pt));
         } else { // 2 step move if we moving from a child
           msg = applyRule(msg, new JtonObject()
               .set("t", "set")
               .set("p", "_temp_move")
-              .set("pt", r_tot)
-              .set("to", r_p)
-              .set("tot", r_pt));
+              .set("pt", tot)
+              .set("to", p)
+              .set("tot", pt));
           applyRule(msg, new JtonObject()
               .set("t", "delete")
-              .set("p", r_p)
-              .set("pt", r_pt));
+              .set("p", p)
+              .set("pt", pt));
           msg = applyRule(msg, new JtonObject()
               .set("t", "set")
-              .set("p", r_to)
-              .set("pt", r_tot)
+              .set("p", to)
+              .set("pt", tot)
               .set("to", "_temp_move")
-              .set("tot", r_pt));
+              .set("tot", pt));
           applyRule(msg, new JtonObject()
               .set("t", "delete")
               .set("p", "_temp_move")
-              .set("pt", r_pt));
+              .set("pt", pt));
         }
       } else {
         msg = applyRule(msg, r);
       }
-      if (msg == null) { return; }
     }
+
     send(msg);
   }
 
   private JtonObject applyRule(JtonObject msg, JtonObject rule) {
-    final String rule_t = rule.getAsString("t");
-    final String rule_pt = rule.getAsString("pt");
-    final String rule_tot = rule.getAsString("tot");
-
     final String property = rule.getAsString("p");
 
-    JtonElement value = rule.get("to");
+    final String t = rule.getAsString("t");
+    final String pt = rule.getAsString("pt");
 
-    if ("json".equals(rule_tot)) {
-      value = JsonParser.parse(value.asString()).asJtonArray();
-    } else if ("bin".equals(rule_tot)) {
-      final JtonArray byteArray = JsonParser.parse(value.asString()).asJtonArray();
-      value = new JtonPrimitive(JRedUtil.toBuffer(byteArray));
-    } else if ("msg".equals(rule_tot)) {
-      value = JRedUtil.getMessageProperty(msg, value.asString());
-    } else if ("flow".equals(rule_tot) || "global".equals(rule_tot)) {
-      value = JRedUtil.getObjectProperty(getContext(rule_tot), value.asString());
-    } else if ("date".equals(rule_tot)) {
-      value = new JtonPrimitive(System.currentTimeMillis());
-    } else if ("jsonpath".equals(rule_tot)) {
-      value = JRedUtil.evaluateJsonPathExpression(msg, value.asString());
-    }
+    final JtonElement value = getToValue(msg, rule);
+    final JtonElement fromParts = getFromValue(msg, rule);
 
     String fromType = null;
     JtonElement fromValue = null;
-    // TODO fromRE
 
-    if ("change".equals(rule_t)) {
-      final JtonElement rule_from = rule.get("from");
-      final String rule_fromt = rule.getAsString("fromt");
-      if ("msg".equals(rule_fromt) || "flow".equals(rule_fromt) || "global".equals(rule_fromt)) {
-        throw new UnsupportedOperationException();
+    if ("change".equals(t)) {
+      final JtonElement from = rule.get("from");
+      final String fromt = rule.getAsString("fromt");
+      if ("msg".equals(fromt)) {
+        fromValue = JRedUtil.getMessageProperty(msg, from.asString());
+      } else if ("flow".equals(fromt) || "global".equals(fromt)) {
+        fromValue = JRedUtil.getObjectProperty(getContext(fromt), from.asString());
       } else {
-        fromType = rule_fromt;
-        fromValue = rule_from;
-        // fromRE = rule.fromRE;
+        fromType = fromt;
+        fromValue = from;
       }
     }
 
-    if ("msg".equals(rule_pt)) {
-      if ("delete".equals(rule_t)) {
+    if ("msg".equals(pt)) {
+      if ("delete".equals(t)) {
         JRedUtil.deleteMessageProperty(msg, property);
-      } else if ("set".equals(rule_t)) {
+      } else if ("set".equals(t)) {
         JRedUtil.setMessageProperty(msg, property, value, true);
-      } else if ("change".equals(rule_t)) {
-        final JtonPrimitive current = JtonUtil.getProperty(msg, property).asJtonPrimitive(false);
+      } else if ("change".equals(t)) {
+        final JtonPrimitive current = JRedUtil.getMessageProperty(msg, property)
+            .asJtonPrimitive(false);
         if (current != null) {
           if (current.isString()) {
             if (("num".equals(fromType) || "bool".equals(fromType) || "str".equals(fromType))
                 && current.asString().equals(fromValue.asString())) {
               // str representation of exact from number/boolean
               // only replace if they match exactly
-              JtonUtil.setProperty(msg, property, value, true);
+              JRedUtil.setMessageProperty(msg, property, value, false);
             } else {
-              // TODO regular expression
-              throw new UnsupportedOperationException();
+              JRedUtil.setMessageProperty(msg, property, new JtonPrimitive(current.asString()
+                  .replaceAll(fromValue.asString(), value.asString())), false);
             }
           } else if (current.isNumber() && "num".equals(fromType)) {
             if (current.asNumber().equals(fromValue.asNumber())) {
-              JtonUtil.setProperty(msg, property, value, true);
+              JRedUtil.setMessageProperty(msg, property, value, false);
             }
           } else if (current.isBoolean() && "bool".equals(fromType)) {
             if (current.asBoolean() == fromValue.asBoolean()) {
-              JtonUtil.setProperty(msg, property, value, true);
+              JRedUtil.setMessageProperty(msg, property, value, false);
             }
           }
         }
       }
     } else {
       JtonObject target = null;
-      if ("flow".equals(rule_pt) || "global".equals(rule_pt)) {
-        target = getContext(rule_pt);
+      if ("flow".equals(pt) || "global".equals(pt)) {
+        target = getContext(pt);
       }
       if (target != null) {
-        if ("delete".equals(rule_t)) {
+        if ("delete".equals(t)) {
           JRedUtil.deleteObjectProperty(target, property);
-        } else if ("set".equals(rule_t)) {
+        } else if ("set".equals(t)) {
           JtonUtil.setProperty(target, property, value, true);
-        } else if ("change".equals(rule_t)) {
+        } else if ("change".equals(t)) {
           final JtonPrimitive current = JtonUtil.getProperty(target, property).asJtonPrimitive(null);
           if (current != null) {
             if (current.isString()) {
@@ -244,7 +245,8 @@ public class ChangeNode extends AbstractNode {
                 // only replace if they match exactly
                 JtonUtil.setProperty(target, property, value, true);
               } else {
-                throw new UnsupportedOperationException(); // XXX
+                JRedUtil.setMessageProperty(msg, property, new JtonPrimitive(current.asString()
+                    .replaceAll(fromValue.asString(), value.asString())), false);
               }
             } else if (current.isNumber() && "num".equals(fromType)) {
               if (current.asNumber().equals(fromValue.asNumber())) {
@@ -261,5 +263,50 @@ public class ChangeNode extends AbstractNode {
     }
 
     return msg;
+  }
+
+  private JtonElement getToValue(JtonObject msg, JtonObject rule) {
+    return JRedUtil.evaluateNodeProperty(rule.getAsString("to"), rule.getAsString("tot"), this, msg);
+  }
+
+  private JtonObject getFromValue(JtonObject msg, JtonObject rule) {
+    String fromValue;
+    String fromType;
+    String fromRE;
+
+    final String t = rule.getAsString("t");
+    final String fromt = rule.getAsString("fromt");
+    if ("change".equals(t)) {
+      if ("msg".equals(fromt) || "flow".equals(fromt) || "global".equals(fromt)) {
+        if ("msg".equals(fromt)) {
+          return getFromValueType(JRedUtil
+              .getMessageProperty(msg, rule.getAsString("from")).asJtonPrimitive());
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private JtonObject getFromValueType(JtonElement _fromValue) {
+    final String fromType;
+    final Pattern fromRE;
+    final JtonObject fromParts = new JtonObject();
+//    if (_fromValue.isJtonTransient()) {
+//      final JtonTransient fromValue = _fromValue.asJtonTransient();
+//      if (fromValue.getValue() instanceof Pattern) {
+//        fromType = "re";
+//        fromRE = (Pattern) fromValue.getValue();
+//      }
+//    } else if (_fromValue.isJtonPrimitive()) {
+//      final JtonPrimitive fromValue = _fromValue.asJtonPrimitive();
+//      if (fromValue.isNumber()) {
+//        fromType = "num";
+//      } else if (fromValue.isBoolean()) {
+//        fromType = "bool";
+//      }
+//    }
+
+    return fromParts;
   }
 }

@@ -51,7 +51,7 @@ public class SqlQueryNode extends AbstractNode {
     logger.trace(">>> trace: id={}, msg={}", getId(), msg);
 
     final NepheleDao dao = msg.has("dao")
-        ? (NepheleDao) msg.getAsJtonTransient("data").getValue()
+        ? (NepheleDao) msg.getAsJtonPrimitive("data").getValue()
         : ((DataSourceNode) getFlow().getNode(dataSource)).getDao();
 
     Runnable decorated = CircuitBreaker.decorateRunnable(circuitBreaker, () -> {
