@@ -37,6 +37,7 @@ import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
+import com.nepheletech.messagebus.AsyncMessageBus;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 import com.nepheletech.messagebus.Subscription;
@@ -70,6 +71,7 @@ public abstract class AbstractNode implements Node {
   protected final Flow flow;
 
   // Event listeners...
+  private final Subscription subscription;
   private final Subscription nodesStartedSubscription;
   private final Subscription nodesStoppedSubscription;
 
@@ -86,6 +88,21 @@ public abstract class AbstractNode implements Node {
     flow.setup(this);
 
     updateWires(config.getAsJtonArray("wires", true));
+
+    subscription = AsyncMessageBus.subscribe(id, new MessageBusListener<JtonObject>() {
+      @Override
+      public void messageSent(String topic, JtonObject msg) {
+        try {
+          AbstractNode.this.onMessage(msg);
+        } catch (JRedRuntimeException e) {
+          throw e;
+        } catch (RuntimeException e) {
+          // e.printStackTrace();
+          error(e, msg);
+          throw new JRedRuntimeException(e);
+        }
+      }
+    });
 
     if (this instanceof NodesStartedEventListener) {
       nodesStartedSubscription = MessageBus
@@ -182,6 +199,10 @@ public abstract class AbstractNode implements Node {
           logger.debug(e.getMessage(), e);
         }
       }
+    }
+
+    if (subscription != null) {
+      subscription.unsubscribe();
     }
 
     if (this.hasSubscribers) {
@@ -329,19 +350,12 @@ public abstract class AbstractNode implements Node {
     if (msg == null) {
       msg = new JtonObject();
     }
+
     if (!msg.has("_msgid")) {
       msg.set("_msgid", UUID.randomUUID().toString());
     }
-    // this.metric("receive",msg);
-    try {
-      onMessage(msg);
-    } catch (JRedRuntimeException e) {
-      throw e;
-    } catch (RuntimeException e) {
-      // e.printStackTrace();
-      error(e, msg);
-      throw new JRedRuntimeException(e);
-    }
+
+    AsyncMessageBus.sendMessage(id, msg);
   }
 
   protected abstract void onMessage(JtonObject msg);
