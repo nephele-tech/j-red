@@ -19,9 +19,6 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
@@ -31,7 +28,6 @@ import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 
 public class HttpInNode extends AbstractNode implements NodesStartedEventListener {
-  private static final Logger logger = LoggerFactory.getLogger(HttpInNode.class);
 
   public static String createListenerTopic(String method, String url) {
     return HttpInNode.class.getName() + ':' + method + ':' + url;
