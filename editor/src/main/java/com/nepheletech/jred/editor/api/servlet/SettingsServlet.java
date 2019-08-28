@@ -73,7 +73,13 @@ public class SettingsServlet extends HttpServlet implements Constants {
                         .set("label", "J-RED website")
                         .set("url", "https://github.com/nephele-tech/j-red")))
                 .set("palette", new JtonObject()
-                    .set("editable", false)))
+                    .set("editable", false))
+                .set("languages", new JtonArray()
+                    .push("de")
+                    .push("en-US")
+                    .push("ja")
+                    .push("ko")
+                    .push("zh-CN")))
             .set("flowEncryptionType", "system")
             .set("tlsConfigDisableLocalFiles", false);
       }

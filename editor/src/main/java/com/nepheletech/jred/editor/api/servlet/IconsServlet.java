@@ -35,16 +35,16 @@ import com.nepheletech.servlet.utils.HttpServletUtil;
 @WebServlet(urlPatterns = { "/icons" })
 public class IconsServlet extends HttpServlet {
   private static final long serialVersionUID = 7211868867121781035L;
-  
+
   private static final Logger logger = LoggerFactory.getLogger(IconsServlet.class);
 
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     logger.trace(">>> doGet: {}", req.getRequestURI());
-    
+
     if (HttpServletUtil.acceptsJSON(req)) {
       HttpServletUtil.sendJSON(res, JsonParser.parse("{\n" +
-          "    \"node-red\": [\n" +
+          "  \"node-red\": [\n" +
           "    \"alert.svg\",\n" +
           "    \"arduino.png\",\n" +
           "    \"arrow-in.svg\",\n" +
@@ -58,18 +58,18 @@ public class IconsServlet extends HttpServlet {
           "    \"debug.svg\",\n" +
           "    \"envelope.svg\",\n" +
           "    \"feed.svg\",\n" +
+          "    \"file-in.svg\",\n" +
+          "    \"file-out.svg\",\n" +
           "    \"file.svg\",\n" +
           "    \"function.svg\",\n" +
           "    \"hash.svg\",\n" +
           "    \"inject.svg\",\n" +
           "    \"join.svg\",\n" +
-          "    \"leveldb.svg\",\n" +
+          "    \"leveldb.png\",\n" +
           "    \"light.svg\",\n" +
           "    \"link-out.svg\",\n" +
           "    \"mongodb.png\",\n" +
           "    \"mouse.png\",\n" +
-          "    \"node-changed.svg\",\n" +
-          "    \"node-error.svg\",\n" +
           "    \"parser-csv.svg\",\n" +
           "    \"parser-html.svg\",\n" +
           "    \"parser-json.svg\",\n" +
@@ -81,19 +81,21 @@ public class IconsServlet extends HttpServlet {
           "    \"serial.svg\",\n" +
           "    \"sort.svg\",\n" +
           "    \"split.svg\",\n" +
+          "    \"status.svg\",\n" +
           "    \"subflow.svg\",\n" +
           "    \"swap.svg\",\n" +
           "    \"switch.svg\",\n" +
           "    \"template.svg\",\n" +
           "    \"timer.svg\",\n" +
           "    \"trigger.svg\",\n" +
-          "    \"twitter.svg\",\n" +
           "    \"watch.svg\",\n" +
           "    \"white-globe.svg\"\n" +
           "  ],\n" +
           "  \"node-red-node-rbe\": [\n" +
-          "    \"rbe.svg\"\n" +
-          "  ]\n" +
+          "    \"rbe.png\"\n" +
+          "  ],\n" +
+          "  \"node-red-node-sentiment\": [],\n" +
+          "  \"node-red-node-tail\": []\n" +
           "}"));
     } else {
       res.sendError(HttpServletResponse.SC_BAD_REQUEST);
