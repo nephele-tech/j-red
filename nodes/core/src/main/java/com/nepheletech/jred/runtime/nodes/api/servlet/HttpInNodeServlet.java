@@ -28,7 +28,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
+import java.util.concurrent.TimeUnit;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
@@ -47,7 +49,7 @@ import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
-@WebServlet(urlPatterns = { "/http-in/*" })
+@WebServlet(asyncSupported = true, urlPatterns = { "/http-in/*" })
 public class HttpInNodeServlet extends HttpServlet {
   private static final long serialVersionUID = 2459007704268778103L;
 
@@ -71,6 +73,13 @@ public class HttpInNodeServlet extends HttpServlet {
         .set("query", getQuery(req))
         // TODO params
         .set("cookies", getCookies(req));
+    
+    //
+    // AsyncContext object
+    //
+    
+    final AsyncContext ac = req.startAsync();
+    //ac.setTimeout(TimeUnit.MINUTES.toMillis(10));
 
     //
     // Message object.
@@ -79,7 +88,7 @@ public class HttpInNodeServlet extends HttpServlet {
     final JtonObject msg = new JtonObject()
         .set("req", request)
         .set("_req", req, true)
-        .set("_res", res, true);
+        .set("_res", ac, true);
 
     //
     // For a GET request, 'payload', contains an object of any query string
@@ -113,6 +122,7 @@ public class HttpInNodeServlet extends HttpServlet {
 
       try {
         if (_msg == null || _msg.has("_res")) {
+          logger.info("==========================={}", HttpInNode.createListenerTopic(method, url));
           MessageBus.sendMessage(HttpInNode.createListenerTopic(method, url), _msg = msg.deepCopy());
         } else {
           break;
@@ -122,9 +132,9 @@ public class HttpInNodeServlet extends HttpServlet {
       }
     }
 
-    if (_msg != null && _msg.has("_res")) {
-      res.sendError(HttpServletResponse.SC_NOT_FOUND);
-    }
+    //if (_msg != null && _msg.has("_res")) {
+    //  res.sendError(HttpServletResponse.SC_NOT_FOUND);
+    //}
   }
 
   /**

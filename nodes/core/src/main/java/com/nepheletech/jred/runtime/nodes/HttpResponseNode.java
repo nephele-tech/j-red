@@ -21,6 +21,7 @@ package com.nepheletech.jred.runtime.nodes;
 
 import static com.nepheletech.servlet.utils.HttpServletUtil.APPLICATION_JSON;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
@@ -53,9 +54,13 @@ public class HttpResponseNode extends AbstractNode {
     logger.trace(">>> onMessage: msg={}", msg);
 
     final JtonElement _res = msg.remove("_res");
-    if (_res.isJtonPrimitive() && _res.asJtonPrimitive().isJtonTransient()
-        && _res.asJtonPrimitive().getValue() instanceof HttpServletResponse) {
-      final HttpServletResponse res = (HttpServletResponse) _res.asJtonPrimitive().getValue();
+    if (_res.isJtonPrimitive() 
+        && _res.asJtonPrimitive().isJtonTransient()
+        && _res.asJtonPrimitive().getValue() instanceof AsyncContext) {
+      
+      AsyncContext ac = (AsyncContext) _res.asJtonPrimitive().getValue();
+      
+      final HttpServletResponse res = (HttpServletResponse) ac.getResponse();// (HttpServletResponse) _res.asJtonPrimitive().getValue();
       final int statusCode = (this.statusCode == -1) ? msg.get("statusCode").asInt(200) : this.statusCode;
       final JtonObject headers = (this.headers == null || this.headers.size() == 0)
           ? msg.get("headers").asJtonObject(true)
@@ -118,6 +123,8 @@ public class HttpResponseNode extends AbstractNode {
         } else {
           HttpServletUtil.sendJSON(res, msg.get("payload"));
         }
+        
+        ac.complete();
 
       } catch (Exception e) {
         e.printStackTrace();

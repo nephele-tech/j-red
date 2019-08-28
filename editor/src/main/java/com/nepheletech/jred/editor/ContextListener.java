@@ -31,6 +31,7 @@ import com.nepheletech.jred.runtime.DefaultFlowsRuntime;
 import com.nepheletech.jred.runtime.FlowsRuntime;
 import com.nepheletech.jred.runtime.storage.LocalFileSystemStorage;
 import com.nepheletech.jred.runtime.storage.Storage;
+import com.nepheletech.messagebus.AsyncMessageBus;
 import com.nepheletech.messagebus.MessageBus;
 
 @WebListener
@@ -61,5 +62,8 @@ public class ContextListener implements ServletContextListener {
 
     // Reset message bus...
     MessageBus.unsubscribeAll();
+    
+    // Reset async message bus...
+    AsyncMessageBus.unsubscribeAll();
   }
 }

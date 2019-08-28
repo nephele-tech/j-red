@@ -19,6 +19,7 @@
  */
 package com.nepheletech.jred.runtime.events;
 
+@Deprecated
 public interface NodesStartedEventListener {
   void onNodesStarted(NodesStartedEvent event) throws Exception;
 }

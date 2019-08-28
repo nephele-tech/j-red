@@ -19,15 +19,14 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
-import com.nepheletech.jred.runtime.events.NodesStartedEvent;
-import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonUtil;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
+import com.nepheletech.messagebus.Subscription;
 
-public class HttpInNode extends AbstractNode implements NodesStartedEventListener {
+public class HttpInNode extends AbstractNode /*implements NodesStartedEventListener*/ {
 
   public static String createListenerTopic(String method, String url) {
     return HttpInNode.class.getName() + ':' + method + ':' + url;
@@ -40,7 +39,8 @@ public class HttpInNode extends AbstractNode implements NodesStartedEventListene
   private final boolean upload;
 
   private final MessageBusListener<JtonObject> requestListener = (topic, msg) -> receive(msg);
-  private final String requestListenerTopic;
+  
+  private final Subscription subscription;
 
   public HttpInNode(Flow flow, JtonObject config) {
     super(flow, config);
@@ -52,22 +52,16 @@ public class HttpInNode extends AbstractNode implements NodesStartedEventListene
     this.upload = config.get("upload").asBoolean();
     // TODO swagger
 
-    this.requestListenerTopic = createListenerTopic(this.method, this.url);
-  }
-
-  @Override
-  public void onNodesStarted(NodesStartedEvent event) {
-    logger.trace(">>> ----------------------------- onNodesStarted: event={}", event);
-
-    logger.debug("subscribe to: {}", requestListenerTopic);
-    MessageBus.subscribe(requestListenerTopic, requestListener);
+    subscription =MessageBus.subscribe(createListenerTopic(this.method, this.url), requestListener);
   }
 
   @Override
   protected void onClosed(boolean removed) {
     logger.trace(">>> onClosed");
 
-    MessageBus.subscribe(requestListenerTopic, requestListener);
+    if (subscription != null) {
+      subscription.unsubscribe();
+    }
   }
 
   @Override
