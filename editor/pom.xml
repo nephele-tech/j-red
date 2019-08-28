@@ -168,7 +168,7 @@
 							<outputDirectory>${basedir}/target/${project.artifactId}/debug/view</outputDirectory>
 							<resources>
 								<resource>
-									<directory>node-red/node-red-${node-red.version}/packages/node_modules/@node-red/nodes/core/core/lib/debug</directory>
+									<directory>node-red/node-red-${node-red.version}/packages/node_modules/@node-red/nodes/core/common/lib/debug</directory>
 									<filtering>false</filtering>
 								</resource>
 							</resources>

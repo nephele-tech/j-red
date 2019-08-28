@@ -26,7 +26,7 @@
         <input type="hidden" id="node-input-noerr">
     </div>
     <div class="form-row node-text-editor-row" style="position:relative">
-        <div style="position: absolute; right:0; bottom:calc(100% + 3px);"><button id="node-function-expand-js" class="editor-button editor-button-small"><i class="fa fa-expand"></i></button></div>
+        <div style="position: absolute; right:0; bottom:calc(100% + 3px);"><button id="node-function-expand-js" class="red-ui-button red-ui-button-small"><i class="fa fa-expand"></i></button></div>
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-func-editor" ></div>
     </div>
     <div class="form-row" style="margin-bottom: 0px">
@@ -47,7 +47,7 @@
         },
         inputs:1,
         outputs:1,
-        icon: "function.png",
+        icon: "function.svg",
         label: function() {
             return this.name||this._("function.function");
         },
@@ -91,11 +91,14 @@
                 type:"function", // the type of object the library is for
                 editor:this.editor, // the field name the main text body goes to
                 mode: "ace/mode/java",
-                fields:['name','outputs']
+                fields:['name','outputs'],
+                ext:"js"
             });
             this.editor.focus();
 
-            $("#node-function-expand-js").click(function(e) {
+            RED.popover.tooltip($("#node-function-expand-js"), RED._("node-red:common.label.expand"));
+
+            $("#node-function-expand-js").on("click", function(e) {
                 e.preventDefault();
                 var value = that.editor.getValue();
                 RED.editor.editJavaScript({
@@ -117,7 +120,7 @@
             var annot = this.editor.getSession().getAnnotations();
             this.noerr = 0;
             $("#node-input-noerr").val(0);
-            for (var k=0; k < annot.length; k++) {// XXX not working for Java
+            for (var k=0; k < annot.length; k++) {
                 //console.log(annot[k].type,":",annot[k].text, "on line", annot[k].row);
                 if (annot[k].type === "error") {
                     $("#node-input-noerr").val(annot.length);
@@ -135,7 +138,7 @@
         oneditresize: function(size) {
             var rows = $("#dialog-form>div:not(.node-text-editor-row)");
             var height = $("#dialog-form").height();
-            for (var i=0; i<rows.size(); i++) {
+            for (var i=0; i<rows.length; i++) {
                 height -= $(rows[i]).outerHeight(true);
             }
             var editorRow = $("#dialog-form>div.node-text-editor-row");

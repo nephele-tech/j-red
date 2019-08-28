@@ -1,5 +1,4 @@
 <!--
-  Copyright NepheleTech and other contributors, http://www.nepheletech.com
   Copyright JS Foundation and other contributors, http://js.foundation
 
   Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,6 +48,7 @@
         {v:"lte",t:"<=",kind:'V'},
         {v:"gt",t:">",kind:'V'},
         {v:"gte",t:">=",kind:'V'},
+        {v:"hask",t:"switch.rules.hask",kind:'V'},
         {v:"btwn",t:"switch.rules.btwn",kind:'V'},
         {v:"cont",t:"switch.rules.cont",kind:'V'},
         {v:"regex",t:"switch.rules.regex",kind:'V'},
@@ -118,7 +118,7 @@
                 return label;
             }
         },
-        icon: "switch.png",
+        icon: "switch.svg",
         label: function() {
             return this.name||this._("switch.switch");
         },
@@ -129,7 +129,7 @@
             var node = this;
             var previousValueType = {value:"prev",label:this._("inject.previous"),hasValue:false};
 
-            $("#node-input-property").typedInput({default:this.propertyType||'msg',types:['msg','flow','global','jsonata']});
+            $("#node-input-property").typedInput({default:this.propertyType||'msg',types:['msg','flow','global','jsonata','env']});
             var outputCount = $("#node-input-outputs").val("{}");
 
             var andLabel = this._("switch.and");
@@ -143,6 +143,7 @@
                 var typeField = rule.find(".node-input-rule-type-value");
                 var numField = rule.find(".node-input-rule-num-value");
                 var expField = rule.find(".node-input-rule-exp-value");
+                var keyField = rule.find(".node-input-rule-key-value");
                 var btwnField1 = rule.find(".node-input-rule-btwn-value");
                 var btwnField2 = rule.find(".node-input-rule-btwn-value2");
                 var selectWidth;
@@ -209,14 +210,33 @@
                             selectField.append($("<option></option>").val(operators[d].v).text(/^switch/.test(operators[d].t)?node._(operators[d].t):operators[d].t));
                         }
                     }
-                    var valueField = $('<input/>',{class:"node-input-rule-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'str',types:['msg','flow','global','str','num','jsonpath','env',previousValueType]});
-                    var numValueField = $('<input/>',{class:"node-input-rule-num-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'num',types:['flow','global','num','jsonpath','env']});
-                    var expValueField = $('<input/>',{class:"node-input-rule-exp-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'jsonpath',types:['jsonpath']});
-                    var btwnValueField = $('<input/>',{class:"node-input-rule-btwn-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'num',types:['msg','flow','global','str','num','jsonpath','env',previousValueType]});
-                    var btwnAndLabel = $('<span/>',{class:"node-input-rule-btwn-label"}).text(" "+andLabel+" ").appendTo(row3);
-                    var btwnValue2Field = $('<input/>',{class:"node-input-rule-btwn-value2",type:"text",style:"margin-left:2px;"}).appendTo(row3).typedInput({default:'num',types:['msg','flow','global','str','num','jsonpath','env',previousValueType]});
-                    var typeValueField = $('<input/>',{class:"node-input-rule-type-value",type:"text",style:"margin-left: 5px;"}).appendTo(row)
-                        .typedInput({default:'string',types:[
+
+                    function createValueField(){
+                        return $('<input/>',{class:"node-input-rule-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'str',types:['msg','flow','global','str','num','jsonata','env',previousValueType]});
+                    }
+
+                    function createNumValueField(){
+                        return $('<input/>',{class:"node-input-rule-num-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'num',types:['flow','global','num','jsonata','env']});
+                    }
+
+                    function createExpValueField(){
+                        return $('<input/>',{class:"node-input-rule-exp-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'jsonata',types:['jsonata']});
+                    }
+
+                    function createBtwnValueField(){
+                        return $('<input/>',{class:"node-input-rule-btwn-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'num',types:['msg','flow','global','str','num','jsonata','env',previousValueType]});
+                    }
+
+                    function createBtwnAndLabel(){
+                        return $('<span/>',{class:"node-input-rule-btwn-label"}).text(" "+andLabel+" ").appendTo(row3);
+                    }
+
+                    function createBtwnValue2Field(){
+                        return $('<input/>',{class:"node-input-rule-btwn-value2",type:"text",style:"margin-left:2px;"}).appendTo(row3).typedInput({default:'num',types:['msg','flow','global','str','num','jsonata','env',previousValueType]});
+                    }
+
+                    function createTypeValueField(){
+                        return $('<input/>',{class:"node-input-rule-type-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'string',types:[
                             {value:"string",label:"string",hasValue:false},
                             {value:"number",label:"number",hasValue:false},
                             {value:"boolean",label:"boolean",hasValue:false},
@@ -227,52 +247,66 @@
                             {value:"undefined",label:"undefined",hasValue:false},
                             {value:"null",label:"null",hasValue:false}
                         ]});
+                    }
+
+                    var valueField = null;
+                    var numValueField = null;
+                    var expValueField = null;
+                    var btwnAndLabel = null;
+                    var btwnValueField = null;
+                    var btwnValue2Field = null;
+                    var typeValueField = null;
+
                     var finalspan = $('<span/>',{style:"float: right;margin-top: 6px;"}).appendTo(row);
                     finalspan.append(' &#8594; <span class="node-input-rule-index">'+(i+1)+'</span> ');
                     var caseSensitive = $('<input/>',{id:"node-input-rule-case-"+i,class:"node-input-rule-case",type:"checkbox",style:"width:auto;vertical-align:top"}).appendTo(row2);
                     $('<label/>',{for:"node-input-rule-case-"+i,style:"margin-left: 3px;"}).text(caseLabel).appendTo(row2);
-                    selectField.change(function() {
-                        resizeRule(container);
+                    selectField.on("change", function() {
                         var type = selectField.val();
-                        if ((type === "btwn") || (type === "index")) {
+                        if (valueField){
                             valueField.typedInput('hide');
+                        }
+                        if (expValueField){
                             expValueField.typedInput('hide');
+                        }
+                        if (numValueField){
                             numValueField.typedInput('hide');
+                        }
+                        if (typeValueField){
                             typeValueField.typedInput('hide');
+                        }
+                        if (btwnValueField){
+                            btwnValueField.typedInput('hide');
+                        }
+                        if (btwnValue2Field){
+                            btwnValue2Field.typedInput('hide');
+                        }
+
+                        if ((type === "btwn") || (type === "index")) {
+                            if (!btwnValueField){
+                                btwnValueField = createBtwnValueField();
+                            }
                             btwnValueField.typedInput('show');
                         } else if ((type === "head") || (type === "tail")) {
-                            btwnValueField.typedInput('hide');
-                            btwnValue2Field.typedInput('hide');
-                            expValueField.typedInput('hide');
+                            if (!numValueField){
+                                numValueField = createNumValueField();
+                            }
                             numValueField.typedInput('show');
-                            typeValueField.typedInput('hide');
-                            valueField.typedInput('hide');
                         } else if (type === "jsonata_exp") {
-                            btwnValueField.typedInput('hide');
-                            btwnValue2Field.typedInput('hide');
+                            if (!expValueField){
+                                expValueField = createExpValueField();
+                            }
                             expValueField.typedInput('show');
-                            numValueField.typedInput('hide');
-                            typeValueField.typedInput('hide');
-                            valueField.typedInput('hide');
-                        } else {
-                            btwnValueField.typedInput('hide');
-                            expValueField.typedInput('hide');
-                            numValueField.typedInput('hide');
-                            typeValueField.typedInput('hide');
-                            valueField.typedInput('hide');
-                            if (type === "true" || type === "false" || type === "null" || type === "nnull" || type === "empty" || type === "nempty" || type === "else") {
-                                valueField.typedInput('hide');
-                                typeValueField.typedInput('hide');
+                        } else if (type === "istype") {
+                            if (!typeValueField){
+                                typeValueField = createTypeValueField();
                             }
-                            else
-                            if (type === "istype") {
-                                valueField.typedInput('hide');
-                                typeValueField.typedInput('show');
-                            }
-                            else {
-                                typeValueField.typedInput('hide');
+                            typeValueField.typedInput('show');
+                        } else if (! (type === "true" || type === "false" || type === "null" || type === "nnull" || type === "empty" || type === "nempty" || type === "else" )) {
+                                if (!valueField){
+                                    valueField = createValueField();
+                                }
                                 valueField.typedInput('show');
-                            }
                         }
                         if (type === "regex") {
                             row2.show();
@@ -280,28 +314,53 @@
                         } else if ((type === "btwn") || (type === "index")) {
                             row2.hide();
                             row3.show();
+                            if (!btwnValue2Field){
+                                btwnValue2Field = createBtwnValue2Field();
+                            }
                             btwnValue2Field.typedInput('show');
                         } else {
                             row2.hide();
                             row3.hide();
                         }
+                        resizeRule(container);
+
                     });
                     selectField.val(rule.t);
                     if ((rule.t == "btwn") || (rule.t == "index")) {
+                        if (!btwnValueField){
+                            btwnValueField = createBtwnValueField();
+                        }
                         btwnValueField.typedInput('value',rule.v);
                         btwnValueField.typedInput('type',rule.vt||'num');
+
+                        if (!btwnValue2Field){
+                            btwnValue2Field = createBtwnValue2Field();
+                        }
                         btwnValue2Field.typedInput('value',rule.v2);
                         btwnValue2Field.typedInput('type',rule.v2t||'num');
                     } else if ((rule.t === "head") || (rule.t === "tail")) {
+                        if (!numValueField){
+                            numValueField = createNumValueField();
+                        }
                         numValueField.typedInput('value',rule.v);
                         numValueField.typedInput('type',rule.vt||'num');
                     } else if (rule.t === "istype") {
+                        if (!typeValueField){
+                            typeValueField =createTypeValueField();
+                        }
                         typeValueField.typedInput('value',rule.vt);
                         typeValueField.typedInput('type',rule.vt);
                     } else if (rule.t === "jsonata_exp") {
+                        if (!expValueField){
+                            expValueField = createExpValueField();
+                        }
+                    } else if (rule.t === "jsonata_exp") {
                         expValueField.typedInput('value',rule.v);
-                        expValueField.typedInput('type',rule.vt||'jsonpath');
+                        expValueField.typedInput('type',rule.vt||'jsonata');
                     } else if (typeof rule.v != "undefined") {
+                        if (!valueField){
+                            valueField = createValueField();
+                        }
                         valueField.typedInput('value',rule.v);
                         valueField.typedInput('type',rule.vt||'str');
                     }
@@ -353,7 +412,6 @@
         },
         oneditsave: function() {
             var rules = $("#node-input-rule-container").editableList('items');
-            var ruleset;
             var node = this;
             node.rules = [];
             rules.each(function(i) {
@@ -391,7 +449,7 @@
         oneditresize: function(size) {
             var rows = $("#dialog-form>div:not(.node-input-rule-container-row)");
             var height = size.height;
-            for (var i=0;i<rows.size();i++) {
+            for (var i=0;i<rows.length;i++) {
                 height -= $(rows[i]).outerHeight(true);
             }
             var editorRow = $("#dialog-form>div.node-input-rule-container-row");
@@ -400,57 +458,4 @@
         }
     });
 })();
-</script>
-
-<!--
-  Copyright NepheleTech and other contributors, http://www.nepheletech.com
-  Copyright JS Foundation and other contributors, http://js.foundation
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
-
-<script type="text/x-red" data-help-name="switch">
-    <p>Route messages based on their property values or sequence position.</p>
-    <h3>Details</h3>
-    <p>When a message arrives, the node will evaluate each of the defined rules
-    and forward the message to the corresponding outputs of any matching rules.</p>
-    <p>Optionally, the node can be set to stop evaluating rules once it finds one
-    that matches.</p>
-    <p>The rules can be evaluated against an individual message property, a flow or global
-    context property or the result of a JsonPath expression.</p>
-    <h4>Rules</h4>
-    <p>There are four types of rule:</p>
-    <ol>
-        <li><b>Value</b> rules are evaluated against the configured property</li>
-        <li><b>Sequence</b> rules can be used on message sequences, such as those
-            generated by the Split node</li>
-        <li>A JsonPath <b>Expression</b> can be provided that will be evaluated
-            against the whole message and will match if the expression returns
-            a true value.</li>
-        <li>An <b>Otherwise</b> rule can be used to match if none of the preceeding
-            rules have matched.</li>
-    </ol>
-    <h4>Notes</h4>
-    <p>The <code>is true/false</code> and <code>is null</code> rules perform strict
-       comparisons against those types. They do not convert between types.</p>
-    <p>The <code>is empty</code> rule passes for Strings, Arrays and Buffers that have
-       a length of 0, or Objects that have no properties. It does not pass for <code>null</code>
-       or <code>undefined</code> values.</p>
-    <h4>Handling message sequences</h4>
-    <p>By default, the node does not modify the <code>msg.parts</code> property of messages
-       that are part of a sequence.</p>
-    <p>The <b>recreate message sequences</b> option can be enabled to generate new message sequences
-       for each rule that matches. In this mode, the node will buffer the entire incoming
-       sequence before sending the new sequences on. The runtime setting <code>nodeMessageBufferMaxLength</code>
-       can be used to limit how many messages nodes will buffer.</p>
 </script>
