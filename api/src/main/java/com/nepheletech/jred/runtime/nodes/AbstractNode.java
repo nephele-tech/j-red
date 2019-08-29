@@ -28,9 +28,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jred.runtime.events.NodesStartedEvent;
+//import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 //import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
-import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
+//import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
 //import com.nepheletech.jred.runtime.events.NodesStoppedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
@@ -156,6 +156,11 @@ public abstract class AbstractNode implements Node {
 
   @Override
   public String getAlias() { return _alias; }
+  
+  @Override
+  public String getAliasOrIdIfNull() {
+    return _alias != null ? _alias : id;
+  }
 
   @Override
   public void updateWires(JtonArray wires) {

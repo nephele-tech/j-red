@@ -22,24 +22,21 @@ package com.nepheletech.jred.runtime.nodes;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.common.base.Objects;
+import com.jayway.jsonpath.JsonPath;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JsonParser;
 import com.nepheletech.jton.JsonSyntaxException;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.jton.JtonUtil;
 
 public class ChangeNode extends AbstractNode {
-  private static final Logger logger = LoggerFactory.getLogger(ChangeNode.class);
-
   private final JtonArray rules;
-
   private boolean valid = true;
 
   public ChangeNode(Flow flow, JtonObject config) {
@@ -75,13 +72,13 @@ public class ChangeNode extends AbstractNode {
       final String fromt = rule.getAsString("fromt");
       if ("change".equals(t)
           && !"msg".equals(fromt) && !"flow".equals(fromt) && !"global".equals(fromt)) {
+        final String fromRE = rule.get("from").asString();
         if ("re".equals(fromt)) {
           try {
-            final String fromRE = rule.get("from").asString();
             rule.set("fromRE", Pattern.compile(fromRE), true);
           } catch (PatternSyntaxException e) {
             valid = false;
-            throw new IllegalArgumentException("change.errors.invalid-fome", e); // FIXME
+            throw new IllegalArgumentException("Invalid 'from' property", e);
           }
         }
       }
@@ -96,19 +93,23 @@ public class ChangeNode extends AbstractNode {
           JsonParser.parse(to);
         } catch (JsonSyntaxException e) {
           valid = false;
-          throw new IllegalArgumentException("change.errors.invalid-json", e); // FIXME
+          throw new IllegalArgumentException("Invalid 'to' JSON property", e);
         }
       } else if ("bool".equals(tot)) {
         rule.set("to", rule.getAsBoolean("to"));
       } else if ("jsonpath".equals(tot)) {
         try {
-          rule.set("to", JRedUtil.prepareJsonPathExpression(to), true);
+          // TODO optimize JSONPath evaluation
+          rule.set("toJSONPath", JRedUtil.prepareJsonPathExpression(to), true);
         } catch (RuntimeException e) {
           valid = false;
-          throw new IllegalArgumentException("change.errors.invalid-expr", e); // FIXME
+          throw new IllegalArgumentException("Invalid JSONPath expression", e);
         }
       } else if ("env".equals(tot)) {
+        // replace 'to' with environment parameter value and...
         rule.set("to", JRedUtil.evaluateNodeProperty(to, "env", this, null));
+        // set 'tot' to 'str'
+        rule.set("tot", "str");
       }
     }
   }
@@ -117,20 +118,23 @@ public class ChangeNode extends AbstractNode {
   protected void onMessage(JtonObject msg) {
     logger.trace("onMessage: msg.keySet={}", msg.keySet());
 
-    if (!valid) { return; }
+    if (valid) {
+      send(applyRules(msg));
+    }
+  }
 
-    // applyRules
-
-    for (JtonElement _rule : rules) {
-      final JtonObject r = _rule.asJtonObject();
+  private JtonObject applyRules(JtonObject msg) {
+    rules.forEach(elem -> {
+      final JtonObject r = elem.asJtonObject();
       final String t = r.getAsString("t");
+
       if ("move".equals(t)) {
-        final String p = r.getAsString("p");
-        final String pt = r.getAsString("pt");
         final String to = r.getAsString("to");
         final String tot = r.getAsString("tot");
-        if (!tot.equals(pt) || p.indexOf(to) != -1) {
-          msg = applyRule(msg, new JtonObject()
+        final String p = r.getAsString("p");
+        final String pt = r.getAsString("pt");
+        if (!tot.equals(pt) || (p.indexOf(to) != -1)) {
+          applyRule(msg, new JtonObject()
               .set("t", "set")
               .set("p", to)
               .set("pt", tot)
@@ -140,8 +144,8 @@ public class ChangeNode extends AbstractNode {
               .set("t", "delete")
               .set("p", p)
               .set("pt", pt));
-        } else { // 2 step move if we moving from a child
-          msg = applyRule(msg, new JtonObject()
+        } else {
+          applyRule(msg, new JtonObject()
               .set("t", "set")
               .set("p", "_temp_move")
               .set("pt", tot)
@@ -151,7 +155,7 @@ public class ChangeNode extends AbstractNode {
               .set("t", "delete")
               .set("p", p)
               .set("pt", pt));
-          msg = applyRule(msg, new JtonObject()
+          applyRule(msg, new JtonObject()
               .set("t", "set")
               .set("p", to)
               .set("pt", tot)
@@ -163,150 +167,138 @@ public class ChangeNode extends AbstractNode {
               .set("pt", pt));
         }
       } else {
-        msg = applyRule(msg, r);
+        applyRule(msg, r);
       }
-    }
-
-    send(msg);
-  }
-
-  private JtonObject applyRule(JtonObject msg, JtonObject rule) {
-    final String property = rule.getAsString("p");
-
-    final String t = rule.getAsString("t");
-    final String pt = rule.getAsString("pt");
-
-    final JtonElement value = getToValue(msg, rule);
-    final JtonElement fromParts = getFromValue(msg, rule);
-
-    String fromType = null;
-    JtonElement fromValue = null;
-
-    if ("change".equals(t)) {
-      final JtonElement from = rule.get("from");
-      final String fromt = rule.getAsString("fromt");
-      if ("msg".equals(fromt)) {
-        fromValue = JRedUtil.getMessageProperty(msg, from.asString());
-      } else if ("flow".equals(fromt) || "global".equals(fromt)) {
-        fromValue = JRedUtil.getObjectProperty(getContext(fromt), from.asString());
-      } else {
-        fromType = fromt;
-        fromValue = from;
-      }
-    }
-
-    if ("msg".equals(pt)) {
-      if ("delete".equals(t)) {
-        JRedUtil.deleteMessageProperty(msg, property);
-      } else if ("set".equals(t)) {
-        JRedUtil.setMessageProperty(msg, property, value, true);
-      } else if ("change".equals(t)) {
-        final JtonPrimitive current = JRedUtil.getMessageProperty(msg, property)
-            .asJtonPrimitive(false);
-        if (current != null) {
-          if (current.isString()) {
-            if (("num".equals(fromType) || "bool".equals(fromType) || "str".equals(fromType))
-                && current.asString().equals(fromValue.asString())) {
-              // str representation of exact from number/boolean
-              // only replace if they match exactly
-              JRedUtil.setMessageProperty(msg, property, value, false);
-            } else {
-              JRedUtil.setMessageProperty(msg, property, new JtonPrimitive(current.asString()
-                  .replaceAll(fromValue.asString(), value.asString())), false);
-            }
-          } else if (current.isNumber() && "num".equals(fromType)) {
-            if (current.asNumber().equals(fromValue.asNumber())) {
-              JRedUtil.setMessageProperty(msg, property, value, false);
-            }
-          } else if (current.isBoolean() && "bool".equals(fromType)) {
-            if (current.asBoolean() == fromValue.asBoolean()) {
-              JRedUtil.setMessageProperty(msg, property, value, false);
-            }
-          }
-        }
-      }
-    } else {
-      JtonObject target = null;
-      if ("flow".equals(pt) || "global".equals(pt)) {
-        target = getContext(pt);
-      }
-      if (target != null) {
-        if ("delete".equals(t)) {
-          JRedUtil.deleteObjectProperty(target, property);
-        } else if ("set".equals(t)) {
-          JtonUtil.setProperty(target, property, value, true);
-        } else if ("change".equals(t)) {
-          final JtonPrimitive current = JtonUtil.getProperty(target, property).asJtonPrimitive(null);
-          if (current != null) {
-            if (current.isString()) {
-              if (("num".equals(fromType) || "bool".equals(fromType) || "str".equals(fromType))
-                  && current.asString().equals(fromValue.asString())) {
-                // str representation of exact from number/boolean
-                // only replace if they match exactly
-                JtonUtil.setProperty(target, property, value, true);
-              } else {
-                JRedUtil.setMessageProperty(msg, property, new JtonPrimitive(current.asString()
-                    .replaceAll(fromValue.asString(), value.asString())), false);
-              }
-            } else if (current.isNumber() && "num".equals(fromType)) {
-              if (current.asNumber().equals(fromValue.asNumber())) {
-                JtonUtil.setProperty(target, property, value, true);
-              }
-            } else if (current.isBoolean() && "bool".equals(fromType)) {
-              if (current.asBoolean() == fromValue.asBoolean()) {
-                JtonUtil.setProperty(target, property, value, true);
-              }
-            }
-          }
-        }
-      }
-    }
+    });
 
     return msg;
   }
 
-  private JtonElement getToValue(JtonObject msg, JtonObject rule) {
-    return JRedUtil.evaluateNodeProperty(rule.getAsString("to"), rule.getAsString("tot"), this, msg);
-  }
+  private void applyRule(JtonObject msg, JtonObject rule) {
+    final String property = rule.getAsString("p");
 
-  private JtonObject getFromValue(JtonObject msg, JtonObject rule) {
-    String fromValue;
-    String fromType;
-    String fromRE;
+    final String pt = rule.getAsString("pt");
+    if ("msg".equals(pt)) {
+      final String t = rule.getAsString("t");
+      if ("delete".equals(t)) {
+        JRedUtil.deleteMessageProperty(msg, property);
+      } else if ("set".equals(t)) {
+        JRedUtil.setMessageProperty(msg, property, getToValue(msg, rule), true);
+      } else if ("change".equals(t)) {
+        final JtonElement fromValue = getFromValue(msg, rule);
+        final String fromValueType = getFromValueType(msg, rule);
+        final JtonElement fromRE = rule.get("fromRE");
+        final JtonElement toValue = getToValue(msg, rule);
 
-    final String t = rule.getAsString("t");
-    final String fromt = rule.getAsString("fromt");
-    if ("change".equals(t)) {
-      if ("msg".equals(fromt) || "flow".equals(fromt) || "global".equals(fromt)) {
-        if ("msg".equals(fromt)) {
-          return getFromValueType(JRedUtil
-              .getMessageProperty(msg, rule.getAsString("from")).asJtonPrimitive());
+        final JtonElement current = JRedUtil.getMessageProperty(msg, property);
+        if (current.isJtonPrimitive()) {
+          final JtonPrimitive currPrimitive = current.asJtonPrimitive();
+          if (currPrimitive.isString()) {
+            if (("num".equals(fromValueType) || "bool".equals(fromValueType) || "str".equals(fromValueType)
+                && Objects.equal(currPrimitive.asString(), fromValue))) {
+              // str representation of exact from number/boolean
+              // only replace if they match exactly
+              JRedUtil.setMessageProperty(msg, property, toValue, false);
+            } else {
+              final String value = (!fromRE.isJtonNull())
+                  ? ((Pattern) fromRE.asJtonPrimitive().getValue())
+                      .matcher(currPrimitive.asString()).replaceAll(toValue.asString())
+                  : currPrimitive.asString().replace(fromValue.asString(), toValue.asString());
+              JRedUtil.setMessageProperty(msg, property, new JtonPrimitive(value), false);
+            }
+          } else if (currPrimitive.isNumber() && "num".equals(fromValueType)) {
+            if (currPrimitive.equals(fromValue)) {
+              JRedUtil.setMessageProperty(msg, property, toValue, false);
+            }
+          } else if (currPrimitive.isBoolean() && "bool".equals(fromValueType)) {
+            if (currPrimitive.equals(fromValue)) {
+              JRedUtil.setMessageProperty(msg, property, toValue, false);
+            }
+          }
+        }
+      }
+    } else if ("flow".equals(pt) || "global".equals(pt)) {
+      final String t = rule.getAsString("t");
+      if ("delete".equals(t)) {
+        JRedUtil.deleteNodeProperty(property, pt, this, msg);
+      } else if ("set".equals(t)) {
+        JRedUtil.setNodeProperty(property, pt, this, msg, getToValue(msg, rule));
+      } else if ("change".equals(pt)) {
+        final JtonElement fromValue = getFromValue(msg, rule);
+        final String fromValueType = getFromValueType(msg, rule);
+        final JtonElement fromRE = rule.get("fromRE");
+        final JtonElement toValue = getToValue(msg, rule);
+
+        final JtonObject target = getContext(pt);
+
+        final JtonElement current = JRedUtil.getMessageProperty(msg, property);
+        if (current.isJtonPrimitive()) {
+          final JtonPrimitive currPrimitive = current.asJtonPrimitive();
+          if (currPrimitive.isString()) {
+            if (("num".equals(fromValueType) || "bool".equals(fromValueType) || "str".equals(fromValueType)
+                && Objects.equal(currPrimitive.asString(), fromValue))) {
+              // str representation of exact from number/boolean
+              // only replace if they match exactly
+              JtonUtil.setProperty(target, property, toValue, true);
+            } else {
+              final String value = (!fromRE.isJtonNull())
+                  ? ((Pattern) fromRE.asJtonPrimitive().getValue())
+                      .matcher(currPrimitive.asString()).replaceAll(toValue.asString())
+                  : currPrimitive.asString().replace(fromValue.asString(), toValue.asString());
+              JRedUtil.setNodeProperty(property, pt, this, msg, new JtonPrimitive(value));
+            }
+          } else if (currPrimitive.isNumber() && "num".equals(fromValueType)) {
+            if (currPrimitive.equals(fromValue)) {
+              JtonUtil.setProperty(target, property, toValue, true);
+            }
+          } else if (currPrimitive.isBoolean() && "bool".equals(fromValueType)) {
+            if (currPrimitive.equals(fromValue)) {
+              JtonUtil.setProperty(target, property, toValue, true);
+            }
+          }
         }
       }
     }
-
-    return null;
   }
 
-  private JtonObject getFromValueType(JtonElement _fromValue) {
-    final String fromType;
-    final Pattern fromRE;
-    final JtonObject fromParts = new JtonObject();
-//    if (_fromValue.isJtonTransient()) {
-//      final JtonTransient fromValue = _fromValue.asJtonTransient();
-//      if (fromValue.getValue() instanceof Pattern) {
-//        fromType = "re";
-//        fromRE = (Pattern) fromValue.getValue();
-//      }
-//    } else if (_fromValue.isJtonPrimitive()) {
-//      final JtonPrimitive fromValue = _fromValue.asJtonPrimitive();
-//      if (fromValue.isNumber()) {
-//        fromType = "num";
-//      } else if (fromValue.isBoolean()) {
-//        fromType = "bool";
-//      }
-//    }
+  private JtonElement getToValue(JtonObject msg, JtonObject rule) {
+    final String to = rule.getAsString("to");
+    final String tot = rule.getAsString("tot");
+    if ("jsonpath".equals(tot)) {
+      final JsonPath jsonPath = (JsonPath) rule.getAsJtonPrimitive("toJSONPath").getValue();
+      return JRedUtil.evaluateJsonPathExpression(msg, jsonPath);
+    } else {
+      return JRedUtil.evaluateNodeProperty(to, tot, this, msg);
+    }
+  }
 
-    return fromParts;
+  private JtonElement getFromValue(JtonObject msg, JtonObject rule) {
+    final String t = rule.getAsString("t");
+    if ("change".equals(t)) {
+      final String fromt = rule.getAsString("fromt");
+      if ("msg".equals(fromt) || "flow".equals(fromt) || "global".equals(fromt)) {
+        if ("msg".equals(fromt)) {
+          return JRedUtil.getMessageProperty(msg, rule.getAsString("from"));
+        } else if ("flow".equals(fromt) || "global".equals(fromt)) {
+          return JRedUtil.evaluateNodeProperty(rule.getAsString("from"), fromt, this, msg);
+        }
+      } else {
+        return rule.get("from");
+      }
+    }
+    return JtonNull.INSTANCE;
+  }
+
+  private String getFromValueType(JtonObject msg, JtonObject rule) {
+    final String t = rule.getAsString("t");
+    if ("change".equals(t)) {
+      final String fromt = rule.getAsString("fromt");
+      if ("msg".equals(fromt) || "flow".equals(fromt) || "global".equals(fromt)) {
+        throw new UnsupportedOperationException(); // TODO
+      } else {
+        return fromt;
+      }
+    }
+    return null;
   }
 }
