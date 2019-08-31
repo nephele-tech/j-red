@@ -281,7 +281,6 @@ public abstract class AbstractNode implements Node {
     String sentMessageId = null;
 
     // for each output of node eg. [msgs to output 0, msgs to output 1, ...]
-    boolean msgSent = false;
     for (int i = 0, imax = numOutputs; i < imax; i++) {
       final JtonArray wires = this.wires.get(i).asJtonArray(); // wires leaving output 1
       if (i < msg.asJtonArray().size()) {
@@ -302,12 +301,11 @@ public abstract class AbstractNode implements Node {
                   if (sentMessageId == null) {
                     sentMessageId = m.asJtonObject().getAsString("_msgid", null);
                   }
-                  if (msgSent) {
+                  if (sendEvents.size() > 0) {
                     final JtonElement clonedMsg = m.deepCopy();
                     sendEvents.add(new SendEvent(node, clonedMsg.asJtonObject()));
                   } else {
                     sendEvents.add(new SendEvent(node, m.asJtonObject()));
-                    msgSent = false;
                   }
                 }
               }
