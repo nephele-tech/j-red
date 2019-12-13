@@ -19,17 +19,44 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonUtil;
-import com.nepheletech.messagebus.MessageBus;
-import com.nepheletech.messagebus.MessageBusListener;
-import com.nepheletech.messagebus.Subscription;
 
-public class HttpInNode extends AbstractNode /*implements NodesStartedEventListener*/ {
+public class HttpInNode extends AbstractNode {
 
-  public static String createListenerTopic(String method, String url) {
-    return HttpInNode.class.getName() + ':' + method + ':' + url;
+  private static final Logger logger = LoggerFactory.getLogger(HttpInNode.class);
+
+  private static final ConcurrentMap<String, WeakReference<HttpInNode>> mappings = new ConcurrentHashMap<>();
+
+  public static HttpInNode byPath(String path) {
+
+    logger.info("-----> keys = {}", mappings.keySet());
+
+    if (mappings.containsKey(path)) {
+      final WeakReference<HttpInNode> value = mappings.get(path);
+      if (value != null) { return value.get(); }
+    } else {
+      for (final Entry<String, WeakReference<HttpInNode>> entry : mappings.entrySet()) {
+
+        logger.info("-------------{} --------------- {}", path, entry.getKey());
+
+        if (path.matches(entry.getKey())) { return entry.getValue().get(); }
+      }
+    }
+
+    return null;
   }
 
   // ---
@@ -38,30 +65,58 @@ public class HttpInNode extends AbstractNode /*implements NodesStartedEventListe
   private final String method;
   private final boolean upload;
 
-  private final MessageBusListener<JtonObject> requestListener = (topic, msg) -> receive(msg);
-  
-  private final Subscription subscription;
+  private List<String> params = null;
+
+  private final String key;
 
   public HttpInNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     final String url = config.get("url").asString(null);
-    if (url == null) { throw new RuntimeException("missing path"); }
+    if (url == null) { throw new RuntimeException("missing url"); }
+
+    // normalize url
     this.url = (url.charAt(0) != '/') ? '/' + url : url;
+
+    // extract path parameters from url
+    final StringBuilder sb = new StringBuilder();
+    final String[] parts = url.split("/");
+    for (String part : parts) {
+      logger.info("------------------- {}", part);
+      
+      if (StringUtils.trimToNull(part) == null) {
+        continue;
+      }
+
+      if (part.startsWith(":")) {
+        if (this.params == null) {
+          this.params = new ArrayList<>();
+        }
+        this.params.add(part.substring(1));
+        sb.append("/(.+)");
+      } else {
+        sb.append("/")
+            .append(part);
+      }
+    }
+    this.key = sb.toString();
+
     this.method = config.get("method").asString("GET").toUpperCase();
     this.upload = config.get("upload").asBoolean();
+
     // TODO swagger
 
-    subscription =MessageBus.subscribe(createListenerTopic(this.method, this.url), requestListener);
+    if (mappings.containsKey(this.key)) {
+      // TODO show warning...
+    }
+
+    // last one wins
+    mappings.put(this.key, new WeakReference<>(this));
   }
 
   @Override
   protected void onClosed(boolean removed) {
-    logger.trace(">>> onClosed");
-
-    if (subscription != null) {
-      subscription.unsubscribe();
-    }
+    mappings.remove(this.key);
   }
 
   @Override
@@ -70,8 +125,33 @@ public class HttpInNode extends AbstractNode /*implements NodesStartedEventListe
 
     // TODO uploads...
 
-    logger.info("-------------------------{}", JtonUtil.getProperty(msg, "req._pathInfo"));
+    //
+    // pathInfo
+    //
 
-    send(msg);
+    final String pathInfo = JtonUtil.getProperty(msg, "req._pathInfo").asString(null);
+
+    final JtonObject _params = new JtonObject();
+    JtonUtil.setProperty(msg, "req.params", _params, true);
+
+    if (this.params != null) {
+
+      if (pathInfo != null) {
+        final String[] parts = pathInfo.split("/");
+        for (int i = 0, n = this.params.size(); i < n; i++) {
+          if (parts.length > i + 1) {
+            _params.set(this.params.get(i), parts[i + 1]);
+          }
+        }
+
+        send(msg);
+      }
+
+    } else {
+
+      if (pathInfo == null) {
+        send(msg);
+      }
+    }
   }
 }
