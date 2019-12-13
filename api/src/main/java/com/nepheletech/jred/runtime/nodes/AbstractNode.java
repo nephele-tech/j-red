@@ -28,6 +28,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nepheletech.jred.runtime.events.NodesStartedEvent;
+import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
+import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
+import com.nepheletech.jred.runtime.events.NodesStoppedEventListener;
 //import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 //import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
 //import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
@@ -37,7 +41,6 @@ import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.messagebus.AsyncMessageBus;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 import com.nepheletech.messagebus.Subscription;
@@ -72,8 +75,8 @@ public abstract class AbstractNode implements Node {
 
   // Event listeners...
   private final Subscription subscription;
-//  private final Subscription nodesStartedSubscription;
-//  private final Subscription nodesStoppedSubscription;
+  private final Subscription nodesStartedSubscription;
+  private final Subscription nodesStoppedSubscription;
 
   public AbstractNode(final Flow flow, final JtonObject config) {
     this.flow = flow;
@@ -89,7 +92,7 @@ public abstract class AbstractNode implements Node {
 
     updateWires(config.getAsJtonArray("wires", true));
 
-    subscription = AsyncMessageBus.subscribe(id, new MessageBusListener<JtonObject>() {
+    subscription = MessageBus.subscribe(id, new MessageBusListener<JtonObject>() {
       @Override
       public void messageSent(String topic, JtonObject msg) {
         try {
@@ -104,39 +107,39 @@ public abstract class AbstractNode implements Node {
       }
     });
 
-//    if (this instanceof NodesStartedEventListener) {
-//      nodesStartedSubscription = MessageBus
-//          .subscribe(NodesStartedEvent.class, new MessageBusListener<NodesStartedEvent>() {
-//            @Override
-//            public void messageSent(String topic, NodesStartedEvent message) {
-//              try {
-//                ((NodesStartedEventListener) AbstractNode.this).onNodesStarted(message);
-//              } catch (Exception e) {
-//                logger.error("Unhandled exception", e);
-//                logger.debug(e.getMessage(), e);
-//              }
-//            }
-//          });
-//    } else {
-//      nodesStartedSubscription = null;
-//    }
+    if (this instanceof NodesStartedEventListener) {
+      nodesStartedSubscription = MessageBus
+          .subscribe(NodesStartedEvent.class, new MessageBusListener<NodesStartedEvent>() {
+            @Override
+            public void messageSent(String topic, NodesStartedEvent message) {
+              try {
+                ((NodesStartedEventListener) AbstractNode.this).onNodesStarted(message);
+              } catch (Exception e) {
+                logger.error("Unhandled exception", e);
+                logger.debug(e.getMessage(), e);
+              }
+            }
+          });
+    } else {
+      nodesStartedSubscription = null;
+    }
 
-//    if (this instanceof NodesStoppedEventListener) {
-//      nodesStoppedSubscription = MessageBus
-//          .subscribe(NodesStoppedEvent.class, new MessageBusListener<NodesStoppedEvent>() {
-//            @Override
-//            public void messageSent(String topic, NodesStoppedEvent message) {
-//              try {
-//                ((NodesStoppedEventListener) AbstractNode.this).onNodesStopped(message);
-//              } catch (Exception e) {
-//                logger.error("Unhandled exception", e);
-//                logger.debug(e.getMessage(), e);
-//              }
-//            }
-//          });
-//    } else {
-//      nodesStoppedSubscription = null;
-//    }
+    if (this instanceof NodesStoppedEventListener) {
+      nodesStoppedSubscription = MessageBus
+          .subscribe(NodesStoppedEvent.class, new MessageBusListener<NodesStoppedEvent>() {
+            @Override
+            public void messageSent(String topic, NodesStoppedEvent message) {
+              try {
+                ((NodesStoppedEventListener) AbstractNode.this).onNodesStopped(message);
+              } catch (Exception e) {
+                logger.error("Unhandled exception", e);
+                logger.debug(e.getMessage(), e);
+              }
+            }
+          });
+    } else {
+      nodesStoppedSubscription = null;
+    }
   }
 
   @Override
@@ -189,22 +192,22 @@ public abstract class AbstractNode implements Node {
   public final void close(boolean removed) {
     logger.trace(">>> close: type={}, id={}, removed={}", type, id, removed);
 
-//    if (nodesStartedSubscription != null) {
-//      nodesStartedSubscription.unsubscribe();
-//    }
+    if (nodesStartedSubscription != null) {
+      nodesStartedSubscription.unsubscribe();
+    }
 
-//    if (nodesStoppedSubscription != null) {
-//      nodesStoppedSubscription.unsubscribe();
-//
-//      if (this instanceof NodesStoppedEventListener) {
-//        try {
-//          ((NodesStoppedEventListener) AbstractNode.this).onNodesStopped(new NodesStoppedEvent(this));
-//        } catch (Exception e) {
-//          logger.error("Unhandled exception", e);
-//          logger.debug(e.getMessage(), e);
-//        }
-//      }
-//    }
+    if (nodesStoppedSubscription != null) {
+      nodesStoppedSubscription.unsubscribe();
+
+      if (this instanceof NodesStoppedEventListener) {
+        try {
+          ((NodesStoppedEventListener) AbstractNode.this).onNodesStopped(new NodesStoppedEvent(this));
+        } catch (Exception e) {
+          logger.error("Unhandled exception", e);
+          logger.debug(e.getMessage(), e);
+        }
+      }
+    }
 
     if (subscription != null) {
       subscription.unsubscribe();
@@ -358,7 +361,7 @@ public abstract class AbstractNode implements Node {
       msg.set("_msgid", UUID.randomUUID().toString());
     }
 
-    AsyncMessageBus.sendMessage(id, msg);
+    MessageBus.sendMessage(id, msg, true);
   }
 
   protected abstract void onMessage(JtonObject msg);
@@ -486,5 +489,4 @@ public abstract class AbstractNode implements Node {
 
     JRedUtil.publish("debug", "debug", o);
   }
-
 }

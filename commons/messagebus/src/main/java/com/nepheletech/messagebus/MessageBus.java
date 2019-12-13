@@ -19,31 +19,11 @@ package com.nepheletech.messagebus;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.Executor;
 
 /**
  * Provides support for basic intra-application message passing.
  */
 public class MessageBus {
-
-  private static MessageBus instance = null;
-
-  private static MessageBus getInstance() {
-    if (instance == null) {
-      synchronized (MessageBus.class) {
-        if (instance == null) {
-          instance = new MessageBus(new Executor() {
-            @Override
-            public void execute(Runnable command) {
-              command.run();
-            }
-          });
-        }
-      }
-    }
-
-    return instance;
-  }
 
   /**
    * All registered subscribers, indexed by event type.
@@ -52,13 +32,12 @@ public class MessageBus {
    * lightweight to get an immutable snapshot of all current subscribers to an
    * event without any locking.
    */
-  private final ConcurrentMap<String, CopyOnWriteArraySet<MessageBusListener<?>>> messageTopics = new ConcurrentHashMap<>();
-  
-  private final Executor executor;
-  
-  protected MessageBus(Executor executor) {
-    this.executor = executor;
-  }
+  private static final ConcurrentMap<String, CopyOnWriteArraySet<MessageBusListener<?>>> messageTopics = new ConcurrentHashMap<>();
+
+  /**
+   * Constructor.
+   */
+  private MessageBus() {}
 
   /**
    * Subscribes a listener to a message topic.
@@ -67,10 +46,6 @@ public class MessageBus {
    * @param messageListener
    */
   public static <T> Subscription subscribe(Class<? super T> topic, MessageBusListener<T> messageListener) {
-    return getInstance().subscribeImpl(topic, messageListener);
-  }
-
-  protected <T> Subscription subscribeImpl(Class<? super T> topic, MessageBusListener<T> messageListener) {
     return subscribe(topic.getName(), messageListener);
   }
 
@@ -81,10 +56,6 @@ public class MessageBus {
    * @param messageListener
    */
   public static <T> Subscription subscribe(String topic, MessageBusListener<T> messageListener) {
-    return getInstance().subscribeImpl(topic, messageListener);
-  }
-
-  protected <T> Subscription subscribeImpl(String topic, MessageBusListener<T> messageListener) {
     CopyOnWriteArraySet<MessageBusListener<?>> topicListeners = messageTopics.get(topic);
 
     if (topicListeners == null) {
@@ -101,7 +72,7 @@ public class MessageBus {
       @Override
       public void unsubscribe() {
         try {
-          MessageBus.this.unsubscribeImpl(topic, messageListener);
+          MessageBus.unsubscribeImpl(topic, messageListener);
         } catch (IllegalArgumentException e) {
           // ignore
         }
@@ -115,7 +86,7 @@ public class MessageBus {
    * @param topic
    * @param messageListener
    */
-  private <T> void unsubscribeImpl(String topic, MessageBusListener<T> messageListener) {
+  private static <T> void unsubscribeImpl(String topic, MessageBusListener<T> messageListener) {
     CopyOnWriteArraySet<MessageBusListener<?>> topicListeners = messageTopics.get(topic);
 
     if (topicListeners == null) { throw new IllegalArgumentException(topic + " does not exist."); }
@@ -132,13 +103,24 @@ public class MessageBus {
    * @param message
    */
   public static <T> void sendMessage(T message) {
-    getInstance().sendMessageImpl(message);
-  }
-
-  protected <T> void sendMessageImpl(T message) {
     if (message == null) { throw new NullPointerException("message can't be null"); }
 
-    sendMessage(message.getClass().getName(), message);
+    sendMessage(message.getClass().getName(), message, false);
+  }
+  
+  public static <T> void sendMessage(T message, boolean async) {
+    if (message == null) { throw new NullPointerException("message can't be null"); }
+
+    sendMessage(message.getClass().getName(), message, async);
+  }
+  
+  /**
+   * Sends a message to subscribed topic listeners.
+   *
+   * @param message
+   */
+  public static <T> void sendMessage(String topic, T message) {
+    sendMessage(topic, message, false);
   }
 
   /**
@@ -146,34 +128,27 @@ public class MessageBus {
    *
    * @param message
    */
-  public static <T> void sendMessage(String topic, T message) {
-    getInstance().sendMessageImpl(topic, message);
-  }
-
   @SuppressWarnings("unchecked")
-  protected <T> void sendMessageImpl(String topic, T message) {
-    executor.execute(new Runnable() {
-      @Override
-      public void run() {
-        CopyOnWriteArraySet<MessageBusListener<?>> topicListeners = messageTopics.get(topic);
+  public static <T> void sendMessage(String topic, T message, boolean async) {
+    CopyOnWriteArraySet<MessageBusListener<?>> topicListeners = messageTopics.get(topic);
 
-        if (topicListeners != null) {
-          for (MessageBusListener<?> listener : topicListeners) {
-            ((MessageBusListener<T>) listener).messageSent(topic, message);
-          }
-        }
+    if (topicListeners != null) {
+      if (async) {
+        topicListeners.stream().parallel().forEach(x -> {
+          ((MessageBusListener<T>) x).messageSent(topic, message);
+        });
+      } else {
+        topicListeners.stream().forEach(x -> {
+          ((MessageBusListener<T>) x).messageSent(topic, message);
+        });
       }
-    });
+    }
   }
 
   /**
    * Unsubscribe all listeners.
    */
   public static void unsubscribeAll() {
-    getInstance().unsubscribeAllImpl();
-  }
-
-  protected void unsubscribeAllImpl() {
     messageTopics.clear();
   }
 }
