@@ -40,17 +40,18 @@ public abstract class AbstractCamelNode extends AbstractNode {
 
     if (this.camelContextRef != null) {
       this.camelContextStartupSubscription = MessageBus
-          .subscribe(this.camelContextRef, new MessageBusListener<CamelContext>() {
-        @Override
-        public void messageSent(String topic, CamelContext camelContext) {
-          try {
-            addRoutes(camelContext);
-          } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-        }
-      });
+          .subscribe(CamelContextNode.byRef(this.camelContextRef),
+              new MessageBusListener<CamelContext>() {
+                @Override
+                public void messageSent(String topic, CamelContext camelContext) {
+                  try {
+                    addRoutes(camelContext);
+                  } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                  }
+                }
+              });
     } else {
       this.camelContextStartupSubscription = null;
     }
@@ -66,7 +67,7 @@ public abstract class AbstractCamelNode extends AbstractNode {
   protected void onClosed(boolean removed) {
     logger.trace(">>> onClosed: {}", removed);
 
-    if (/*removed &&*/ camelContextRef != null) {
+    if (/* removed && */ camelContextRef != null) {
       camelContextStartupSubscription.unsubscribe();
     }
   }

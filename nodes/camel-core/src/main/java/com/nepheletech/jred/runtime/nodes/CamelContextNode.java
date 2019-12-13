@@ -49,7 +49,7 @@ public class CamelContextNode extends AbstractConfigurationNode
     logger.trace(">>> onNodesStarted:");
 
     if (camelContext != null) {
-      MessageBus.sendMessage(getId(), camelContext);
+      MessageBus.sendMessage(byRef(getId()), camelContext);
 
       try {
         camelContext.start();
@@ -66,12 +66,16 @@ public class CamelContextNode extends AbstractConfigurationNode
     if (camelContext != null) {
       try {
         camelContext.stop();
-        //camelContext.removeRouteDefinitions(camelContext.getRouteDefinitions());
+        // camelContext.removeRouteDefinitions(camelContext.getRouteDefinitions());
         // TODO camelContext registry RESET
       } catch (Exception e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }
+  }
+
+  public static String byRef(String id) {
+    return CamelContextNode.class.getName() + ":" + id;
   }
 }

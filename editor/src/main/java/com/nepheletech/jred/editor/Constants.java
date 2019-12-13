@@ -19,7 +19,7 @@
 package com.nepheletech.jred.editor;
 
 public interface Constants {
-  static final String NODE_RED_VERSION = "1.0.0-beta.3";
+  static final String NODE_RED_VERSION = "1.0.3";
   
   static final String NODE_RED_API_VERSION = "Node-RED-API-Version";
   static final String NODE_RED_API_V1 = "v1";
