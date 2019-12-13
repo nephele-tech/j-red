@@ -28,7 +28,7 @@ import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.jton.internal.Streams;
-import com.nepheletech.jton.jsonpath.JtonPath;
+import com.nepheletech.jton.jsonpath.JtonPathConfiguration;
 import com.nepheletech.jton.stream.JsonWriter;
 
 /**
@@ -46,7 +46,7 @@ public abstract class JtonElement {
    * Initialize JsonPath to use JTON objects.
    */
   static {
-    JtonPath.configure();
+    JtonPathConfiguration.configure();
   }
 
   /**

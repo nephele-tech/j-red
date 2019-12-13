@@ -10,9 +10,9 @@ import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import com.nepheletech.jton.jsonpath.JtonProvider;
 import com.nepheletech.jton.jsonpath.JtonMappingProvider;
 
-public final class JtonPath {
+public final class JtonPathConfiguration {
 
-  private JtonPath() {
+  private JtonPathConfiguration() {
   }
 
   public static void configure() {

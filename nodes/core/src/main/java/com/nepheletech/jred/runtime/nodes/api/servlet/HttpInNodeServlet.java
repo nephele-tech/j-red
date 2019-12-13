@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
@@ -46,7 +45,6 @@ import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
-import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/http-in/*" })
@@ -102,39 +100,15 @@ public class HttpInNodeServlet extends HttpServlet {
     }
 
     //
-    // Message dispatcher...
+    // Dispatcher...
     //
-
-    final String[] parts = pathInfo != null
-        ? pathInfo.split("/")
-        : new String[0];
-
-    final StringBuilder sb = new StringBuilder();
-    JtonObject _msg = null;
-    for (int i = 1; i < parts.length; i++) {
-      sb.append("/")
-          .append(parts[i]);
-
-      final String url = sb.toString();
-      request.set("_pathInfo", pathInfo.substring(url.length()));
-
-      logger.debug("url={}, pathInfo={}", url, request.get("_pathInfo").asString());
-
-      try {
-        if (_msg == null || _msg.has("_res")) {
-          logger.info("==========================={}", HttpInNode.createListenerTopic(method, url));
-          MessageBus.sendMessage(HttpInNode.createListenerTopic(method, url), _msg = msg.deepCopy());
-        } else {
-          break;
-        }
-      } catch (RuntimeException e) {
-        throw new ServletException(e);
-      }
+    
+    final HttpInNode node = HttpInNode.byPath(pathInfo);
+    if (node != null) {
+      node.receive(msg);
+    } else {
+      res.sendError(HttpServletResponse.SC_BAD_REQUEST);
     }
-
-    //if (_msg != null && _msg.has("_res")) {
-    //  res.sendError(HttpServletResponse.SC_NOT_FOUND);
-    //}
   }
 
   /**

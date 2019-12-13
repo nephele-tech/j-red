@@ -125,32 +125,37 @@ public class FlowImpl implements Flow {
       final String id = configNodes.remove(0);
       final JtonObject node = configs.getAsJtonObject(id);
       if (!activeNodes.containsKey(id)) {
-        boolean readyToCreate = true;
-        // This node doesn't exist.
-        // Check it doesn't reference another non-existing config node.
-        for (String prop : node.keySet()) {
-          if (!"id".equals(prop) && !"wires".equals(prop) && !"_users".equals(prop)) {
-            final String configRef = node.getAsString(prop, null);
-            if (configRef != null && configs.has(configRef)) {
-              if (!activeNodes.containsKey(configRef)) {
-                // References a non-existing config node
-                // Add it to the back of the list to try again later
-                configNodes.add(id);
-                configNodesAttempts.set(id, configNodesAttempts.getAsInt(id, 0) + 1);
-                if (configNodesAttempts.getAsInt(id) == 100) {
-                  throw new RuntimeException("Circular config node dependency detected: " + id);
+        if (!node.getAsBoolean("d", false)) {
+          boolean readyToCreate = true;
+          // This node doesn't exist.
+          // Check it doesn't reference another non-existing config node.
+          for (String prop : node.keySet()) {
+            if (!"id".equals(prop) && !"wires".equals(prop) && !"_users".equals(prop)) {
+              final String configRef = node.getAsString(prop, null);
+              if (configRef != null && configs.has(configRef)
+                  && !configs.getAsJtonObject(configRef).getAsBoolean("d", false)) {
+                if (!activeNodes.containsKey(configRef)) {
+                  // References a non-existing config node
+                  // Add it to the back of the list to try again later
+                  configNodes.add(id);
+                  configNodesAttempts.set(id, configNodesAttempts.getAsInt(id, 0) + 1);
+                  if (configNodesAttempts.getAsInt(id) == 100) {
+                    throw new RuntimeException("Circular config node dependency detected: " + id);
+                  }
+                  readyToCreate = false;
+                  break;
                 }
-                readyToCreate = false;
-                break;
               }
             }
           }
-        }
-        if (readyToCreate) {
-          newNode = FlowUtil.createNode(this, node);
-          if (newNode != null) {
-            activeNodes.put(id, newNode);
+          if (readyToCreate) {
+            newNode = FlowUtil.createNode(this, node);
+            if (newNode != null) {
+              activeNodes.put(id, newNode);
+            }
           }
+        } else {
+          logger.debug("not starting disabled config node : {}", id);
         }
       }
     }
@@ -171,32 +176,36 @@ public class FlowImpl implements Flow {
     if (flowNodes != null) {
       for (String id : flowNodes.keySet()) {
         final JtonObject node = flowNodes.getAsJtonObject(id);
-        if (!node.has("subflow")) {
-          if (!activeNodes.containsKey(id)) {
-            newNode = FlowUtil.createNode(this, node);
-            if (newNode != null) {
-              activeNodes.put(id, newNode);
+        if (!node.getAsBoolean("d", false)) {
+          if (!node.has("subflow")) {
+            if (!activeNodes.containsKey(id)) {
+              newNode = FlowUtil.createNode(this, node);
+              if (newNode != null) {
+                activeNodes.put(id, newNode);
+              }
+            }
+          } else {
+            if (!subflowInstanceNodes.containsKey(id)) {
+              try {
+                final String subflowRef = node.getAsString("subflow");
+                final JtonObject flowSubflows = flow.getAsJtonObject("subflows");
+                final JtonObject globalSubflows = global.getAsJtonObject("subflows");
+                final JtonObject subflowDefinition = flowSubflows.has(subflowRef)
+                    ? flowSubflows.getAsJtonObject(subflowRef)
+                    : globalSubflows.getAsJtonObject(subflowRef);
+                // console.log("NEED TO CREATE A SUBFLOW",id,node.subflow);
+                // subflowInstanceNodes.put(id, true);
+                final Subflow subflow = new Subflow(this, this.global, subflowDefinition, node);
+                subflowInstanceNodes.put(id, subflow);
+                subflow.start(null);
+                this.activeNodes.put(id, subflow.node);
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
             }
           }
         } else {
-          if (!subflowInstanceNodes.containsKey(id)) {
-            try {
-              final String subflowRef = node.getAsString("subflow");
-              final JtonObject flowSubflows = flow.getAsJtonObject("subflows");
-              final JtonObject globalSubflows = global.getAsJtonObject("subflows");
-              final JtonObject subflowDefinition = flowSubflows.has(subflowRef)
-                  ? flowSubflows.getAsJtonObject(subflowRef)
-                  : globalSubflows.getAsJtonObject(subflowRef);
-              // console.log("NEED TO CREATE A SUBFLOW",id,node.subflow);
-              // subflowInstanceNodes.put(id, true);
-              final Subflow subflow = new Subflow(this, this.global, subflowDefinition, node);
-              subflowInstanceNodes.put(id, subflow);
-              subflow.start(null);
-              this.activeNodes.put(id, subflow.node);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
-          }
+          logger.debug("not starting disabled node: {}", id);
         }
       }
     }

@@ -37,6 +37,8 @@ public interface Node {
   String getName();
 
   String getAlias();
+  
+  String getAliasOrIdIfNull();
 
   void updateWires(JtonArray wires);
 
