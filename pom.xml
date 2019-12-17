@@ -4,8 +4,16 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nepheletech</groupId>
 	<artifactId>jred</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<packaging>pom</packaging>
+
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub OWNER Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/nephele-tech/j-red</url>
+		</repository>
+	</distributionManagement>
 
 	<properties>
 		<java.version>8</java.version>

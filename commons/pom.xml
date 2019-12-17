@@ -1,17 +1,19 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.nepheletech</groupId>
-    <artifactId>jred</artifactId>
-    <version>0.0.2</version>
-  </parent>
-  <artifactId>jred-commons</artifactId>
-  <packaging>pom</packaging>
-  <modules>
-    <module>dao</module>
-    <module>jfc</module>
-  	<module>jton</module>
-  	<module>messagebus</module>
-    <module>servlet-utils</module>
-  </modules>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.nepheletech</groupId>
+		<artifactId>jred</artifactId>
+		<version>0.0.3</version>
+	</parent>
+	<artifactId>jred-commons</artifactId>
+	<packaging>pom</packaging>
+	<modules>
+		<module>dao</module>
+		<module>jfc</module>
+		<module>jton</module>
+		<module>messagebus</module>
+		<module>servlet-utils</module>
+	</modules>
 </project>
