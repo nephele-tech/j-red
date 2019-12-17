@@ -1,3 +1,25 @@
 - Replace JSONata with JSonPath #2
   https://github.com/nephele-tech/j-red/issues/2
   Requires patching Node-RED editor: ui/common/typedInput.js.
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        jsonata: {
+            value: "jsonata",
+            label: "expression",
+            icon: "red/images/typedInput/expr.svg",
+            validate: function(v) { try{jsonata(v);return true;}catch(e){return false;}},
+            expand:function() {
+                var that = this;
+                RED.editor.editExpression({
+                    value: this.value().replace(/\t/g,"\n"),
+                    complete: function(v) {
+                        that.value(v.replace(/\n/g,"\t"));
+                    }
+                })
+            }
+        },
+        jsonpath: { // Issue: #2 (ggeorg)
+            value:"jsonpath",
+            label:"expression",
+            icon:"red/images/typedInput/expr.svg"
+        },
+        bin: { ... }
