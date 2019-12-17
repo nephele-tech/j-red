@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<settings>
+
+  <activeProfiles>
+    <activeProfile>jred-repository</activeProfile>
+  </activeProfiles>
+
+  <profiles>
+    <profile>
+      <id>jred-repository</id>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo1.maven.org/maven2</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
+          <id>jred-repository</id>
+          <name>GitHub Apache Maven Packages</name>
+          <url>https://maven.pkg.github.com/nephele-tech/j-red</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <servers>
+    <server>
+      <id>jred-repository</id>
+      <username>nephele-tech</username>
+      <password>495bbbcfc232a4a5d88d4ec92749bdc0168e2f34</password>
+    </server>
+  </servers>
+</settings>
