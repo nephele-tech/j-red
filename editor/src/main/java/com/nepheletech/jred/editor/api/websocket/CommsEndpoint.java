@@ -88,7 +88,7 @@ public class CommsEndpoint implements MessageBusListener<JtonObject> {
     logger.trace(">>> onOpen: id={}", session.getId());
 
     this.session = session;
-    this.session.setMaxIdleTimeout(-1L);
+    this.session.setMaxIdleTimeout(0L);
     // this.session.setMaxTextMessageBufferSize(8192);
 
     on("node-status", handleStatusEvent);

@@ -45,7 +45,7 @@ public class FlowsServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     logger.trace(">>> doGet:");
-    
+
     if (HttpServletUtil.acceptsJSON(req)) {
       final String version = req.getHeader(Constants.NODE_RED_API_VERSION);
       if (!(Constants.NODE_RED_API_V1.equals(version)
@@ -56,7 +56,7 @@ public class FlowsServlet extends HttpServlet {
             .toString());
         return;
       }
-      
+
       logger.debug("{} = {}", Constants.NODE_RED_API_VERSION, version);
 
       final JtonObject result = getRuntime().getFlows();
@@ -81,17 +81,17 @@ public class FlowsServlet extends HttpServlet {
           .toString());
       return;
     }
-    
+
     // XXX opts
 
     final JtonElement flows = HttpServletUtil.getJSONBody(req);
-    
+
     if (logger.isDebugEnabled()) {
       logger.debug("flows: {}", flows.toString(" "));
     }
 
     final String deploymentType = req.getHeader(Constants.NODE_RED_DEPLOYMENT_TYPE);
-    
+
     if (logger.isDebugEnabled()) {
       logger.debug("deploymentType: {}, version: {}", deploymentType, version);
     }

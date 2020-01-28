@@ -57,7 +57,6 @@ public final class HttpServletUtil {
   private static final String TEXT_HTML_UTF8 = "text/html; charset=UTF-8";
 
   public static final String TEXT_PLAIN = "text/plain";
-  @SuppressWarnings("unused")
   private static final String TEXT_PLAIN_UTF8 = "text/plain; charset=UTF-8";
 
   public static final String APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
@@ -115,6 +114,16 @@ public final class HttpServletUtil {
    */
   public static void sendJSON(HttpServletResponse res, JtonElement json) throws IOException {
     send(res, APPLICATION_JSON_UTF8, json.toString());
+  }
+
+  /**
+   * 
+   * @param res
+   * @param text
+   * @throws IOException
+   */
+  public static void sendText(HttpServletResponse res, String text) throws IOException {
+    send(res, TEXT_PLAIN_UTF8, text);
   }
 
   /**
@@ -198,6 +207,21 @@ public final class HttpServletUtil {
       // TODO log the error
       return JtonNull.INSTANCE;
     }
+  }
+
+  /**
+   * 
+   * @param req
+   * @return
+   */
+  public static String getBaseUrl(HttpServletRequest req) {
+    final StringBuilder baseUrl = new StringBuilder();
+    baseUrl.append(req.getScheme()).append("://").append(req.getServerName());
+    if ((req.getServerPort() != 80) && (req.getServerPort() != 443)) {
+      baseUrl.append(":").append(req.getServerPort());
+    }
+    baseUrl.append(req.getContextPath()).append("/");
+    return baseUrl.toString();
   }
 
   // ---

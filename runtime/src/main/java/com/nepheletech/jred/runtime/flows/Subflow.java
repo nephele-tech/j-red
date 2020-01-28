@@ -117,15 +117,16 @@ public class Subflow extends FlowImpl {
               if (_payload.has("text") || _payload.has("fill") || _payload.has("shape")
                   || _payload.keySet().size() == 0) {
                 // msg.payload is an object that looks like a status object
-                // TODO status
-                return;
+                throw new UnsupportedOperationException("status");
+                //return;
               }
             }
 
             // Anything else - inspect it and use as status text
             // TODO
           } else if (msg.has("status")) {
-
+            // if msg.status exists
+            throw new UnsupportedOperationException("if status");
           }
         }
       };

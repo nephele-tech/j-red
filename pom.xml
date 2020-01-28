@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nepheletech</groupId>
 	<artifactId>jred</artifactId>
-	<version>0.0.3</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<distributionManagement>
@@ -18,21 +18,25 @@
 
 	<properties>
 		<java.version>8</java.version>
-		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 		<node-red.version>1.0.3</node-red.version>
-		<tomcat.version>9.0.19</tomcat.version>
+		
+		<!-- maven plugins -->
+    <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+    <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
 
 		<!-- logging -->
 		<slf4j.version>1.7.25</slf4j.version>
 
 		<!-- Apache Camel -->
-		<apache.camel.version>3.0.0-M2</apache.camel.version>
+		<apache.camel.version>3.0.0</apache.camel.version>
 		<apache.commons-lang3.version>3.8.1</apache.commons-lang3.version>
 
-		<!-- In sync with Apache Tomcat 9.0.14 -->
+    <!-- Apache Tomcat -->
+    <tomcat.version>9.0.19</tomcat.version>
+    
+		<!-- In sync with Apache Tomcat -->
 		<servlet-api.version>4.0.1</servlet-api.version>
 		<websocket-api.version>1.1</websocket-api.version>
-
 		<jstl.version>1.2</jstl.version>
 
 		<!-- io.fabric8: docker-maven-plugin -->
@@ -50,4 +54,22 @@
 		<module>editor</module>
 		<module>console</module>
 	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>3.0.0-M1</version>
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

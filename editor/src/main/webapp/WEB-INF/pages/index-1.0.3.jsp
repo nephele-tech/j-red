@@ -1,14 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <!--
   Copyright JS Foundation and other contributors, http://js.foundation
 
@@ -24,17 +16,29 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>${pageContext.request.contextPath}</title>
 <link rel="icon" type="image/png" href="favicon.ico">
-<link rel="mask-icon" href="red&#x2F;images&#x2F;node-red-icon-black.svg" color="#8f0000">
+<link rel="mask-icon"
+	href="red&#x2F;images&#x2F;node-red-icon-black.svg" color="#8f0000">
 <link rel="stylesheet" href="vendor/jquery/css/base/jquery-ui.min.css">
-<link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet"
+	href="vendor/font-awesome/css/font-awesome.min.css">
 <link rel="stylesheet" href="red/style.min.css">
 </head>
 <body spellcheck="false">
-<div id="red-ui-editor"></div>
-<script src="vendor/vendor.js"></script>
-<script src="red&#x2F;red.min.js"></script>
-<script src="red&#x2F;main.min.js"></script>
+	<div id="red-ui-editor"></div>
+	<script src="vendor/vendor.js"></script>
+	<script src="red&#x2F;red.js"></script>
+	<script src="red&#x2F;main.js"></script>
 </body>
 </html>

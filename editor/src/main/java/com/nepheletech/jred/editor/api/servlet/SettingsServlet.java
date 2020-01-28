@@ -61,6 +61,7 @@ public class SettingsServlet extends HttpServlet implements Constants {
       } else {
         final String contextPath = req.getContextPath();
         result = new JtonObject()
+            .set("apiRootUrl", HttpServletUtil.getBaseUrl(req))
             .set("httpNodeRoot", contextPath + "/http-in/")
             .set("version", NODE_RED_VERSION)
             .set("context", new JtonObject()

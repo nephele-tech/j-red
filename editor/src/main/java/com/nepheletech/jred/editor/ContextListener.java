@@ -23,6 +23,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +37,17 @@ import com.nepheletech.messagebus.MessageBus;
 @WebListener
 public class ContextListener implements ServletContextListener {
   private static final Logger logger = LoggerFactory.getLogger(ContextListener.class);
-
+  
+  private static final String PROPERTY_FLOWS_DIR = "flows.dir";
+  private static final String DEFAULT_FLOWS_DIR = "WEB-INF/flows";
+;
   public void contextInitialized(ServletContextEvent sce) {
     final ServletContext servletContext = sce.getServletContext();
     logger.info(">>> Context initialized... {}", servletContext.getContextPath());
 
     servletContext.setAttribute(NodeRegistry.class.getName(), new NodeRegistry());
 
-    final String baseDir = servletContext.getRealPath("WEB-INF/flows");
+    final String baseDir = getBaseDir(servletContext);
     final Storage storage = new LocalFileSystemStorage(baseDir);
     final FlowsRuntime flowsRuntime = new DefaultFlowsRuntime(storage);
     servletContext.setAttribute(FlowsRuntime.class.getName(), flowsRuntime);
@@ -61,5 +65,13 @@ public class ContextListener implements ServletContextListener {
 
     // Reset message bus...
     MessageBus.unsubscribeAll();
+  }
+
+  protected String getBaseDir(ServletContext servletContext) {
+    String baseDir = System.getProperty(PROPERTY_FLOWS_DIR);
+    if (null == StringUtils.trimToNull(baseDir)) {
+      baseDir = servletContext.getRealPath(DEFAULT_FLOWS_DIR);
+    }
+    return baseDir;
   }
 }
