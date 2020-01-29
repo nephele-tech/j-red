@@ -459,6 +459,7 @@ public final class FlowsManager {
 
   private Flow flowAPI = new Flow() {
     private final JtonObject context = new JtonObject();
+    //=Settings.get().globalContext(); TODO use seed for global context
 
     @Override
     public Node getNode(String id) {

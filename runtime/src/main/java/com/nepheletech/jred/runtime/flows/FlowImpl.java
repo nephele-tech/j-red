@@ -55,6 +55,7 @@ public class FlowImpl implements Flow {
   protected JtonObject global;
   protected JtonObject flow;
 
+  @SuppressWarnings("unused")
   private final boolean isGlobalFlow;
 
   private final String id;
