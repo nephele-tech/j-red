@@ -20,9 +20,12 @@
 		<java.version>8</java.version>
 		<node-red.version>1.0.3</node-red.version>
 		
+		<jaxb-api.version>2.3.1</jaxb-api.version>
+		<jaxb-runtime>2.3.2</jaxb-runtime>
+		
 		<!-- maven plugins -->
-    <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-    <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
+	    <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+	    <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
 
 		<!-- logging -->
 		<slf4j.version>1.7.25</slf4j.version>
@@ -31,8 +34,8 @@
 		<apache.camel.version>3.0.0</apache.camel.version>
 		<apache.commons-lang3.version>3.8.1</apache.commons-lang3.version>
 
-    <!-- Apache Tomcat -->
-    <tomcat.version>9.0.19</tomcat.version>
+	    <!-- Apache Tomcat -->
+	    <tomcat.version>9.0.19</tomcat.version>
     
 		<!-- In sync with Apache Tomcat -->
 		<servlet-api.version>4.0.1</servlet-api.version>
