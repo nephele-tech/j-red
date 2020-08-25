@@ -28,9 +28,9 @@ import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.jton.JsonParser;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.jton.JtonPrimitive;
 
 public class TemplateNode extends AbstractNode {
@@ -117,7 +117,7 @@ public class TemplateNode extends AbstractNode {
     JtonElement value;
 
     if ("json".equals(outputFormat)) {
-      value = JsonParser.parse(_value);
+      value = JtonParser.parse(_value);
     } else if ("yaml".equals(outputFormat)) {
       value = YamlNode.yaml2jton(_value);
     } else {

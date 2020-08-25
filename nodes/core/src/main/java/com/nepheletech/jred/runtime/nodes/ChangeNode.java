@@ -23,15 +23,15 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import com.google.common.base.Objects;
+import com.google.gson.JsonSyntaxException;
 import com.jayway.jsonpath.JsonPath;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.jton.JsonParser;
-import com.nepheletech.jton.JsonSyntaxException;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.jton.JtonUtil;
 
@@ -90,7 +90,7 @@ public class ChangeNode extends AbstractNode {
       } else if ("json".equals(tot) || "bin".equals(tot)) {
         try {
           // check this is parsable JSON
-          JsonParser.parse(to);
+          JtonParser.parse(to);
         } catch (JsonSyntaxException e) {
           valid = false;
           throw new IllegalArgumentException("Invalid 'to' JSON property", e);

@@ -25,12 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.nepheletech.jton.JtonArray;
-import com.nepheletech.jton.JtonElement;
-import com.nepheletech.jton.JtonNull;
-import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JtonPrimitive;
-
 /**
  * A class representing an array type in Jton. An array is a list of
  * {@link JtonElement}s each of which can be of a different type. This is an

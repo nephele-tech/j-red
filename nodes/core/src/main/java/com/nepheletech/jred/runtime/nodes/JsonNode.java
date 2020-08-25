@@ -19,12 +19,12 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import com.google.gson.JsonSyntaxException;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.jton.JsonParser;
-import com.nepheletech.jton.JsonSyntaxException;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.jton.JtonPrimitive;
 
 public class JsonNode extends AbstractNode {
@@ -50,7 +50,7 @@ public class JsonNode extends AbstractNode {
       if (value.isJtonPrimitive() && value.asJtonPrimitive().isString()) {
         if ("".equals(action) || "obj".equals(action)) {
           try {
-            JRedUtil.setMessageProperty(msg, property, JsonParser.parse(value.asString()), false);
+            JRedUtil.setMessageProperty(msg, property, JtonParser.parse(value.asString()), false);
           } catch (JsonSyntaxException e) {
             error(e, msg);
           }

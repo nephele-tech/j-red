@@ -91,8 +91,8 @@ public class FunctionNode extends AbstractNode {
     };
 
     se = new ScriptEvaluator<>(_imports, func,
-        JtonElement.class, parameterNames, parameterTypes, throwTypes,
-        getName() != null ? getName() : getId());
+        JtonElement.class, parameterNames, parameterTypes, throwTypes/*,
+        getName() != null ? getName() : getId()*/);
 
     try {
       se.compile();

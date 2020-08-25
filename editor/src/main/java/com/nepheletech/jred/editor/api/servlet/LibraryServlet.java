@@ -30,10 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonParseException;
 import com.nepheletech.jred.runtime.FlowsRuntime;
-import com.nepheletech.jred.runtime.storage.Storage;
-import com.nepheletech.jton.JsonParseException;
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
@@ -93,10 +92,10 @@ public class LibraryServlet extends HttpServlet {
     logger.info("library={}, type={}, path={}", library, type, path);
     try {
       if ("flows".equals(type)) {
-        final JtonArray flow = JsonParser.parse(body).asJtonArray();
+        final JtonArray flow = JtonParser.parse(body).asJtonArray();
         getRuntime().getStorage().saveLibraryEntry(type, path, new JtonObject(), flow.toString("\t"));
       } else {
-        final JtonObject meta = JsonParser.parse(body).asJtonObject();
+        final JtonObject meta = JtonParser.parse(body).asJtonObject();
         final String text = meta.get("text").asString(null);
         meta.remove("text");
         logger.info("type={}, path={}s, meta={}", type, path, meta);

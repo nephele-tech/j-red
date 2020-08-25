@@ -31,10 +31,10 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonParseException;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
-import com.nepheletech.jton.JsonParseException;
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 
 /**
  * HttpServlet utility.
@@ -202,7 +202,7 @@ public final class HttpServletUtil {
    */
   public static JtonElement getJSONBody(HttpServletRequest req) throws IOException {
     try (final Reader input = req.getReader()) {
-      return JsonParser.parse(input);
+      return JtonParser.parse(input);
     } catch (JsonParseException e) {
       // TODO log the error
       return JtonNull.INSTANCE;

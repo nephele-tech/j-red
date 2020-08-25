@@ -11,7 +11,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.nepheletech</groupId>
-			<artifactId>jton</artifactId>
+			<artifactId>jton-path</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

@@ -34,13 +34,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonParseException;
 import com.nepheletech.jred.runtime.storage.util.Crypto;
-import com.nepheletech.jton.JsonParseException;
-import com.nepheletech.jton.JsonParser;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonParser;
 
 public class LocalFileSystemStorage implements Storage {
   private static final Logger logger = LoggerFactory.getLogger(LocalFileSystemStorage.class);
@@ -150,7 +150,7 @@ public class LocalFileSystemStorage implements Storage {
     if (fn.toFile().isFile()) {
       if ("flows".equals(type)) {
         try {
-          return JsonParser.parse(new String(Files.readAllBytes(fn), "UTF-8"));
+          return JtonParser.parse(new String(Files.readAllBytes(fn), "UTF-8"));
         } catch (JsonParseException e) {
           throw new RuntimeException(e);
         }
@@ -295,13 +295,13 @@ public class LocalFileSystemStorage implements Storage {
     String data = readFile(path, backupPath);
     if (data != null) {
       try {
-        return JsonParser.parse(data);
+        return JtonParser.parse(data);
       } catch (JsonParseException e1) {
         logger.debug(e1.getMessage(), e1);
         // try again with backup file only
         data = readFile(backupPath);
         try {
-          return JsonParser.parse(data);
+          return JtonParser.parse(data);
         } catch (JsonParseException e2) {
           logger.debug(e1.getMessage(), e2);
           return JtonNull.INSTANCE;

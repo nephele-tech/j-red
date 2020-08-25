@@ -23,12 +23,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import com.nepheletech.jton.JtonArray;
-import com.nepheletech.jton.JtonElement;
-import com.nepheletech.jton.JtonNull;
-import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JtonPrimitive;
-import com.nepheletech.jton.internal.LinkedTreeMap;
+import com.google.gson.internal.LinkedTreeMap;
 
 /**
  * A class representing an object type in Jton. An object consists of name-value

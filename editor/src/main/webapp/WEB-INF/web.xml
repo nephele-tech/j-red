@@ -20,7 +20,7 @@
 		<servlet-class>com.nepheletech.jred.editor.MainServlet</servlet-class>
 		<init-param>
 			<param-name>template</param-name>
-			<param-value>/WEB-INF/pages/index-1.0.3.jsp</param-value>
+			<param-value>/WEB-INF/pages/index-1.1.3.jsp</param-value>
 		</init-param>
 	</servlet>
 	<servlet-mapping>

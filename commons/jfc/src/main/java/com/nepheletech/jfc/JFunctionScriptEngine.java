@@ -21,8 +21,10 @@ package com.nepheletech.jfc;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Optional;
 
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;
@@ -49,12 +51,11 @@ public class JFunctionScriptEngine extends AbstractScriptEngine implements Compi
   private final JavaCompilerSettings settings;
 
   public JFunctionScriptEngine() {
-    //compiler = new JavaCompilerFactory().createCompiler("jsr199");
+    // compiler = new JavaCompilerFactory().createCompiler("jsr199");
     compiler = new JavaCompilerFactory().createCompiler("eclipse");
     settings = compiler.createDefaultSettings();
     settings.setSourceVersion("11");
-    settings.setTargetVersion("1.8");
-    settings.setWarnings(false);
+    settings.setTargetVersion("11");
   }
 
   @Override
@@ -82,39 +83,49 @@ public class JFunctionScriptEngine extends AbstractScriptEngine implements Compi
     final String fileName = getFileName(context);
     final String className = getClassName(context);
     final Class<?>[] parameterTypes = getParameterTypes(context);
-    final ClassLoader parentCL = Thread.currentThread().getContextClassLoader();
+    final ClassLoader parentClassLoader = Optional.ofNullable(Thread.currentThread().getContextClassLoader())
+        .orElse(JFunctionScriptEngine.class.getClassLoader());
 
-    // System.out.println("fileName: " + fileName);
-    // System.out.println("className: " + className);
-    // System.out.println("parameterTypes: " + parameterTypes);
+    System.out.println("fileName: " + fileName);
+    System.out.println("className: " + className);
 
     // provide access to resource like e.g. source code
-    final MemoryResourceReader mrr = new MemoryResourceReader();
-    mrr.add(fileName, script.getBytes());
+    final MemoryResourceReader src = new MemoryResourceReader();
+    
+    try {
+      src.add(fileName, script.getBytes("UTF-8"));
+    } catch (UnsupportedEncodingException e1) {
+      src.add(fileName, script.getBytes());
+    }
 
     // where the compilers are storing the results
-    final MemoryResourceStore mrs = new MemoryResourceStore();
-    
-    // class loader
-    final ResourceStoreClassLoader classLoader = new ResourceStoreClassLoader(parentCL, new ResourceStore[] { mrs });
+    final MemoryResourceStore dst = new MemoryResourceStore();
 
-    CompilationResult result = compiler.compile(new String[] { fileName }, mrr, mrs, classLoader, settings);
+    // class loader
+    final ResourceStoreClassLoader classLoader = new ResourceStoreClassLoader(parentClassLoader,
+        new ResourceStore[] { dst });
+
+    final CompilationResult result = compiler
+        .compile(new String[] { fileName }, src, dst, classLoader, settings);
 
     if (result.getErrors().length > 0) {
-      System.err.println(script);
       for (CompilationProblem error : result.getErrors()) {
-        System.err.println(error.toString());
+        System.err.println(String.format("ERROR: %s", error.toString()));
       }
-      
+
+      String[] lines = script.split("\n");
+      for (int i = 0, n = lines.length; i < n; i++) {
+        System.err.println(String.format("%6d: %s", i + 1, lines[i]));
+      }
+
       final CompilationProblem firstError = result.getErrors()[0];
-      throw new ScriptException(firstError.getMessage(), 
+      throw new ScriptException(firstError.getMessage(),
           firstError.getFileName(), firstError.getStartLine(), firstError.getStartColumn());
     }
 
-    // System.err.println(result.getWarnings().length + " warnings");
-    // for (CompilationProblem warning : result.getWarnings()) {
-    // System.err.println(warning.toString());
-    // }
+    for (CompilationProblem warning : result.getWarnings()) {
+      System.err.println(String.format("WARNING: %s", warning.toString()));
+    }
 
     try {
       return new JavaCompiledScript(classLoader.loadClass(className), "eval", parameterTypes);

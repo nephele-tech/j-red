@@ -40,7 +40,7 @@ import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 import com.nepheletech.messagebus.Subscription;
@@ -121,7 +121,7 @@ public class CommsEndpoint implements MessageBusListener<JtonObject> {
     logger.trace(">>> onMessage: message={}", message);
 
     try {
-      JtonElement jsonMsg = JsonParser.parse(message);
+      JtonElement jsonMsg = JtonParser.parse(message);
       if (jsonMsg.isJtonObject()) {
         JtonObject msg = jsonMsg.asJtonObject();
         if (msg.has("subscribe")) {

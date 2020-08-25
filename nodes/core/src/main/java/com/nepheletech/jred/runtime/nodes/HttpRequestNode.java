@@ -66,7 +66,7 @@ import com.github.mustachejava.MustacheFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.jton.JtonUtil;
 
@@ -347,7 +347,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
           try {
             if (!"bin".equals(this.ret)) {
               if ("obj".equals(this.ret)) {
-                msg.set("payload", JsonParser
+                msg.set("payload", JtonParser
                     .parse(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8)));
               } else {
                 msg.set("payload", EntityUtils.toString(entity));

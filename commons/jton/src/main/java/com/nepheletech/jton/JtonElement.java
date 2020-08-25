@@ -22,32 +22,15 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
-import com.nepheletech.jton.JtonArray;
-import com.nepheletech.jton.JtonElement;
-import com.nepheletech.jton.JtonNull;
-import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JtonPrimitive;
+import com.google.gson.stream.JsonWriter;
 import com.nepheletech.jton.internal.Streams;
-import com.nepheletech.jton.jsonpath.JtonPathConfiguration;
-import com.nepheletech.jton.stream.JsonWriter;
 
 /**
  * A class representing an element of Jton. It could either be a
  * {@link JtonObject}, a {@link JtonArray}, a {@link JtonPrimitive} or a
  * {@link JtonNull}.
- *
- * @author ggeorg
- * @author Inderjeet Singh
- * @author Joel Leitch
  */
 public abstract class JtonElement {
-
-  /**
-   * Initialize JsonPath to use JTON objects.
-   */
-  static {
-    JtonPathConfiguration.configure();
-  }
 
   /**
    * Returns a deep copy of this element. Immutable elements like primitives and
@@ -62,14 +45,18 @@ public abstract class JtonElement {
    *
    * @return true if this element is of type {@link JtonArray}, false otherwise.
    */
-  public boolean isJtonArray() { return this instanceof JtonArray; }
+  public boolean isJtonArray() {
+    return this instanceof JtonArray;
+  }
 
   /**
    * provides check for verifying if this element is a Jton object or not.
    *
    * @return true if this element is of type {@link JtonObject}, false otherwise.
    */
-  public boolean isJtonObject() { return this instanceof JtonObject; }
+  public boolean isJtonObject() {
+    return this instanceof JtonObject;
+  }
 
   /**
    * provides check for verifying if this element is a primitive or not.
@@ -77,7 +64,9 @@ public abstract class JtonElement {
    * @return true if this element is of type {@link JtonPrimitive}, false
    *         otherwise.
    */
-  public boolean isJtonPrimitive() { return this instanceof JtonPrimitive; }
+  public boolean isJtonPrimitive() {
+    return this instanceof JtonPrimitive;
+  }
 
   /**
    * provides check for verifying if this element represents a null value or not.
@@ -85,7 +74,9 @@ public abstract class JtonElement {
    * @return true if this element is of type {@link JtonNull}, false otherwise.
    * @since 1.2
    */
-  public boolean isJtonNull() { return this instanceof JtonNull; }
+  public boolean isJtonNull() {
+    return this instanceof JtonNull;
+  }
 
   /**
    * convenience method to get this element as a {@link JtonObject}. If the
@@ -97,7 +88,9 @@ public abstract class JtonElement {
    * @throws IllegalStateException if the element is of another type.
    */
   public JtonObject asJtonObject() {
-    if (isJtonObject()) { return (JtonObject) this; }
+    if (isJtonObject()) {
+      return (JtonObject) this;
+    }
     throw new IllegalStateException("Not a Jton Object: " + this);
   }
 
@@ -119,7 +112,9 @@ public abstract class JtonElement {
    * @throws IllegalStateException if the element is of another type.
    */
   public JtonArray asJtonArray() {
-    if (isJtonArray()) { return (JtonArray) this; }
+    if (isJtonArray()) {
+      return (JtonArray) this;
+    }
     throw new IllegalStateException("Not a Jton Array: " + this);
   }
 
@@ -141,7 +136,9 @@ public abstract class JtonElement {
    * @throws IllegalStateException if the element is of another type.
    */
   public JtonPrimitive asJtonPrimitive() {
-    if (isJtonPrimitive()) { return (JtonPrimitive) this; }
+    if (isJtonPrimitive()) {
+      return (JtonPrimitive) this;
+    }
     throw new IllegalStateException("Not a Jton Primitive: " + this);
   }
 
@@ -165,7 +162,9 @@ public abstract class JtonElement {
    * @since 1.2
    */
   public JtonNull asJtonNull() {
-    if (isJtonNull()) { return (JtonNull) this; }
+    if (isJtonNull()) {
+      return (JtonNull) this;
+    }
     throw new IllegalStateException("Not a Jton Null: " + this);
   }
 

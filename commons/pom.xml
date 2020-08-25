@@ -15,5 +15,6 @@
 		<module>jton</module>
 		<module>messagebus</module>
 		<module>servlet-utils</module>
+		<module>jton-path</module>
 	</modules>
 </project>

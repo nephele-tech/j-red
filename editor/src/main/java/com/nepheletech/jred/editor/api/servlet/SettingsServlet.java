@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.nepheletech.jred.editor.Constants;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/settings/*" })
@@ -98,7 +98,7 @@ public class SettingsServlet extends HttpServlet implements Constants {
       if (HttpServletUtil.acceptsJSON(req)) {
         try {
           final HttpSession session = req.getSession();
-          session.setAttribute("/settins/user", JsonParser.parse(HttpServletUtil.getBody(req)));
+          session.setAttribute("/settins/user", JtonParser.parse(HttpServletUtil.getBody(req)));
           res.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } catch (RuntimeException e) {
           // LOG.w(e, ExceptionUtils.getRootCauseMessage(e));

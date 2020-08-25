@@ -27,7 +27,7 @@ import org.apache.camel.builder.RouteBuilder;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 
 public class KafkaInNode extends AbstractCamelNode implements Processor {
 
@@ -65,7 +65,7 @@ public class KafkaInNode extends AbstractCamelNode implements Processor {
     final Message message = exchange.getIn();
     receive(new JtonObject()
         .set("_uid", exchange.getExchangeId())
-        .set("payload", JsonParser.parse(message.getBody(String.class))));
+        .set("payload", JtonParser.parse(message.getBody(String.class))));
   }
 
   @Override
