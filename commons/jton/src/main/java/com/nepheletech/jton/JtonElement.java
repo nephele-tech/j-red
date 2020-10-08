@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.Optional;
 
 import com.google.gson.stream.JsonWriter;
 import com.nepheletech.jton.internal.Streams;
@@ -87,19 +88,25 @@ public abstract class JtonElement {
    * @return get this element as a {@link JtonObject}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JtonObject asJtonObject() {
+  public final JtonObject asJtonObject() {
     if (isJtonObject()) {
       return (JtonObject) this;
     }
     throw new IllegalStateException("Not a Jton Object: " + this);
   }
 
-  public JtonObject asJtonObject(final JtonObject defaultValue) {
+  @Deprecated
+  public final JtonObject asJtonObject(final JtonObject defaultValue) {
     return isJtonObject() ? asJtonObject() : defaultValue;
   }
 
-  public JtonObject asJtonObject(final boolean create) {
+  @Deprecated
+  public final JtonObject asJtonObject(final boolean create) {
     return isJtonObject() ? asJtonObject() : create ? new JtonObject() : null;
+  }
+
+  public final Optional<JtonObject> asOptJtonObject() {
+    return isJtonObject() ? Optional.of((JtonObject) this) : Optional.empty();
   }
 
   /**
@@ -111,19 +118,25 @@ public abstract class JtonElement {
    * @return get this element as a {@link JtonArray}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JtonArray asJtonArray() {
+  public final JtonArray asJtonArray() {
     if (isJtonArray()) {
       return (JtonArray) this;
     }
     throw new IllegalStateException("Not a Jton Array: " + this);
   }
 
-  public JtonArray asJtonArray(final JtonArray defaultValue) {
+  @Deprecated
+  public final JtonArray asJtonArray(final JtonArray defaultValue) {
     return isJtonArray() ? asJtonArray() : defaultValue;
   }
 
-  public JtonArray asJtonArray(final boolean create) {
+  @Deprecated
+  public final JtonArray asJtonArray(final boolean create) {
     return isJtonArray() ? asJtonArray() : create ? new JtonArray() : null;
+  }
+
+  public final Optional<JtonArray> asOptJtonArray() {
+    return isJtonArray() ? Optional.of((JtonArray) this) : Optional.empty();
   }
 
   /**
@@ -135,20 +148,25 @@ public abstract class JtonElement {
    * @return get this element as a {@link JtonPrimitive}.
    * @throws IllegalStateException if the element is of another type.
    */
-  public JtonPrimitive asJtonPrimitive() {
+  public final JtonPrimitive asJtonPrimitive() {
     if (isJtonPrimitive()) {
       return (JtonPrimitive) this;
     }
     throw new IllegalStateException("Not a Jton Primitive: " + this);
   }
 
-  public JtonPrimitive asJtonPrimitive(final JtonPrimitive defaultValue) {
+  @Deprecated
+  public final JtonPrimitive asJtonPrimitive(final JtonPrimitive defaultValue) {
     return isJtonPrimitive() ? asJtonPrimitive() : defaultValue;
   }
 
   @Deprecated
-  public JtonPrimitive asJtonPrimitive(final Object value) {
+  public final JtonPrimitive asJtonPrimitive(final Object value) {
     return isJtonPrimitive() ? asJtonPrimitive() : value != null ? new JtonPrimitive(value, false) : null;
+  }
+  
+  public final Optional<JtonPrimitive> asOptJtonPrimitive() {
+    return isJtonPrimitive() ? Optional.of((JtonPrimitive) this) : Optional.empty();
   }
 
   /**
@@ -161,11 +179,15 @@ public abstract class JtonElement {
    * @throws IllegalStateException if the element is of another type.
    * @since 1.2
    */
-  public JtonNull asJtonNull() {
+  public final JtonNull asJtonNull() {
     if (isJtonNull()) {
       return (JtonNull) this;
     }
     throw new IllegalStateException("Not a Jton Null: " + this);
+  }
+  
+  public final Optional<JtonNull> asOptJtonNull() {
+    return isJtonNull() ? Optional.of((JtonNull) this) : Optional.empty();
   }
 
   /**
@@ -182,7 +204,7 @@ public abstract class JtonElement {
     throw new UnsupportedOperationException(getClass().getSimpleName());
   }
 
-  public boolean asBoolean(boolean defaultValue) {
+  public final boolean asBoolean(boolean defaultValue) {
     try {
       return isJtonPrimitive() ? asBoolean() : defaultValue;
     } catch (RuntimeException e) {
@@ -190,12 +212,17 @@ public abstract class JtonElement {
     }
   }
 
-  public Boolean asBoolean(Boolean defaultValue) {
+  @Deprecated
+  public final Boolean asBoolean(Boolean defaultValue) {
     try {
       return isJtonPrimitive() ? asBoolean() : defaultValue;
     } catch (RuntimeException e) {
       return defaultValue;
     }
+  }
+  
+  public final Optional<Boolean> asOptBoolean() {
+    return isJtonPrimitive() ? Optional.of(asBoolean()) : Optional.empty();
   }
 
   /**
@@ -218,6 +245,10 @@ public abstract class JtonElement {
     } catch (RuntimeException e) {
       return defaultValue;
     }
+  }
+  
+  public Optional<? extends Number> asOptNumber() {
+    return isJtonPrimitive() ? Optional.of(asNumber()) : Optional.empty();
   }
 
   /**
