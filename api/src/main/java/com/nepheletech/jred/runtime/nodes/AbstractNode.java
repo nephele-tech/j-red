@@ -19,11 +19,19 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +53,7 @@ import com.nepheletech.messagebus.MessageBus;
 import com.nepheletech.messagebus.MessageBusListener;
 import com.nepheletech.messagebus.Subscription;
 
-public abstract class AbstractNode implements Node {
+public abstract class AbstractNode extends RouteBuilder implements Node {
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
   private final class JRedRuntimeException extends RuntimeException {
@@ -73,16 +81,22 @@ public abstract class AbstractNode implements Node {
 
   protected final Flow flow;
 
+  protected final CamelContext camelContext;
+  protected final ProducerTemplate template;
+
   // Event listeners...
-  private final Subscription subscription;
+  // private final Subscription subscription;
   private final Subscription nodesStartedSubscription;
   private final Subscription nodesStoppedSubscription;
 
   public AbstractNode(final Flow flow, final JtonObject config) {
     this.flow = flow;
+    this.camelContext = flow.getCamelContext();
+    this.template = camelContext.createProducerTemplate();
+    
     this.id = config.getAsString("id");
     this.type = config.getAsString("type");
-    this.z = config.getAsString("z");
+    this.z = config.getAsString("z", null);
     this.name = config.getAsString("name", null);
     this._alias = config.getAsString("_alias", null);
 
@@ -91,21 +105,6 @@ public abstract class AbstractNode implements Node {
     flow.setup(this);
 
     updateWires(config.getAsJtonArray("wires", true));
-
-    subscription = MessageBus.subscribe(id, new MessageBusListener<JtonObject>() {
-      @Override
-      public void messageSent(String topic, JtonObject msg) {
-        try {
-          AbstractNode.this.onMessage(msg);
-        } catch (JRedRuntimeException e) {
-          throw e;
-        } catch (RuntimeException e) {
-          // e.printStackTrace();
-          error(e, msg);
-          throw new JRedRuntimeException(e);
-        }
-      }
-    });
 
     if (this instanceof NodesStartedEventListener) {
       nodesStartedSubscription = MessageBus
@@ -143,23 +142,44 @@ public abstract class AbstractNode implements Node {
   }
 
   @Override
-  public Flow getFlow() { return flow; }
+  public void configure() throws Exception {
+    logger.trace(">>> configure: {}", this);
+
+    fromF("direct:%s", getId())
+        .toF("log:%s?level=TRACE",  logger.getName())
+        .process((x) -> onMessage(x.getIn().getBody(JtonObject.class)));
+  }
 
   @Override
-  public String getId() { return id; }
+  public Flow getFlow() {
+    return flow;
+  }
 
   @Override
-  public String getType() { return type; }
+  public String getId() {
+    return id;
+  }
 
   @Override
-  public String getZ() { return z; }
+  public String getType() {
+    return type;
+  }
 
   @Override
-  public String getName() { return name; }
+  public String getZ() {
+    return z;
+  }
 
   @Override
-  public String getAlias() { return _alias; }
-  
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public String getAlias() {
+    return _alias;
+  }
+
   @Override
   public String getAliasOrIdIfNull() {
     return _alias != null ? _alias : id;
@@ -209,18 +229,40 @@ public abstract class AbstractNode implements Node {
       }
     }
 
-    if (subscription != null) {
-      subscription.unsubscribe();
-    }
-
     if (this.hasSubscribers) {
       MessageBus.sendMessage(topicPrefix.concat("#closed"), removed);
+    }
+
+    if (template != null) {
+      try {
+        template.stop();
+      } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+
+    try {
+      for (RouteDefinition d : this.getRouteCollection().getRoutes()) {
+        logger.debug("Removing route: {}", d);
+
+        var routeId = d.getId();
+
+        var rc = flow.getCamelContext().getRouteController();
+        rc.stopRoute(routeId);
+
+        flow.getCamelContext().removeRoute(routeId);
+      }
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
 
     onClosed(removed);
   }
 
-  protected void onClosed(boolean removed) {}
+  protected void onClosed(boolean removed) {
+  }
 
   @Override
   public <T> Subscription on(String event, MessageBusListener<T> messageListener) {
@@ -338,7 +380,9 @@ public abstract class AbstractNode implements Node {
       }
     }
 
-    if (exception != null) { throw exception; }
+    if (exception != null) {
+      throw exception;
+    }
   }
 
   private final class SendEvent {
@@ -361,7 +405,8 @@ public abstract class AbstractNode implements Node {
       msg.set("_msgid", UUID.randomUUID().toString());
     }
 
-    MessageBus.sendMessage(id, msg, true);
+    // MessageBus.sendMessage(id, msg, true);
+    template.sendBody("direct:" + getId(), msg);
   }
 
   protected abstract void onMessage(JtonObject msg);
@@ -403,8 +448,12 @@ public abstract class AbstractNode implements Node {
    * @param msg
    */
   protected void error(Throwable t, JtonObject msg) {
-    if (t == null) { throw new IllegalArgumentException("Throwable is null"); }
-    if (msg == null) { throw new IllegalArgumentException("Message is null"); }
+    if (t == null) {
+      throw new IllegalArgumentException("Throwable is null");
+    }
+    if (msg == null) {
+      throw new IllegalArgumentException("Message is null");
+    }
 
     if (t != null) {
       error0(t, msg.deepCopy());

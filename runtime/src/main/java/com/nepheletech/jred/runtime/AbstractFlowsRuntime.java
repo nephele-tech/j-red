@@ -21,6 +21,9 @@ package com.nepheletech.jred.runtime;
 
 import java.io.IOException;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.impl.DefaultCamelContext;
+
 import com.nepheletech.jred.runtime.flows.FlowsManager;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jred.runtime.storage.Storage;
@@ -31,10 +34,18 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
 
   private final Storage storage;
   private final FlowsManager flowsManager;
+  private final CamelContext camelContext;
 
   protected AbstractFlowsRuntime(Storage storage) {
     this.storage = storage;
     this.flowsManager = new FlowsManager(this);
+    this.camelContext = new DefaultCamelContext();
+    this.camelContext.disableJMX();
+  }
+
+  @Override
+  public CamelContext getCamelContext() {
+    return camelContext;
   }
 
   @Override
@@ -52,10 +63,13 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
   @Override
   public void startFlows() {
     flowsManager.startFlows();
+    
+    camelContext.start();
   }
 
   @Override
   public void stopFlows() {
+    camelContext.stop();
     flowsManager.stopFlows();
   }
 

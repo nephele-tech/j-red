@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.text.WordUtils;
@@ -601,6 +602,15 @@ public final class FlowUtil {
           mapEnvVarProperties(conf, p, flow);
         }
         newNode = (Node) nodeTypeConstructor.newInstance(flow, conf);
+
+        if (newNode instanceof RouteBuilder) {
+          try {
+            flow.getCamelContext().addRoutes((RouteBuilder) newNode);
+          } catch (Exception e) {
+            logger.error("Failed to initialize node", e);
+          }
+        }
+        
       } else {
         // TODO Log.error(Log._("nodes.flow.unknown-type", {type:type}));
       }

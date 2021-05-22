@@ -32,6 +32,9 @@ import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
 public final class DebugNode extends AbstractNode {
+  
+  private final int DEBUG_MAX_LENGTH = 1000;
+  private final boolean USE_COLORS = false;
 
   private boolean active;
 

@@ -19,14 +19,14 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import static java.lang.String.format;
+
 import java.util.Map.Entry;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonElement;
@@ -36,7 +36,7 @@ import com.nepheletech.jton.JtonPrimitive;
 // ftp://[username@]hostname[:port]/directoryname[?options] 
 // sftp://[username@]hostname[:port]/directoryname[?options] 
 // ftps://[username@]hostname[:port]/directoryname[?options]
-public class FtpNode extends AbstractCamelNode implements HasCredentials {
+public class FtpNode extends AbstractNode implements HasCredentials {
   private final boolean secure;
 
   private final String host;
@@ -71,8 +71,10 @@ public class FtpNode extends AbstractCamelNode implements HasCredentials {
   }
 
   @Override
-  protected void addRoutes(CamelContext camelContext) throws Exception {
-    final String ftpUrl = String.format("%sftp://%s@%s:%s%s?password=RAW(%s)&privateKey=%s&autoCreate=true&binary=true",
+  public void configure() throws Exception {
+    super.configure();
+    
+    final String ftpUrl = format("%sftp://%s@%s:%s%s?password=RAW(%s)&privateKey=%s&autoCreate=true&binary=true",
         (secure ? "s" : ""), username, host, port, path, password, "#privateKey");
 
     logger.info("====================={}", ftpUrl);
@@ -80,24 +82,17 @@ public class FtpNode extends AbstractCamelNode implements HasCredentials {
     camelContext.getRegistry()
         .bind("privateKey", privateKey.getBytes());
 
-    camelContext.addRoutes(new RouteBuilder() {
-      // onException(Exception.class)
-
-      @Override
-      public void configure() throws Exception {
-        from("direct:" + getId())
-            .to("log:DEBUG?showBody=true&showHeaders=true")
-            .to(ftpUrl);
-      }
-    });
+    from("direct:" + getId() + "#sftp")
+        .to("log:" + logger.getName() + "?level=TRACE")
+        .to(ftpUrl);
   }
 
   @Override
   protected void onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
-    final ProducerTemplate template = getCamelContext().createProducerTemplate();
-    template.send("direct:" + getId(), new Processor() {
+    final ProducerTemplate template = camelContext.createProducerTemplate();
+    template.send("direct:" + getId() + "#sftp", new Processor() {
       public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
 

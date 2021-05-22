@@ -29,7 +29,7 @@ import org.apache.camel.builder.RouteBuilder;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonObject;
 
-public class EMailNode extends AbstractCamelNode implements HasCredentials {
+public class EMailNode extends AbstractNode implements HasCredentials {
   private final String server;
   private final String port;
   private final boolean secure;
@@ -60,32 +60,8 @@ public class EMailNode extends AbstractCamelNode implements HasCredentials {
   }
 
   @Override
-  protected void addRoutes(CamelContext camelContext) throws Exception {
-
-    camelContext.addRoutes(new RouteBuilder() {
-      // onException(Exception.class)
-
-      @Override
-      public void configure() throws Exception {
-        from("direct:" + getId())
-            .to(String.format("log:DEBUG?showBody=false&showHeaders=%b", logger.isDebugEnabled()));
-      }
-    });
-  }
-
-  @Override
   protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
-
-    final ProducerTemplate template = getCamelContext().createProducerTemplate();
-    template.send("direct:" + getId(), new Processor() {
-      @Override
-      public void process(Exchange exchange) throws Exception {
-        final Message in = exchange.getIn();
-        
-        in.setBody(msg.get("payload").toString(), String.class);
-      }
-    });
+    // TODO Auto-generated method stub
+    
   }
-
 }

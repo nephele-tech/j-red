@@ -24,7 +24,7 @@ import org.apache.camel.CamelContext;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonObject;
 
-public class FtpInNode extends AbstractCamelNode implements HasCredentials {
+public class FtpInNode extends AbstractNode implements HasCredentials {
 
   public FtpInNode(Flow flow, JtonObject config) {
     super(flow, config);
@@ -33,12 +33,6 @@ public class FtpInNode extends AbstractCamelNode implements HasCredentials {
 
   @Override
   public void setCredentials(JtonObject credentials) {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  protected void addRoutes(CamelContext camelContext) throws Exception {
     // TODO Auto-generated method stub
     
   }

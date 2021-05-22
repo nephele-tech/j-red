@@ -21,6 +21,8 @@ package com.nepheletech.jred.runtime.flows;
 
 import java.util.Map;
 
+import org.apache.camel.CamelContext;
+
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
@@ -89,5 +91,11 @@ public interface Flow {
    * @param node
    */
   void setup(Node node);
+  
+  /**
+   * 
+   * @return
+   */
+  CamelContext getCamelContext();
 
 }

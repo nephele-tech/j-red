@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.camel.CamelContext;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -516,6 +517,11 @@ public final class FlowsManager {
       if (node instanceof HasCredentials) {
         ((HasCredentials) node).setCredentials(credentials.get(node.getId()));
       }
+    }
+
+    @Override
+    public CamelContext getCamelContext() {
+      return flowsRuntime.getCamelContext();
     }
   };
 }

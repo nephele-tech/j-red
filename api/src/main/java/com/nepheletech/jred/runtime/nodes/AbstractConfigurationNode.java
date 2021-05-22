@@ -27,6 +27,11 @@ public abstract class AbstractConfigurationNode extends AbstractNode implements 
   public AbstractConfigurationNode(final Flow flow, final JtonObject config) {
     super(flow, config);
   }
+  
+  @Override
+  public final void configure() throws Exception {
+    // no-op
+  }
 
   protected final void onMessage(JtonObject msg) {
     throw new UnsupportedOperationException();
