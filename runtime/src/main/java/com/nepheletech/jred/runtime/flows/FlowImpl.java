@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.camel.CamelContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -374,19 +375,29 @@ public class FlowImpl implements Flow {
     final JtonObject configs = flow.getAsJtonObject("configs", false);
     final JtonObject nodes = flow.getAsJtonObject("nodes", false);
     if ((configs != null && configs.has(id)) || (nodes != null && nodes.has(id))) {
-      // This is a node owned by this flow, so return whatever we have got during a
-      // stop/start, activeNodes could be null for this id
+      // This is a node owned by this flow, so return whatever we have got. 
+      // During a stop/restart, activeNodes could be null for this id
       return activeNodes.get(id);
     } else if (activeNodes.containsKey(id)) {
       // TEMP: this is a subflow internal node within this flow
       return activeNodes.get(id);
+    } else if (subflowInstanceNodes.containsKey(id)) {
+      throw new UnsupportedOperationException("TODO");
+      // TODO return subflowInstanceNodes.get(id);
     } else if (cancelBubble) {
       // The node could be inside one of this flow's subflows
-      throw new UnsupportedOperationException("TODO");
+      for (String sfId : this.subflowInstanceNodes.keySet()) {
+        var node = this.subflowInstanceNodes.get(sfId).getNode(id, cancelBubble);
+        if (node != null) {
+          return node;
+        }
+      }
     } else {
       // Node not found inside this flow - ask the parent
       return parent.getNode(id);
     }
+    
+    return null;
   }
 
   /**
@@ -568,5 +579,10 @@ public class FlowImpl implements Flow {
   @Override
   public void setup(Node node) {
     parent.setup(node);
+  }
+
+  @Override
+  public CamelContext getCamelContext() {
+    return parent.getCamelContext();
   }
 }
