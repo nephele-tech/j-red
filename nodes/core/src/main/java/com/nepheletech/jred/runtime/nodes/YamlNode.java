@@ -28,7 +28,7 @@ public class YamlNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     final JtonElement value = JRedUtil.getMessageProperty(msg, property);
@@ -38,7 +38,7 @@ public class YamlNode extends AbstractNode {
       JRedUtil.setMessageProperty(msg, property, new JtonPrimitive(jton2yaml(value)), false);
     }
 
-    send(msg);
+    return(msg);
   }
 
   // ---

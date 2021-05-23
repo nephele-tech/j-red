@@ -31,6 +31,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public abstract class AbstractUINode extends AbstractNode {
@@ -56,14 +57,14 @@ public abstract class AbstractUINode extends AbstractNode {
 	}
 	
 	@Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
     
     final StringWriter w = new StringWriter();
     mustache.execute(w, prepare(msg.deepCopy()));
     msg.set("payload", w.toString());
     
-    send(msg);
+    return(msg);
 	}
 
   protected Object prepare(final JtonObject msg) {

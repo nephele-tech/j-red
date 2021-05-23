@@ -115,11 +115,13 @@ public class ChangeNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace("onMessage: msg.keySet={}", msg.keySet());
 
     if (valid) {
-      send(applyRules(msg));
+      return(applyRules(msg));
+    } else {
+      return null; // FIXME maybe throw exception
     }
   }
 

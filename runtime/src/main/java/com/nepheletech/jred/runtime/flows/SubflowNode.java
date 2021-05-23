@@ -23,6 +23,7 @@ import java.util.function.BiConsumer;
 
 import com.nepheletech.jred.runtime.nodes.AbstractNode;
 import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 final class SubflowNode extends AbstractNode {
@@ -36,9 +37,9 @@ final class SubflowNode extends AbstractNode {
   public void setUpdateWires(BiConsumer<SubflowNode, JtonArray> updateWires) { this.updateWires = updateWires; }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
-    send(msg);
+    return msg;
   }
 
   @Override

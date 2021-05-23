@@ -97,9 +97,9 @@ public class SwitchNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     if (!valid) {
-      return;
+      return null;
     }
 
     JtonArray onward = new JtonArray();
@@ -204,7 +204,7 @@ public class SwitchNode extends AbstractNode {
       }
     }
 
-    send(onward);
+    return(onward);
   }
 
   private double toDouble(JtonElement value) {

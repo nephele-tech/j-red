@@ -3,6 +3,7 @@ package com.nepheletech.jred.runtime.nodes;
 import static com.nepheletech.messagebus.MessageBus.subscribe;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.messagebus.Subscription;
 
@@ -15,7 +16,7 @@ public class LinkInNode extends AbstractNode {
     super(flow, config);
     this.event = "node:" + getId();
     this.subscription = subscribe(this.event, (String topic, JtonObject message) -> {
-      receive(message);
+      receiveMsg(message);
     });
   }
 
@@ -28,8 +29,8 @@ public class LinkInNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
-    send(msg);
+    return(msg);
   }
 }

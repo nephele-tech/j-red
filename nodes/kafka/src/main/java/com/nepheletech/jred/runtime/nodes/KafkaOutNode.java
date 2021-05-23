@@ -61,14 +61,15 @@ public class KafkaOutNode extends AbstractNode {
     super.configure();
 
     fromF("direct:%s#kafka", getId())
-        .toF("log:%s?level=TRACE&showBody=true&showHeaders=true", logger.getName())
+        //.circuitBreaker() TODO
+        .toF("log:%s?level=TRACE&showBody=false&showHeaders=true", logger.getName())
         .toF("kafka:%s?brokers=%s", topic, brokers);
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
-    
+  protected JtonElement onMessage(JtonObject msg) {
+    logger.trace(">>> onMessage: {}", this);
+
     final Map<String, Object> kafkaHeaders = new HashMap<>();
     final Optional<JtonObject> headers = getProperty(msg, "headers.kafka").asOptJtonObject();
     if (headers.isPresent()) {
@@ -77,13 +78,16 @@ public class KafkaOutNode extends AbstractNode {
         if (KAFKA_KEYS.contains(key)) {
           final Optional<JtonPrimitive> value = entry.getValue().asOptJtonPrimitive();
           if (value.isPresent()) {
-            kafkaHeaders.put(key, value.get().getValue());
+            kafkaHeaders.put("kafka." + key, value.get().getValue());
           }
         }
       }
     }
-    
+
     // Sends the body to an endpoint with the specified headers and header values
-    template.sendBodyAndHeaders(format("direct:%s#kafka", getId()), msg, kafkaHeaders);
+    template.sendBodyAndHeaders(format("direct:%s#kafka", getId()),
+        msg.get("payload"), kafkaHeaders);
+
+    return null;
   }
 }

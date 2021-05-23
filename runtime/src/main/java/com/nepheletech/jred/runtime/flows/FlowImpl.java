@@ -475,7 +475,7 @@ public class FlowImpl implements Flow {
             .set("type", node.getType())
             .set("name", node.getName()));
         
-        targetStatusNode.receive(message);
+        targetStatusNode.receiveMsg(message);
         handled = true;
       }
     }
@@ -554,7 +554,7 @@ public class FlowImpl implements Flow {
                 .set("count", count))
             .set("stack", JRedUtil.stackTrace(rootCause)));
         
-        targetCatchNode.receive(errorMessage);
+        targetCatchNode.receiveMsg(errorMessage);
         handled = true;
       }
     }

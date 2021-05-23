@@ -20,6 +20,7 @@
 package com.nepheletech.jred.runtime.nodes;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public final class CommentNode extends AbstractNode {
@@ -29,7 +30,7 @@ public final class CommentNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     throw new UnsupportedOperationException();
   }
 }

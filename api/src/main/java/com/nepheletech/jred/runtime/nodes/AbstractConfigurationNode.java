@@ -20,6 +20,7 @@
 package com.nepheletech.jred.runtime.nodes;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public abstract class AbstractConfigurationNode extends AbstractNode implements ConfigurationNode {
@@ -33,7 +34,8 @@ public abstract class AbstractConfigurationNode extends AbstractNode implements 
     // no-op
   }
 
-  protected final void onMessage(JtonObject msg) {
+  @Override
+  protected final JtonElement onMessage(JtonObject msg) {
     throw new UnsupportedOperationException();
   }
 }

@@ -42,7 +42,7 @@ public class JsonNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     final JtonElement value = JRedUtil.getMessageProperty(msg, property);
@@ -55,17 +55,17 @@ public class JsonNode extends AbstractNode {
             error(e, msg);
           }
         }
-        send(msg);
+        return(msg);
       } else {
         if ("".equals(action) || "str".equals(action)) {
           // TODO Buffer
           JRedUtil.setMessageProperty(msg, property,
               new JtonPrimitive(pretty ? value.toString("   ") : value.toString()), false);
         }
-        send(msg);
+        return(msg);
       }
     } else {
-      send(msg);
+      return(msg);
     }
   }
 

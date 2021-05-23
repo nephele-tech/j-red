@@ -1,6 +1,7 @@
 package com.nepheletech.jred.runtime.nodes;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.messagebus.MessageBus;
 
@@ -13,10 +14,10 @@ public class LinkOutNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     MessageBus.sendMessage(event, msg);
-    send(msg);
+    return(msg);
   }
 }

@@ -87,7 +87,7 @@ public final class DebugNode extends AbstractNode {
   public boolean isTostatus() { return tostatus; }
 
   @Override
-  protected void onMessage(final JtonObject msg) {
+  protected JtonElement onMessage(final JtonObject msg) {
     logger.trace(">>> onMessage: id={}, msg={}", getId(), msg);
 
     if ("true".equals(complete)) {
@@ -138,6 +138,8 @@ public final class DebugNode extends AbstractNode {
         }
       });
     }
+    
+    return null; // FIXME
   }
 
   private void sendDebug(JtonObject msg) {

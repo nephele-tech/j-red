@@ -98,7 +98,7 @@ public class ConvertNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     if (_rules != null) {
       for (JtonElement _rule : _rules) {
         final JtonObject rule = _rule.asJtonObject(null);
@@ -159,7 +159,7 @@ public class ConvertNode extends AbstractNode {
       }
     }
 
-    send(msg);
+    return(msg);
   }
 
   private Object convert(JtonElement value, String type) {

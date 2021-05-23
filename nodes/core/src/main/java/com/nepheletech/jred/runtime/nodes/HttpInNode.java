@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonUtil;
 
@@ -120,7 +121,7 @@ public class HttpInNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     // TODO uploads...
@@ -144,14 +145,16 @@ public class HttpInNode extends AbstractNode {
           }
         }
 
-        send(msg);
+        return(msg);
       }
 
     } else {
 
       if (pathInfo == null) {
-        send(msg);
+        return(msg);
       }
     }
+    
+    return null; // FIXME
   }
 }

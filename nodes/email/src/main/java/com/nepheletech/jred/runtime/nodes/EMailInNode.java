@@ -37,6 +37,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
@@ -150,7 +151,7 @@ public class EMailInNode extends AbstractNode implements Processor, HasCredentia
       logger.info("body> {}", body.getClass());
     }
 
-    send(msg);
+    //send(msg);
   }
 
   private JtonObject handleMultipart(JtonObject msg, MimeMultipart multipart)
@@ -210,9 +211,9 @@ public class EMailInNode extends AbstractNode implements Processor, HasCredentia
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
-    send(msg);
+    return(msg);
   }
 }

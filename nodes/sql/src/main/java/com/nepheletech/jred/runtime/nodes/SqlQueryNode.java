@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.nepheletech.dao.NepheleDao;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -47,7 +48,7 @@ public class SqlQueryNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(final JtonObject msg) {
+  protected JtonElement onMessage(final JtonObject msg) {
     logger.trace(">>> trace: id={}, msg={}", getId(), msg);
 
     final NepheleDao dao = msg.has("dao")
@@ -113,6 +114,6 @@ public class SqlQueryNode extends AbstractNode {
       logger.info("\tNumberOfSuccessfulCalls={}", circuitBreaker.getMetrics().getNumberOfSuccessfulCalls());
     }
 
-    send(msg);
+    return(msg);
   }
 }

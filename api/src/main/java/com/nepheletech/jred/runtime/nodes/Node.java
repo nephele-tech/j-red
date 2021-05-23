@@ -19,9 +19,10 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import org.apache.camel.Exchange;
+
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonArray;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.messagebus.MessageBusListener;
 import com.nepheletech.messagebus.Subscription;
@@ -42,9 +43,11 @@ public interface Node {
 
   void updateWires(JtonArray wires);
 
-  void send(JtonElement msg);
+  //void send(JtonElement msg);
 
-  void receive(JtonObject msg);
+  void receive(Exchange exchange);
+  
+  void receiveMsg(JtonObject msg);
 
   void close(boolean removed);
 

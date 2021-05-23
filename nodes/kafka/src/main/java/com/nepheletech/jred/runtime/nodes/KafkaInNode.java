@@ -25,6 +25,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.component.kafka.KafkaConstants;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonParser;
 
@@ -47,9 +48,9 @@ public class KafkaInNode extends AbstractNode implements Processor {
   @Override
   public void configure() throws Exception {
     super.configure();
-
+    
     fromF("kafka:%s?brokers=%s&groupId=%s", topic, brokers, groupId)
-        .toF("log:%s?level=DEBUG&showBody=true&showHeaders=true", logger.getName())
+        .toF("log:%s?level=DEBUG&showBody=false&showHeaders=true", logger.getName())
         .process(KafkaInNode.this);
   }
 
@@ -78,14 +79,14 @@ public class KafkaInNode extends AbstractNode implements Processor {
                     message.getHeader(KafkaConstants.LAST_POLL_RECORD, Boolean.class))
                 .set("MANUAL_COMMIT",
                     message.getHeader(KafkaConstants.MANUAL_COMMIT, Boolean.class))));
-
-    receive(msg);
+    
+    message.setBody(msg);
+    
+    receive(exchange);
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
-
-    send(msg);
+  protected JtonElement onMessage(JtonObject msg) {
+    return msg;
   }
 }

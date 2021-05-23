@@ -19,7 +19,6 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +27,6 @@ import java.util.UUID;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
@@ -93,7 +91,7 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
     this.flow = flow;
     this.camelContext = flow.getCamelContext();
     this.template = camelContext.createProducerTemplate();
-    
+
     this.id = config.getAsString("id");
     this.type = config.getAsString("type");
     this.z = config.getAsString("z", null);
@@ -146,8 +144,19 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
     logger.trace(">>> configure: {}", this);
 
     fromF("direct:%s", getId())
-        .toF("log:%s?level=TRACE",  logger.getName())
-        .process((x) -> onMessage(x.getIn().getBody(JtonObject.class)));
+        .toF("log:%s?level=TRACE&showHeaders=true", logger.getName())
+        .process((exchange) -> {
+          logger.trace(">>> process: exchange={}", exchange);
+          final Message message = exchange.getIn();
+          final JtonObject msg = message.getBody(JtonObject.class);
+          final JtonElement result = onMessage(msg);
+          if (result != null) {
+            message.setBody(result);
+            send(exchange); // proceed with next node(s)
+          } else {
+            logger.debug("Stop processing: onMessage() result is null");
+          }
+        });
   }
 
   @Override
@@ -273,8 +282,9 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
     return MessageBus.subscribe(this.topicPrefix.concat(event), messageListener);
   }
 
-  @Override
-  public final void send(JtonElement _msg) {
+  private final void send(Exchange exchange) {
+    JtonElement _msg = exchange.getIn().getBody(JtonElement.class);
+
     logger.trace(">>> send: _msg={}", _msg);
     logger.trace(">>> send: wires={}", wires);
 
@@ -306,7 +316,7 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
         // this.metric("send", msg)
         node = flow.getNode(this._wire);
         if (node != null) {
-          node.receive(msg);
+          node.receive(exchange);
         }
         return;
       } else {
@@ -372,7 +382,8 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
         ev.m.set("_msgid", sentMessageId);
       }
       try {
-        ev.n.receive(ev.m);
+        exchange.getIn().setBody(ev.m);
+        ev.n.receive(exchange);
       } catch (JRedRuntimeException e) {
         if (exception == null) {
           exception = e;
@@ -396,7 +407,25 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
   }
 
   @Override
-  public final void receive(JtonObject msg) {
+  public final void receive(Exchange exchange) {
+    logger.trace(">>> receive: exchange={}", exchange);
+
+    final JtonObject msg = exchange.getIn()
+        .getBody(JtonObject.class);
+
+    exchange.getIn().setBody(ensureMsg(msg));
+
+    template.send("direct:" + getId(), exchange);
+  }
+
+  @Override
+  public final void receiveMsg(JtonObject msg) {
+    logger.trace(">>> receive: msg={}", msg);
+
+    template.sendBody("direct:" + getId(), ensureMsg(msg));
+  }
+
+  private JtonObject ensureMsg(JtonObject msg) {
     if (msg == null) {
       msg = new JtonObject();
     }
@@ -405,11 +434,10 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
       msg.set("_msgid", UUID.randomUUID().toString());
     }
 
-    // MessageBus.sendMessage(id, msg, true);
-    template.sendBody("direct:" + getId(), msg);
+    return msg;
   }
 
-  protected abstract void onMessage(JtonObject msg);
+  protected abstract JtonElement onMessage(JtonObject msg);
 
   protected void metric() {
     throw new UnsupportedOperationException();

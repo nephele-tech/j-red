@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public final class StatusNode extends AbstractNode {
@@ -34,9 +35,9 @@ public final class StatusNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     log.trace(">>> onMessage: msg={}" + msg);
     
-    send(msg);
+    return(msg);
   }
 }

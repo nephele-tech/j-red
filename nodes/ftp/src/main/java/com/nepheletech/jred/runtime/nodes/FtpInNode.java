@@ -22,6 +22,7 @@ package com.nepheletech.jred.runtime.nodes;
 import org.apache.camel.CamelContext;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public class FtpInNode extends AbstractNode implements HasCredentials {
@@ -38,9 +39,9 @@ public class FtpInNode extends AbstractNode implements HasCredentials {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     // TODO Auto-generated method stub
-    
+    return null;
   }
 
 }

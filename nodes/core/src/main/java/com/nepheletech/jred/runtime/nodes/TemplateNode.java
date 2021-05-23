@@ -74,7 +74,7 @@ public class TemplateNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     try {
@@ -104,7 +104,7 @@ public class TemplateNode extends AbstractNode {
       throw e;
     }
 
-    send(msg);
+    return(msg);
   }
 
   protected Object prepare(final JtonObject msg) {

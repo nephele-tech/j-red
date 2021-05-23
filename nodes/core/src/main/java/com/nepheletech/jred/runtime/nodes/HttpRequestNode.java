@@ -118,7 +118,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}, thread={}", msg, Thread.currentThread().getId());
 
     try {
@@ -137,7 +137,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
             .set("fill", "red")
             .set("shape", "ring")
             .set("text", "non-http transport requested"));
-        return;
+        return null;
       }
 
       if (!((url.indexOf("http://") == 0) || (url.indexOf("https://") == 0))) {
@@ -374,7 +374,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
       status(new JtonObject());
     }
 
-    send(msg);
+    return(msg);
   }
 
   private String jsonToURLEncoding(JtonElement json) {

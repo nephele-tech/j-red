@@ -20,6 +20,7 @@
 package com.nepheletech.jred.runtime.nodes;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public class ExceptionNode extends AbstractNode {
@@ -31,7 +32,7 @@ public class ExceptionNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     throw new RuntimeException(message);
   }
 }

@@ -25,6 +25,7 @@ import java.util.Set;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonArray;
+import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public final class CatchNode extends AbstractNode {
@@ -50,9 +51,9 @@ public final class CatchNode extends AbstractNode {
   public boolean isUncaught() { return uncaught; }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
-    send(msg);
+    return(msg);
   }
 }

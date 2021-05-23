@@ -107,7 +107,7 @@ public class Subflow extends FlowImpl {
 
       this.statusNode = new AbstractNode(this, subflowStatusConfig) {
         @Override
-        protected void onMessage(JtonObject msg) {
+        protected JtonElement onMessage(JtonObject msg) {
           if (msg.has("payload")) {
             final JtonElement payload = msg.get("payload");
             if (payload.isJtonPrimitive() && payload.asJtonPrimitive().isString()) {
@@ -128,6 +128,8 @@ public class Subflow extends FlowImpl {
             // if msg.status exists
             throw new UnsupportedOperationException("if status");
           }
+          
+          return null; // FIXME
         }
       };
     }

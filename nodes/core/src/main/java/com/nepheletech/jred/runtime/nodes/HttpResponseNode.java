@@ -50,7 +50,7 @@ public class HttpResponseNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected JtonElement onMessage(JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     final JtonElement asyncContextWrapper = msg.remove(AsyncContext.class.getName());
@@ -140,6 +140,8 @@ public class HttpResponseNode extends AbstractNode {
       // TODO node.warn(RED._("httpin.errors.no-response"));
       logger.warn("No response object");
     }
+    
+    return null;
   }
 
 }
