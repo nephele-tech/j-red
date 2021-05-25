@@ -32,6 +32,7 @@
 
 		<!-- Apache Camel -->
 		<apache.camel.version>3.9.0</apache.camel.version>
+		<apache-camel.version>3.9.0</apache-camel.version>
 		
 		<!-- Apache Commons -->
 		<apache.commons-lang3.version>3.12.0</apache.commons-lang3.version>

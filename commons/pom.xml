@@ -16,5 +16,6 @@
 		<module>messagebus</module>
 		<module>servlet-utils</module>
 		<module>jton-path</module>
+		<module>camel-cron4j</module>
 	</modules>
 </project>

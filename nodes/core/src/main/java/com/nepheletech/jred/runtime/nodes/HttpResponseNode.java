@@ -51,7 +51,7 @@ public class HttpResponseNode extends AbstractNode {
 
   @Override
   protected JtonElement onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
+    logger.trace(">>> onMessage: {}", this);
 
     final JtonElement asyncContextWrapper = msg.remove(AsyncContext.class.getName());
     if (asyncContextWrapper.isJtonPrimitive() 

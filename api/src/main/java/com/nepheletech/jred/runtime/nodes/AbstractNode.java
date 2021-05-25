@@ -145,18 +145,21 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
 
     fromF("direct:%s", getId())
         .toF("log:%s?level=TRACE&showHeaders=true", logger.getName())
-        .process((exchange) -> {
-          logger.trace(">>> process: exchange={}", exchange);
-          final Message message = exchange.getIn();
-          final JtonObject msg = message.getBody(JtonObject.class);
-          final JtonElement result = onMessage(msg);
-          if (result != null) {
-            message.setBody(result);
-            send(exchange); // proceed with next node(s)
-          } else {
-            logger.debug("Stop processing: onMessage() result is null");
-          }
-        });
+        .process(this::onMessage);
+  }
+
+  protected void onMessage(Exchange exchange) {
+    logger.trace(">>> onMessage: exchange={}", exchange);
+    
+    final Message message = exchange.getIn();
+    final JtonObject msg = message.getBody(JtonObject.class);
+    final JtonElement result = onMessage(msg);
+    if (result != null) {
+      message.setBody(result);
+      send(exchange);
+    } else {
+      logger.debug("Stop processing: onMessage() result is null");
+    }
   }
 
   @Override
@@ -420,12 +423,12 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
 
   @Override
   public final void receiveMsg(JtonObject msg) {
-    logger.trace(">>> receive: msg={}", msg);
+    logger.trace(">>> receiveMsg: msg={}", msg);
 
     template.sendBody("direct:" + getId(), ensureMsg(msg));
   }
 
-  private JtonObject ensureMsg(JtonObject msg) {
+  protected JtonObject ensureMsg(JtonObject msg) {
     if (msg == null) {
       msg = new JtonObject();
     }
