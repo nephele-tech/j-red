@@ -9,13 +9,13 @@ import org.slf4j.LoggerFactory;
 import it.sauronsoftware.cron4j.Scheduler;
 
 public class Cron4jConsumer extends DefaultConsumer {
-  
+
   private static final Logger logger = LoggerFactory.getLogger(Cron4jConsumer.class);
 
   private Scheduler scheduler = null;
 
   private final Runnable scheduledTask = () -> run();
-  
+
   private final Cron4jEndpoint endpoint;
 
   public Cron4jConsumer(Cron4jEndpoint endpoint, Processor processor) {
@@ -25,7 +25,7 @@ public class Cron4jConsumer extends DefaultConsumer {
 
   private void run() {
     logger.trace(">>> run: {}", this);
-    
+
     final Exchange exchange = endpoint.createExchange();
 
     try {
@@ -41,12 +41,12 @@ public class Cron4jConsumer extends DefaultConsumer {
   @Override
   protected void doStart() throws Exception {
     logger.trace(">>> doStart: {}", this);
-    
+
     super.doStart();
 
     scheduler = new Scheduler();
-    //TODO scheduler.setDaemon(true);
-    //TODO scheduler.setTimeZone(TimeZone.getTimeZone(getRouteId()));
+    // TODO scheduler.setDaemon(true);
+    // TODO scheduler.setTimeZone(TimeZone.getTimeZone(getRouteId()));
     scheduler.schedule(endpoint.getSchedule(), scheduledTask);
     scheduler.start();
   }
@@ -54,7 +54,7 @@ public class Cron4jConsumer extends DefaultConsumer {
   @Override
   protected void doStop() throws Exception {
     logger.trace(">>> doStop: {}", this);
-    
+
     if (scheduler != null) {
       try {
         scheduler.stop();
