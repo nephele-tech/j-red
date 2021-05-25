@@ -38,6 +38,7 @@ import com.nepheletech.jred.runtime.nodes.HasCredentials;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.messagebus.MessageBus;
@@ -494,7 +495,8 @@ public final class FlowsManager {
 
     @Override
     public JtonElement getSetting(String key) {
-      return new JtonPrimitive(System.getenv(key));
+      final String value = System.getenv(key);
+      return (value != null) ? new JtonPrimitive(System.getenv(key)) : JtonNull.INSTANCE;
     }
 
     @Override
