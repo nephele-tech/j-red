@@ -475,7 +475,7 @@ public class FlowImpl implements Flow {
             .set("type", node.getType())
             .set("name", node.getName()));
         
-        targetStatusNode.receiveMsg(message);
+        targetStatusNode.receive(message);
         handled = true;
       }
     }
@@ -489,7 +489,7 @@ public class FlowImpl implements Flow {
    */
   @Override
   public boolean handleError(final Node node, final Throwable logMessage, final JtonObject msg, Node reportingNode) {
-    logger.trace(">>> handleError: {}", logMessage);
+    logger.error(">>> handleError: {}", logMessage);
 
     if (reportingNode == null) {
       reportingNode = node;
@@ -554,7 +554,7 @@ public class FlowImpl implements Flow {
                 .set("count", count))
             .set("stack", JRedUtil.stackTrace(rootCause)));
         
-        targetCatchNode.receiveMsg(errorMessage);
+        targetCatchNode.receive(errorMessage);
         handled = true;
       }
     }

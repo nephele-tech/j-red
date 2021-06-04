@@ -50,6 +50,8 @@ public class ContextServlet extends HttpServlet {
 
       if (pathInfo != null) {
         final String[] parts = pathInfo.split("/");
+        
+        logger.debug("parts: {}", Arrays.asList(parts));
 
         if (parts.length > 1) {
           final String type = parts[1];
@@ -69,7 +71,8 @@ public class ContextServlet extends HttpServlet {
             }
           } else if ("global".equals(type)) {
             final FlowsRuntime runtime = getRuntime();
-            
+            HttpServletUtil.sendJSON(res, runtime.getGlobalContext());
+            return;
           }
         }
         logger.warn("invalid request (pathInfo={})", pathInfo);

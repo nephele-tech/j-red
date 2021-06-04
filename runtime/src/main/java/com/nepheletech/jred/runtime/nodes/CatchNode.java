@@ -23,9 +23,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.camel.Exchange;
+
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonArray;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public final class CatchNode extends AbstractNode {
@@ -51,9 +52,9 @@ public final class CatchNode extends AbstractNode {
   public boolean isUncaught() { return uncaught; }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
-    return(msg);
+    send(exchange, msg);
   }
 }

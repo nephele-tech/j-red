@@ -19,8 +19,9 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import org.apache.camel.Exchange;
+
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public final class CommentNode extends AbstractNode {
@@ -30,7 +31,7 @@ public final class CommentNode extends AbstractNode {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
+  protected void onMessage(Exchange exchange, JtonObject msg) {
     throw new UnsupportedOperationException();
   }
 }

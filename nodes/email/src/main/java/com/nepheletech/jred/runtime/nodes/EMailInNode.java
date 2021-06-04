@@ -37,7 +37,6 @@ import org.apache.commons.io.IOUtils;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonArray;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
@@ -48,8 +47,11 @@ public class EMailInNode extends AbstractNode implements Processor, HasCredentia
   private final String port;
   private final String box; // For IMAP, The mailbox to process
   private final String disposition; // For IMAP, the disposition of the read email
+  @SuppressWarnings("unused")
   private final String criteria;
+  @SuppressWarnings("unused")
   private final String repeat;
+  @SuppressWarnings("unused")
   private final String fetch;
 
   private String userid;
@@ -211,9 +213,9 @@ public class EMailInNode extends AbstractNode implements Processor, HasCredentia
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace(">>> onMessage: {}", getId());
 
-    return(msg);
+    send(exchange, msg);
   }
 }

@@ -19,18 +19,20 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import static com.nepheletech.jred.runtime.util.JRedUtil.evaluateNodeProperty;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 /**
  * 
  */
-public class InjectNode extends AbstractNode {
+public class InjectNode extends AbstractNode implements Processor {
   private final Logger logger = LoggerFactory.getLogger(InjectNode.class);
 
   private final String topic;
@@ -60,26 +62,31 @@ public class InjectNode extends AbstractNode {
       final long delay = onceDelay;
       fromF("timer:%s?delay=%d&repeatCount=1", getId(), delay)
           .toF("log:%s?level=TRACE", logger.getName())
-          .process(x -> x.getIn().setBody(ensureMsg(null)))
+          .process(InjectNode.this)
           .toF("direct:%s", getId());
     } else if (this.repeat > 0L) {
       final long period = repeat * 1000L;
       fromF("timer:%s?period=%d&delay=%d", getId(), period, period)
           .toF("log:%s?level=TRACE", logger.getName())
-          .process(x -> x.getIn().setBody(ensureMsg(null)))
+          .process(InjectNode.this)
           .toF("direct:%s", getId());
     } else if (this.crontab != null) {
       final String schedule = crontab.replace(' ', '+');
       fromF("cron4j:%s?schedule=%s", getId(), schedule)
-        .toF("log:%s?level=TRACE", logger.getName())
-        .process(x -> x.getIn().setBody(ensureMsg(null)))
-        .toF("direct:%s", getId());
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process(InjectNode.this)
+          .toF("direct:%s", getId());
     }
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: {}", this);
+  public void process(Exchange exchange) throws Exception {
+    exchange.getIn().setBody(ensureMsg(exchange, null));
+  }
+
+  @Override
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace(">>> onMessage: {}", getId());
 
     msg.set("topic", topic);
 
@@ -93,19 +100,19 @@ public class InjectNode extends AbstractNode {
         } else if ("none".equals(payloadType)) {
           msg.set("payload", "");
         } else {
-          msg.set("payload", JRedUtil.evaluateNodeProperty(payload, payloadType, this, msg));
+          msg.set("payload", evaluateNodeProperty(payload, payloadType, this, msg));
         }
       } catch (Exception err) {
         // error(err, msg);
       }
     } else {
       try {
-        msg.set("payload", JRedUtil.evaluateNodeProperty(payload, payloadType, this, msg));
+        msg.set("payload", evaluateNodeProperty(payload, payloadType, this, msg));
       } catch (Exception err) {
         // error(err, msg);
       }
     }
 
-    return (msg);
+    send(exchange, msg);
   }
 }

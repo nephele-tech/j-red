@@ -25,6 +25,7 @@ import javax.servlet.AsyncContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 
 import com.nepheletech.jred.runtime.flows.Flow;
@@ -50,8 +51,8 @@ public class HttpResponseNode extends AbstractNode {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: {}", this);
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace("---------------------------- >>> onMessage: {}", msg);
 
     final JtonElement asyncContextWrapper = msg.remove(AsyncContext.class.getName());
     if (asyncContextWrapper.isJtonPrimitive() 
@@ -124,6 +125,9 @@ public class HttpResponseNode extends AbstractNode {
           HttpServletUtil.sendJSON(res, msg.get("payload"));
         }
         
+
+logger.info("---------------------------------------------------------------------------Complete");
+        
         ac.complete();
 
       } catch (Exception e) {
@@ -140,8 +144,6 @@ public class HttpResponseNode extends AbstractNode {
       // TODO node.warn(RED._("httpin.errors.no-response"));
       logger.warn("No response object");
     }
-    
-    return null;
   }
 
 }

@@ -29,7 +29,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>${servlet-api.version}</version>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Apache Commons -->
@@ -49,8 +49,7 @@
 				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
 					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<!-- <release>${java.version}</release> -->
+					<release>${java.version}</release>
 				</configuration>
 			</plugin>
 		</plugins>

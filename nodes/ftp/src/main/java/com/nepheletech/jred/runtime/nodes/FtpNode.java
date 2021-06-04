@@ -88,7 +88,7 @@ public class FtpNode extends AbstractNode implements HasCredentials {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     final ProducerTemplate template = camelContext.createProducerTemplate();
@@ -115,7 +115,5 @@ public class FtpNode extends AbstractNode implements HasCredentials {
         }
       }
     });
-    
-    return null;
   }
 }

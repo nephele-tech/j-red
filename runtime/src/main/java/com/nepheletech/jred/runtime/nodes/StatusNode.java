@@ -20,11 +20,11 @@
 package com.nepheletech.jred.runtime.nodes;
 
 
+import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public final class StatusNode extends AbstractNode {
@@ -35,9 +35,9 @@ public final class StatusNode extends AbstractNode {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     log.trace(">>> onMessage: msg={}" + msg);
     
-    return(msg);
+    send(exchange, msg);
   }
 }

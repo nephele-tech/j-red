@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.camel.Exchange;
 import java.util.Optional;
 import java.util.Set;
 
@@ -61,14 +63,18 @@ public class KafkaOutNode extends AbstractNode {
     super.configure();
 
     fromF("direct:%s#kafka", getId())
-        //.circuitBreaker() TODO
         .toF("log:%s?level=TRACE&showBody=false&showHeaders=true", logger.getName())
         .toF("kafka:%s?brokers=%s", topic, brokers);
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: {}", this);
+  protected String getAdditionalFlow() {
+    return format("direct:%s#kafka", getId());
+  }
+
+  @Override
+  protected void onMessage(Exchange exchange, JtonObject msg) {
+    logger.trace(">>> onMessage: exchange={}, msg={}", exchange, msg);
 
     final Map<String, Object> kafkaHeaders = new HashMap<>();
     final Optional<JtonObject> headers = getProperty(msg, "headers.kafka").asOptJtonObject();
@@ -84,10 +90,7 @@ public class KafkaOutNode extends AbstractNode {
       }
     }
 
-    // Sends the body to an endpoint with the specified headers and header values
-    template.sendBodyAndHeaders(format("direct:%s#kafka", getId()),
-        msg.get("payload"), kafkaHeaders);
-
-    return null;
+    exchange.getIn().getHeaders().putAll(kafkaHeaders);
+    exchange.getIn().setBody(msg.get("payload"));
   }
 }

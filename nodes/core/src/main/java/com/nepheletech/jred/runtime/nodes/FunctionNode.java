@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.script.ScriptException;
 
+import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,11 +129,11 @@ public class FunctionNode extends AbstractNode {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
+  protected void onMessage(Exchange exchange, JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     try {
-      return (se.evaluate(new Object[] { this, msg, this.env,
+      send(exchange, se.evaluate(new Object[] { this, msg, this.env,
           this.nodeContext, this.getFlowContext(), this.getGlobalContext() }));
     } catch (ScriptException e) {
       final JtonArray sourceCode = new JtonArray()

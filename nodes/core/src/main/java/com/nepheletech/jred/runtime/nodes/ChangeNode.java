@@ -22,6 +22,8 @@ package com.nepheletech.jred.runtime.nodes;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.camel.Exchange;
+
 import com.google.common.base.Objects;
 import com.google.gson.JsonSyntaxException;
 import com.jayway.jsonpath.JsonPath;
@@ -115,13 +117,11 @@ public class ChangeNode extends AbstractNode {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
+  protected void onMessage(Exchange exchange, JtonObject msg) {
     logger.trace("onMessage: msg.keySet={}", msg.keySet());
 
     if (valid) {
-      return(applyRules(msg));
-    } else {
-      return null; // FIXME maybe throw exception
+      send(exchange, applyRules(msg));
     }
   }
 

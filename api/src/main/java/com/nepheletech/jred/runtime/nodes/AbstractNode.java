@@ -19,14 +19,15 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import static java.lang.String.format;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
@@ -53,14 +54,6 @@ import com.nepheletech.messagebus.Subscription;
 
 public abstract class AbstractNode extends RouteBuilder implements Node {
   protected final Logger logger = LoggerFactory.getLogger(getClass());
-
-  private final class JRedRuntimeException extends RuntimeException {
-    private static final long serialVersionUID = -9218815348162921335L;
-
-    JRedRuntimeException(Throwable t) {
-      super(t);
-    }
-  }
 
   private final String id;
   private final String type;
@@ -141,26 +134,43 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
 
   @Override
   public void configure() throws Exception {
-    logger.trace(">>> configure: {}", this);
+    logger.trace(">>> configure: {}", getId());
 
-    fromF("direct:%s", getId())
-        .toF("log:%s?level=TRACE&showHeaders=true", logger.getName())
-        .process(this::onMessage);
-  }
+    onException(RuntimeException.class)
+        .log(LoggingLevel.ERROR, logger, "Runtime exception")
+        .process((x) -> {
+          final JtonObject msg = x.getIn().getBody(JtonObject.class);
+          final Exception e = x.getProperty(Exchange.EXCEPTION_CAUGHT, 
+              RuntimeException.class);
+          AbstractNode.this.error(e, msg);
+        }).handled(true);
 
-  protected void onMessage(Exchange exchange) {
-    logger.trace(">>> onMessage: exchange={}", exchange);
+    final String additionalFlow = getAdditionalFlow();
+    logger.debug("additionalFlow={}", additionalFlow);
     
-    final Message message = exchange.getIn();
-    final JtonObject msg = message.getBody(JtonObject.class);
-    final JtonElement result = onMessage(msg);
-    if (result != null) {
-      message.setBody(result);
-      send(exchange);
+    if (additionalFlow != null) {
+      fromF("direct:%s", getId())
+          .toF("log:%s?level=TRACE&showHeaders=true", logger.getName())
+          .process(this::onMessage)
+          .to(getAdditionalFlow());
     } else {
-      logger.debug("Stop processing: onMessage() result is null");
+      fromF("direct:%s", getId())
+          .toF("log:%s?level=TRACE&showHeaders=true", logger.getName())
+          .process(this::onMessage);
     }
   }
+
+  protected String getAdditionalFlow() {
+    return null;
+  }
+
+  protected final void onMessage(Exchange exchange) {
+    logger.trace(">>> onMessage: {}, exchange={}", getId(), exchange);
+
+    onMessage(exchange, exchange.getIn().getBody(JtonObject.class));
+  }
+
+  protected abstract void onMessage(Exchange exchange, JtonObject msg);
 
   @Override
   public Flow getFlow() {
@@ -199,7 +209,7 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
 
   @Override
   public void updateWires(JtonArray wires) {
-    logger.debug("UPDATE {}", this.id);
+    logger.debug("UPDATE {}", getId());
 
     this.wires = wires;
     this._wire = null;
@@ -285,11 +295,11 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
     return MessageBus.subscribe(this.topicPrefix.concat(event), messageListener);
   }
 
-  private final void send(Exchange exchange) {
-    JtonElement _msg = exchange.getIn().getBody(JtonElement.class);
+  protected final void send(Exchange exchange, JtonElement _msg) {
+    logger.trace(">>> send: exchange={}", exchange);
 
-    logger.trace(">>> send: _msg={}", _msg);
-    logger.trace(">>> send: wires={}", wires);
+    // logger.debug("--- send: _msg={}", _msg);
+    // logger.debug("--- send: wires={}", wires);
 
     if (this.hasSubscribers) {
       MessageBus.sendMessage(topicPrefix.concat("#send"), _msg);
@@ -299,8 +309,6 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
       // With nothing wired to the node, no-op send
       return;
     }
-
-    Node node = null;
 
     if (_msg == null
         || !(_msg.isJtonObject() || _msg.isJtonArray())) {
@@ -313,14 +321,11 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
         //       are defined at that point
         //@formatter:on
         final JtonObject msg = _msg.asJtonObject();
-        if (!msg.has("_msgid")) {
-          msg.set("_msgid", UUID.randomUUID().toString());
-        }
+//        if (!msg.has("_msgid")) {
+//          msg.set("_msgid", UUID.randomUUID().toString());
+//        }
         // this.metric("send", msg)
-        node = flow.getNode(this._wire);
-        if (node != null) {
-          node.receive(exchange);
-        }
+        send(exchange, msg, this._wire);
         return;
       } else {
         _msg = new JtonArray().push(_msg);
@@ -332,11 +337,11 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
 
     final int numOutputs = this.wires.size();
 
-    // Build a list of send events so that all cloning is done before any calls to
-    // node.receive
+    // Build a list of send events so that all cloning is done
+    // before any calls to node.receive
     final List<SendEvent> sendEvents = new ArrayList<>();
 
-    String sentMessageId = null;
+//    String sentMessageId = null;
 
     // for each output of node eg. [msgs to output 0, msgs to output 1, ...]
     for (int i = 0, imax = numOutputs; i < imax; i++) {
@@ -350,21 +355,19 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
           int k = 0, kmax;
           // for each recipient node of that output
           for (int j = 0, jmax = wires.size(); j < jmax; j++) {
-            node = flow.getNode(wires.get(j).asString()); // node at end of wire
-            if (node != null) {
-              // for each msg to send eg. [[m1, m2, ...], ...]
-              for (k = 0, kmax = msgs.asJtonArray().size(); k < kmax; k++) {
-                final JtonElement m = msgs.asJtonArray().get(k);
-                if (m.isJtonObject()) {
-                  if (sentMessageId == null) {
-                    sentMessageId = m.asJtonObject().getAsString("_msgid", null);
-                  }
-                  if (sendEvents.size() > 0) {
-                    final JtonElement clonedMsg = m.deepCopy();
-                    sendEvents.add(new SendEvent(node, clonedMsg.asJtonObject()));
-                  } else {
-                    sendEvents.add(new SendEvent(node, m.asJtonObject()));
-                  }
+            final String nodeId = wires.get(j).asString();
+            // for each msg to send eg. [[m1, m2, ...], ...]
+            for (k = 0, kmax = msgs.asJtonArray().size(); k < kmax; k++) {
+              final JtonElement m = msgs.asJtonArray().get(k);
+              if (m.isJtonObject()) {
+//                if (sentMessageId == null) {
+//                  sentMessageId = m.asJtonObject().getAsString("_msgid", null);
+//                }
+                if (sendEvents.size() > 0) {
+                  final JtonElement clonedMsg = m.deepCopy();
+                  sendEvents.add(new SendEvent(nodeId, clonedMsg.asJtonObject()));
+                } else {
+                  sendEvents.add(new SendEvent(nodeId, m.asJtonObject()));
                 }
               }
             }
@@ -373,74 +376,57 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
       }
     }
 
-    if (sentMessageId == null) {
-      sentMessageId = UUID.randomUUID().toString();
-    }
+//    if (sentMessageId == null) {
+//      sentMessageId = UUID.randomUUID().toString();
+//    }
     // this.metric
 
-    JRedRuntimeException exception = null;
-
     for (SendEvent ev : sendEvents) {
-      if (!ev.m.has("_msgid")) {
-        ev.m.set("_msgid", sentMessageId);
-      }
-      try {
-        exchange.getIn().setBody(ev.m);
-        ev.n.receive(exchange);
-      } catch (JRedRuntimeException e) {
-        if (exception == null) {
-          exception = e;
-        }
-      }
-    }
+//      if (!ev.m.has("_msgid")) {
+//        ev.m.set("_msgid", sentMessageId);
+//      }
 
-    if (exception != null) {
-      throw exception;
+      send(exchange, ev.m, ev.n);
     }
   }
 
   private final class SendEvent {
-    final Node n;
+    final String n;
     final JtonObject m;
 
-    public SendEvent(final Node n, final JtonObject m) {
+    public SendEvent(final String n, final JtonObject m) {
       this.n = n;
       this.m = m;
     }
   }
 
-  @Override
-  public final void receive(Exchange exchange) {
-    logger.trace(">>> receive: exchange={}", exchange);
+  private void send(Exchange exchange, JtonObject msg, String nodeId) {
+    logger.trace(">>> send: {} -> {}", getId(), nodeId);
 
-    final JtonObject msg = exchange.getIn()
-        .getBody(JtonObject.class);
-
-    exchange.getIn().setBody(ensureMsg(msg));
-
-    template.send("direct:" + getId(), exchange);
+    exchange.getIn().setBody(ensureMsg(exchange, msg));
+    template.send("direct:" + nodeId, exchange);
   }
 
   @Override
-  public final void receiveMsg(JtonObject msg) {
-    logger.trace(">>> receiveMsg: msg={}", msg);
+  public final void receive(JtonObject msg) {
+    logger.trace(">>> receive: msg={}", msg);
 
-    template.sendBody("direct:" + getId(), ensureMsg(msg));
+    template.send(format("direct:%s", getId()), (x) -> {
+      x.getIn().setBody(ensureMsg(x, msg));
+    });
   }
 
-  protected JtonObject ensureMsg(JtonObject msg) {
+  protected JtonObject ensureMsg(Exchange exchange, JtonObject msg) {
     if (msg == null) {
       msg = new JtonObject();
     }
 
     if (!msg.has("_msgid")) {
-      msg.set("_msgid", UUID.randomUUID().toString());
+      msg.set("_msgid", exchange.getIn().getMessageId());
     }
 
     return msg;
   }
-
-  protected abstract JtonElement onMessage(JtonObject msg);
 
   protected void metric() {
     throw new UnsupportedOperationException();
@@ -499,9 +485,11 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
    */
   private void error0(Throwable logMessage, JtonObject msg) {
     boolean handled = false;
+    
     if (msg != null) {
       handled = flow.handleError(this, logMessage, msg, null);
     }
+    
     if (!handled) {
       Throwable rootCause = ExceptionUtils.getRootCause(logMessage);
       if (rootCause == null) {

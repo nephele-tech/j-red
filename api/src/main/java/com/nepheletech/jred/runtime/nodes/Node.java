@@ -19,8 +19,6 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
-import org.apache.camel.Exchange;
-
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonObject;
@@ -42,12 +40,8 @@ public interface Node {
   String getAliasOrIdIfNull();
 
   void updateWires(JtonArray wires);
-
-  //void send(JtonElement msg);
-
-  void receive(Exchange exchange);
   
-  void receiveMsg(JtonObject msg);
+  void receive(JtonObject msg);
 
   void close(boolean removed);
 

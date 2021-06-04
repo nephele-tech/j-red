@@ -9,6 +9,9 @@
 	</parent>
 	<artifactId>jred-console</artifactId>
 	<packaging>war</packaging>
+	<properties>
+		<docker.repository>${project.artifactId}</docker.repository>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.nepheletech</groupId>
@@ -116,7 +119,7 @@
 					<images>
 						<image>
 							<alias>${project.artifactId}</alias>
-							<name>${docker.username}/${project.artifactId}</name>
+							<name>${docker.username}/${docker.repository}</name>
 							<!-- <name>${docker.username}/${project.artifactId}:${build.version}</name> -->
 							<!-- <registry>${docker.registry}</registry> -->
 							<build>

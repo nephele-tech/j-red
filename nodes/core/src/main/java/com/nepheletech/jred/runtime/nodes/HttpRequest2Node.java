@@ -9,7 +9,6 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.component.http.HttpComponent;
@@ -21,7 +20,6 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheException;
 import com.github.mustachejava.MustacheFactory;
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public class HttpRequest2Node extends AbstractNode implements HasCredentials {
@@ -32,16 +30,22 @@ public class HttpRequest2Node extends AbstractNode implements HasCredentials {
   private final boolean isTemplateUrl;
   private final String nodeMethod;
 
+  @SuppressWarnings("unused")
   private final boolean nodeHTTPPersistent;
 
   private final TlsConfigNode tlsNode;
 
+  @SuppressWarnings("unused")
   private final String ret;
+  @SuppressWarnings("unused")
   private final String authType;
 
+  @SuppressWarnings("unused")
   private final long reqTimeout;
 
+  @SuppressWarnings("unused")
   private final boolean paytoqs;
+  @SuppressWarnings("unused")
   private final boolean paytobody;
 
 //Mustache
@@ -102,7 +106,7 @@ public class HttpRequest2Node extends AbstractNode implements HasCredentials {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
+  protected void onMessage(Exchange exchange, JtonObject msg) {
     logger.trace(">>> onMessage: {}", this);
 
     status(new JtonObject()
@@ -123,7 +127,7 @@ public class HttpRequest2Node extends AbstractNode implements HasCredentials {
       // node.error(RED._("httpin.errors.no-url"),msg);
       log.warn("httpin.errors.no-url");
       // TODO nodeDone();
-      return null;
+      return;
     }
     // url must start http:// or https:// so assume http:// if not set
     if (url.indexOf("://") != -1 && url.indexOf("http") != 0) {
@@ -133,7 +137,7 @@ public class HttpRequest2Node extends AbstractNode implements HasCredentials {
           .set("shape", "ring")
           .set("text", "non-http transport requested"));
       // TODO nodeDone();
-      return null;
+      return;
     }
     if (!((url.indexOf("http://") == 0) || (url.indexOf("https://") == 0))) {
       if (tlsNode != null) {
@@ -162,8 +166,6 @@ public class HttpRequest2Node extends AbstractNode implements HasCredentials {
         .requestBodyAndHeaders(format("direct:%s#request", getId()), msg, headers);
 
     logger.debug("Response: {}", response);
-
-    return null;
   }
 
   private String getUrl(JtonObject msg) {

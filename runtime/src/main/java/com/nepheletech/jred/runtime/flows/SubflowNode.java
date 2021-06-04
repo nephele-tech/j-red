@@ -21,9 +21,10 @@ package com.nepheletech.jred.runtime.flows;
 
 import java.util.function.BiConsumer;
 
+import org.apache.camel.Exchange;
+
 import com.nepheletech.jred.runtime.nodes.AbstractNode;
 import com.nepheletech.jton.JtonArray;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 final class SubflowNode extends AbstractNode {
@@ -37,9 +38,10 @@ final class SubflowNode extends AbstractNode {
   public void setUpdateWires(BiConsumer<SubflowNode, JtonArray> updateWires) { this.updateWires = updateWires; }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
-    return msg;
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace(">>> onMessage: {}", getId());
+    
+    send(exchange, msg);
   }
 
   @Override

@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.camel.Exchange;
 import org.yaml.snakeyaml.Yaml;
 
 import com.nepheletech.jred.runtime.flows.Flow;
@@ -28,7 +29,7 @@ public class YamlNode extends AbstractNode {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     final JtonElement value = JRedUtil.getMessageProperty(msg, property);
@@ -38,7 +39,7 @@ public class YamlNode extends AbstractNode {
       JRedUtil.setMessageProperty(msg, property, new JtonPrimitive(jton2yaml(value)), false);
     }
 
-    return(msg);
+    send(exchange, msg);
   }
 
   // ---

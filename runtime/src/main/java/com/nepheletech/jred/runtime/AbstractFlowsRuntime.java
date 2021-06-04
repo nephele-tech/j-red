@@ -92,4 +92,9 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
     
     // TODO some things I don't follow... (runtime/lib/api/flows.js)
   }
+
+  @Override
+  public JtonObject getGlobalContext() {
+    return flowsManager.getGlobalContext();
+  }
 }

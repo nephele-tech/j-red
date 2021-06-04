@@ -106,7 +106,7 @@ public class HttpInNodeServlet extends HttpServlet {
 
     final HttpInNode node = HttpInNode.byPath(pathInfo);
     if (node != null) {
-      node.receiveMsg(msg);
+      node.receive(msg);
     } else {
       res.sendError(HttpServletResponse.SC_BAD_REQUEST);
     }

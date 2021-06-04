@@ -26,12 +26,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonUtil;
 
@@ -66,8 +66,11 @@ public class HttpInNode extends AbstractNode {
 
   // ---
 
+  @SuppressWarnings("unused")
   private final String url;
+  @SuppressWarnings("unused")
   private final String method;
+  @SuppressWarnings("unused")
   private final boolean upload;
 
   private final List<String> params = new ArrayList<>();
@@ -125,8 +128,8 @@ public class HttpInNode extends AbstractNode {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: {}", this);
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace(">>> onMessage: {}", getId());
 
     // TODO uploads...
 
@@ -155,16 +158,14 @@ public class HttpInNode extends AbstractNode {
           }
         }
 
-        return (msg);
+        send(exchange, msg);
       }
 
     } else {
 
       if (pathInfo == null) {
-        return (msg);
+        send(exchange, msg);
       }
     }
-
-    return (null); // FIXME
   }
 }

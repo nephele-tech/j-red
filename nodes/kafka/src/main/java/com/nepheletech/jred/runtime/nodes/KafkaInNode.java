@@ -25,7 +25,6 @@ import org.apache.camel.Processor;
 import org.apache.camel.component.kafka.KafkaConstants;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonParser;
 
@@ -48,10 +47,11 @@ public class KafkaInNode extends AbstractNode implements Processor {
   @Override
   public void configure() throws Exception {
     super.configure();
-    
+
     fromF("kafka:%s?brokers=%s&groupId=%s", topic, brokers, groupId)
         .toF("log:%s?level=DEBUG&showBody=false&showHeaders=true", logger.getName())
-        .process(KafkaInNode.this);
+        .process(KafkaInNode.this)
+        .toF("direct:%s", getId());
   }
 
   @Override
@@ -61,7 +61,6 @@ public class KafkaInNode extends AbstractNode implements Processor {
     final Message message = exchange.getIn();
 
     JtonObject msg = new JtonObject()
-        .set("_uid", exchange.getExchangeId())
         .set("payload", JtonParser.parse(message.getBody(String.class)))
         .set("headers", new JtonObject()
             .set("kafka", new JtonObject()
@@ -79,14 +78,12 @@ public class KafkaInNode extends AbstractNode implements Processor {
                     message.getHeader(KafkaConstants.LAST_POLL_RECORD, Boolean.class))
                 .set("MANUAL_COMMIT",
                     message.getHeader(KafkaConstants.MANUAL_COMMIT, Boolean.class))));
-    
+
     message.setBody(msg);
-    
-    receive(exchange);
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
-    return msg;
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    send(exchange, msg);
   }
 }

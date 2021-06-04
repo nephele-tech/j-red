@@ -59,7 +59,7 @@ public class InjectNodeServlet extends HttpServlet {
     final InjectNode node = getInjectNode(nodeId);
     if (node != null) {
       try {
-        node.receiveMsg(null);
+        node.receive(null);
       } catch (Exception e) {
         logger.warn("inject failed", e); // TODO send error
         res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

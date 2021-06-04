@@ -19,25 +19,26 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.Processor;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
 public class EMailNode extends AbstractNode implements HasCredentials {
+  @SuppressWarnings("unused")
   private final String server;
+  @SuppressWarnings("unused")
   private final String port;
+  @SuppressWarnings("unused")
   private final boolean secure;
+  @SuppressWarnings("unused")
   private final boolean tls;
+  @SuppressWarnings("unused")
   private final String to;
 
+  @SuppressWarnings("unused")
   private String userid;
+  @SuppressWarnings("unused")
   private String password;
 
   public EMailNode(Flow flow, JtonObject config) {
@@ -61,9 +62,7 @@ public class EMailNode extends AbstractNode implements HasCredentials {
   }
 
   @Override
-  protected JtonElement onMessage(JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     // TODO Auto-generated method stub
-    
-    return null;
   }
 }

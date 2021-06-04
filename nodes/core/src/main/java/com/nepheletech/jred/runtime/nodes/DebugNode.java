@@ -22,6 +22,7 @@ package com.nepheletech.jred.runtime.nodes;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 
+import org.apache.camel.Exchange;
 import org.apache.commons.codec.binary.Hex;
 
 import com.nepheletech.jred.runtime.flows.Flow;
@@ -87,7 +88,7 @@ public final class DebugNode extends AbstractNode {
   public boolean isTostatus() { return tostatus; }
 
   @Override
-  protected JtonElement onMessage(final JtonObject msg) {
+  protected void onMessage(Exchange exchange, JtonObject msg) {
     logger.trace(">>> onMessage: id={}, msg={}", getId(), msg);
 
     if ("true".equals(complete)) {
@@ -138,8 +139,6 @@ public final class DebugNode extends AbstractNode {
         }
       });
     }
-    
-    return null; // FIXME
   }
 
   private void sendDebug(JtonObject msg) {

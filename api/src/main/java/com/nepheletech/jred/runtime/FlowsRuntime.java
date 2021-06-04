@@ -73,4 +73,6 @@ public interface FlowsRuntime {
   Storage getStorage();
 
   CamelContext getCamelContext();
+  
+  JtonObject getGlobalContext();
 }

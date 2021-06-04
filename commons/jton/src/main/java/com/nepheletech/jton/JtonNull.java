@@ -16,9 +16,6 @@
 
 package com.nepheletech.jton;
 
-import com.nepheletech.jton.JtonElement;
-import com.nepheletech.jton.JtonNull;
-
 /**
  * A class representing a Jton {@code null} value.
  *
