@@ -17,49 +17,51 @@
 	</distributionManagement>
 
 	<properties>
-		<java.version>8</java.version>
-		<node-red.version>1.3.4</node-red.version>
-		
+		<java.version>11</java.version>
+		<node-red.version>1.3.5</node-red.version>
+
 		<jaxb-api.version>2.3.1</jaxb-api.version>
 		<jaxb-runtime.version>2.3.2</jaxb-runtime.version>
-		
+
 		<!-- maven plugins -->
-	    <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-	    <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<maven-war-plugin.version>3.3.1</maven-war-plugin.version>
 
 		<!-- logging -->
-		<slf4j.version>1.7.25</slf4j.version>
+		<slf4j.version>1.7.30</slf4j.version>
 
 		<!-- Apache Camel -->
-		<apache.camel.version>3.0.0</apache.camel.version>
-		<apache.commons-lang3.version>3.8.1</apache.commons-lang3.version>
+		<apache.camel.version>3.9.0</apache.camel.version>
+		<apache-camel.version>3.9.0</apache-camel.version>
 
-	    <!-- Apache Tomcat -->
-	    <tomcat.version>9.0.37</tomcat.version>
-    
+		<!-- Apache Commons -->
+		<apache.commons-lang3.version>3.12.0</apache.commons-lang3.version>
+
+		<!-- Apache Tomcat -->
+		<tomcat.version>9.0.46</tomcat.version>
+
 		<!-- In sync with Apache Tomcat -->
 		<servlet-api.version>4.0.1</servlet-api.version>
 		<websocket-api.version>1.1</websocket-api.version>
 		<jstl.version>1.2</jstl.version>
 
 		<!-- io.fabric8: docker-maven-plugin -->
-		<docker-maven-plugin.version>0.26.1</docker-maven-plugin.version>
+		<docker-maven-plugin.version>0.35.0</docker-maven-plugin.version>
 		<build.version>${project.version}</build.version>
 		<docker.username>ntechnology</docker.username>
-		<docker.repository>ntechnology</docker.repository>
 	</properties>
 
-	<modules>
-		<module>commons</module>
-		<module>api</module>
-		<module>runtime</module>
-		<module>nodes</module>
-		<module>editor</module>
-		<module>console</module>
-	</modules>
-
 	<build>
+		<finalName>${project.artifactId}</finalName>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<release>${java.version}</release>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<version>3.0.0-M1</version>
@@ -75,4 +77,13 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<modules>
+		<module>commons</module>
+		<module>api</module>
+		<module>runtime</module>
+		<module>nodes</module>
+		<module>editor</module>
+		<module>console</module>
+	</modules>
 </project>

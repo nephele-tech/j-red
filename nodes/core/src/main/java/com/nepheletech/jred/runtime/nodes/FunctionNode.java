@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.script.ScriptException;
 
+import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,10 +81,10 @@ public class FunctionNode extends AbstractNode {
     // create script evaluator
 
     final String[] _imports = imports.toArray(new String[imports.size()]);
-    final String[] parameterNames = new String[] { "node", "msg", "env", 
+    final String[] parameterNames = new String[] { "node", "msg", "env",
         "context", "flow", "global" };
     final Class<?>[] parameterTypes = new Class<?>[] {
-        FunctionNode.class, JtonObject.class, Env.class, 
+        FunctionNode.class, JtonObject.class, Env.class,
         JtonObject.class, JtonObject.class, JtonObject.class
     };
     final Class<?>[] throwTypes = new Class<?>[] {
@@ -91,8 +92,9 @@ public class FunctionNode extends AbstractNode {
     };
 
     se = new ScriptEvaluator<>(_imports, func,
-        JtonElement.class, parameterNames, parameterTypes, throwTypes/*,
-        getName() != null ? getName() : getId()*/);
+        JtonElement.class, parameterNames, parameterTypes, throwTypes/*
+                                                                      * , getName() != null ? getName() : getId()
+                                                                      */);
 
     try {
       se.compile();
@@ -101,9 +103,13 @@ public class FunctionNode extends AbstractNode {
     }
   }
 
-  public Runnable getCloseHandler() { return closeHandler; }
+  public Runnable getCloseHandler() {
+    return closeHandler;
+  }
 
-  public void setCloseHandler(Runnable closeHandler) { this.closeHandler = closeHandler; }
+  public void setCloseHandler(Runnable closeHandler) {
+    this.closeHandler = closeHandler;
+  }
 
   @Override
   protected void onClosed(boolean removed) {
@@ -123,11 +129,11 @@ public class FunctionNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected void onMessage(Exchange exchange, JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     try {
-      send(se.evaluate(new Object[] { this, msg, this.env,
+      send(exchange, se.evaluate(new Object[] { this, msg, this.env,
           this.nodeContext, this.getFlowContext(), this.getGlobalContext() }));
     } catch (ScriptException e) {
       final JtonArray sourceCode = new JtonArray()

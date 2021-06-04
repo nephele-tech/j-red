@@ -2,6 +2,8 @@ package com.nepheletech.jred.test;
 
 import java.util.Map;
 
+import org.apache.camel.CamelContext;
+
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jton.JtonArray;
@@ -75,6 +77,12 @@ public class NodeTest {
       public void setup(Node node) {
         // TODO Auto-generated method stub
 
+      }
+
+      @Override
+      public CamelContext getCamelContext() {
+        // TODO Auto-generated method stub
+        return null;
       }
     };
   }

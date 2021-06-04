@@ -70,7 +70,8 @@ public class HttpInNodeServlet extends HttpServlet {
         .set("headers", getHeaders(req))
         .set("query", getQuery(req))
         // TODO params
-        .set("cookies", getCookies(req));
+        .set("cookies", getCookies(req))
+        .set("_pathInfo", pathInfo);
     
     //
     // AsyncContext object

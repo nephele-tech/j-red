@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 
 import javax.net.ssl.SSLContext;
 
+import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Consts;
 import org.apache.http.Header;
@@ -118,7 +119,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     logger.trace(">>> onMessage: msg={}, thread={}", msg, Thread.currentThread().getId());
 
     try {
@@ -128,6 +129,9 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
           .set("text", "requesting"));
 
       String url = getUrl(msg); // do mustache
+      
+      logger.debug("url: {}, template: {}", url, template);
+      
       if (StringUtils.isAllBlank(url)) { throw new NullPointerException("No url specified"); }
 
       // url must start http:// or https:// so assume http:// if not set
@@ -154,6 +158,8 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
       final String method = ("use".equals(this.method)
           ? msg.get("method").asString("GET") // use the msg parameter
           : this.method).toUpperCase();
+      
+      logger.debug("url: {}, template: {}, method: {}", url, template, method);
 
       // request builder
 
@@ -374,7 +380,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
       status(new JtonObject());
     }
 
-    send(msg);
+    send(exchange, msg);
   }
 
   private String jsonToURLEncoding(JtonElement json) {

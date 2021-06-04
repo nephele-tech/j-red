@@ -22,6 +22,8 @@ package com.nepheletech.jred.runtime.nodes;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import org.apache.camel.Exchange;
+
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheException;
@@ -74,7 +76,7 @@ public class TemplateNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     logger.trace(">>> onMessage: msg={}", msg);
 
     try {
@@ -104,7 +106,7 @@ public class TemplateNode extends AbstractNode {
       throw e;
     }
 
-    send(msg);
+    send(exchange, msg);
   }
 
   protected Object prepare(final JtonObject msg) {

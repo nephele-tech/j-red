@@ -21,6 +21,8 @@ package com.nepheletech.jred.runtime.nodes;
 
 import java.util.Set;
 
+import org.apache.camel.Exchange;
+
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JtonArray;
@@ -98,7 +100,7 @@ public class ConvertNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected void onMessage(Exchange exchange, JtonObject msg) {
     if (_rules != null) {
       for (JtonElement _rule : _rules) {
         final JtonObject rule = _rule.asJtonObject(null);
@@ -159,7 +161,7 @@ public class ConvertNode extends AbstractNode {
       }
     }
 
-    send(msg);
+    send(exchange, msg);
   }
 
   private Object convert(JtonElement value, String type) {

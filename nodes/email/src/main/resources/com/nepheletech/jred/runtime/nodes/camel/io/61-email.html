@@ -16,10 +16,6 @@
 
 <script type="text/x-red" data-template-name="e-mail">
     <div class="form-row">
-        <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
-        <input type="text" id="node-input-context">
-    </div>
-    <div class="form-row">
         <label for="node-input-to"><i class="fa fa-envelope"></i> <span data-i18n="email.label.to"></span></label>
         <input type="text" id="node-input-to" placeholder="email@address.com">
     </div>
@@ -108,8 +104,7 @@
             secure: {value: true},
             tls: {value: true},
             to: {value:""},
-            name: {value:""},
-            context: {type:'camel context',required:true},
+            name: {value:""}
         },
         credentials: {
             userid: {type:"text"},
@@ -141,10 +136,6 @@
 </script>
 
 <script type="text/x-red" data-template-name="e-mail in">
-    <div class="form-row">
-        <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
-        <input type="text" id="node-input-context">
-    </div>
     <div class="form-row">
         <label for="node-input-fetch"><i class="fa fa-hourglass-half"></i> <span data-i18n="email.label.getmail"></span></label>
         <select type="text" id="node-input-fetch" style="width:130px;">
@@ -302,8 +293,7 @@
             criteria: {value: "UNSEEN"},
             repeat: {value:"300",required:true},
             fetch: {value:"auto"},
-            inputs: {value:0},
-            context: {type:'camel context',required:true},
+            inputs: {value:0}
         },
         credentials: {
             userid: {type:"text"},

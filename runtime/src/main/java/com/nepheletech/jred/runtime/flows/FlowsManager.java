@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.camel.CamelContext;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ import com.nepheletech.jred.runtime.nodes.HasCredentials;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 import com.nepheletech.messagebus.MessageBus;
@@ -457,8 +459,12 @@ public final class FlowsManager {
 
   // -----
 
+  private final JtonObject context = new JtonObject();
+  public JtonObject getGlobalContext() {
+    return context;
+  }
+
   private Flow flowAPI = new Flow() {
-    private final JtonObject context = new JtonObject();
     //=Settings.get().globalContext(); TODO use seed for global context
 
     @Override
@@ -493,7 +499,8 @@ public final class FlowsManager {
 
     @Override
     public JtonElement getSetting(String key) {
-      return new JtonPrimitive(System.getenv(key));
+      final String value = System.getenv(key);
+      return (value != null) ? new JtonPrimitive(System.getenv(key)) : JtonNull.INSTANCE;
     }
 
     @Override
@@ -516,6 +523,11 @@ public final class FlowsManager {
       if (node instanceof HasCredentials) {
         ((HasCredentials) node).setCredentials(credentials.get(node.getId()));
       }
+    }
+
+    @Override
+    public CamelContext getCamelContext() {
+      return flowsRuntime.getCamelContext();
     }
   };
 }

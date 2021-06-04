@@ -30,12 +30,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.attachment.AttachmentMessage;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.io.IOUtils;
 
 import com.nepheletech.jred.runtime.flows.Flow;
@@ -43,15 +40,18 @@ import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
-public class EMailInNode extends AbstractCamelNode implements Processor, HasCredentials {
+public class EMailInNode extends AbstractNode implements Processor, HasCredentials {
   private final String protocol;
   private final String server;
   private final boolean useSSL;
   private final String port;
   private final String box; // For IMAP, The mailbox to process
   private final String disposition; // For IMAP, the disposition of the read email
+  @SuppressWarnings("unused")
   private final String criteria;
+  @SuppressWarnings("unused")
   private final String repeat;
+  @SuppressWarnings("unused")
   private final String fetch;
 
   private String userid;
@@ -82,23 +82,19 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
   }
 
   @Override
-  protected void addRoutes(CamelContext camelContext) throws Exception {
+  public void configure() throws Exception {
+    logger.trace(">>> configure: {}", this);
+
     final String emailUrl = String
         .format("%s%s://%s:%s?username=%s&password=%s&folderName=%s&delete=%b&unseen=true&delay=30000"
             + "&skipFailedMessage=false&handleFailedMessage=true",
             protocol.toLowerCase(), (useSSL ? "s" : ""),
             server, port, userid, password, box, "Delete".equals(disposition));
 
-    camelContext.addRoutes(new RouteBuilder() {
-      // onException(Exception.class)
+    from(emailUrl)
+        .to(String.format("log:DEBUG?showBody=false&showHeaders=%b", logger.isDebugEnabled()))
+        .process(EMailInNode.this);
 
-      @Override
-      public void configure() throws Exception {
-        from(emailUrl)
-            .to(String.format("log:DEBUG?showBody=false&showHeaders=%b", logger.isDebugEnabled()))
-            .process(EMailInNode.this);
-      }
-    });
   }
 
   @Override
@@ -157,7 +153,7 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
       logger.info("body> {}", body.getClass());
     }
 
-    send(msg);
+    //send(msg);
   }
 
   private JtonObject handleMultipart(JtonObject msg, MimeMultipart multipart)
@@ -217,9 +213,9 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace(">>> onMessage: {}", getId());
 
-    send(msg);
+    send(exchange, msg);
   }
 }

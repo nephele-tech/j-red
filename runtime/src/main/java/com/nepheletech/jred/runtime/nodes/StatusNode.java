@@ -20,6 +20,7 @@
 package com.nepheletech.jred.runtime.nodes;
 
 
+import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +35,9 @@ public final class StatusNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     log.trace(">>> onMessage: msg={}" + msg);
     
-    send(msg);
+    send(exchange, msg);
   }
 }

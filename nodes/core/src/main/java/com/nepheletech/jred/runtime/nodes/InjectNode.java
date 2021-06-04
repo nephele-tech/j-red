@@ -19,30 +19,20 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import static com.nepheletech.jred.runtime.util.JRedUtil.evaluateNodeProperty;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jred.runtime.events.NodesStartedEvent;
-import com.nepheletech.jred.runtime.events.NodesStartedEventListener;
-import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
-import com.nepheletech.jred.runtime.events.NodesStoppedEventListener;
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JtonObject;
-
-import it.sauronsoftware.cron4j.Scheduler;
 
 /**
  * 
  */
-public class InjectNode extends AbstractNode 
-    implements NodesStartedEventListener, NodesStoppedEventListener {
+public class InjectNode extends AbstractNode implements Processor {
   private final Logger logger = LoggerFactory.getLogger(InjectNode.class);
 
   private final String topic;
@@ -53,11 +43,6 @@ public class InjectNode extends AbstractNode
   private final boolean once;
   private final long onceDelay;
 
-  private ScheduledExecutorService fixedRateScheduler = null;
-  private Scheduler cron4jScheduler = null;
-
-  private final Runnable scheduledTask = () -> receive(null);
-
   public InjectNode(Flow flow, JtonObject config) {
     super(flow, config);
     this.topic = config.get("topic").asString("");
@@ -67,72 +52,41 @@ public class InjectNode extends AbstractNode
     this.crontab = config.get("crontab").asString(null);
     this.once = config.get("once").asBoolean(false);
     this.onceDelay = (long) Math.max(config.get("onceDelay").asDouble(0.1D) * 1000D, 0);
-
-    logger.trace(">>> created");
   }
 
   @Override
-  public void onNodesStarted(NodesStartedEvent event) throws Exception {
-    logger.trace(">>> onNodesStarted");
+  public void configure() throws Exception {
+    super.configure();
 
     if (this.once && this.onceDelay > 0L) {
-      final Timer timer = new Timer();
-      timer.schedule(new TimerTask() {
-        @Override
-        public void run() {
-          startup();
-        }
-      }, onceDelay);
-    } else {
-      startup();
-    }
-  }
-
-  private void startup() {
-    logger.trace(">>> startup");
-
-    if (this.repeat > 0L) {
-      fixedRateScheduler = Executors.newScheduledThreadPool(1);
-      fixedRateScheduler.scheduleAtFixedRate(scheduledTask, repeat, repeat, TimeUnit.SECONDS);
+      final long delay = onceDelay;
+      fromF("timer:%s?delay=%d&repeatCount=1", getId(), delay)
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process(InjectNode.this)
+          .toF("direct:%s", getId());
+    } else if (this.repeat > 0L) {
+      final long period = repeat * 1000L;
+      fromF("timer:%s?period=%d&delay=%d", getId(), period, period)
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process(InjectNode.this)
+          .toF("direct:%s", getId());
     } else if (this.crontab != null) {
-      cron4jScheduler = new Scheduler();
-      cron4jScheduler.schedule(this.crontab, scheduledTask);
-      cron4jScheduler.start();
-    }
-
-    if (this.once) {
-      receive(null);
-    }
-  }
-  
-  @Override
-  public void onNodesStopped(NodesStoppedEvent event) throws Exception {
-    logger.trace(">>> onNodesStopped");
-
-    if (cron4jScheduler != null) {
-      try {
-        cron4jScheduler.stop();
-      } catch(Exception e) {
-        logger.error("Stopping cron4jScheduler error", e);
-      } finally {
-        cron4jScheduler = null;
-      }
-    }
-    
-    if (fixedRateScheduler != null) {
-      try {
-        fixedRateScheduler.shutdown();
-      } catch(Exception e) {
-        logger.error("Stopping fixedRateScheduler error", e);
-      } finally {
-        fixedRateScheduler = null;
-      }
+      final String schedule = crontab.replace(' ', '+');
+      fromF("cron4j:%s?schedule=%s", getId(), schedule)
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process(InjectNode.this)
+          .toF("direct:%s", getId());
     }
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: id={}, msg={}", getId(), msg);
+  public void process(Exchange exchange) throws Exception {
+    exchange.getIn().setBody(ensureMsg(exchange, null));
+  }
+
+  @Override
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace(">>> onMessage: {}", getId());
 
     msg.set("topic", topic);
 
@@ -146,19 +100,19 @@ public class InjectNode extends AbstractNode
         } else if ("none".equals(payloadType)) {
           msg.set("payload", "");
         } else {
-          msg.set("payload", JRedUtil.evaluateNodeProperty(payload, payloadType, this, msg));
+          msg.set("payload", evaluateNodeProperty(payload, payloadType, this, msg));
         }
       } catch (Exception err) {
         // error(err, msg);
       }
     } else {
       try {
-        msg.set("payload", JRedUtil.evaluateNodeProperty(payload, payloadType, this, msg));
+        msg.set("payload", evaluateNodeProperty(payload, payloadType, this, msg));
       } catch (Exception err) {
         // error(err, msg);
       }
     }
 
-    send(msg);
+    send(exchange, msg);
   }
 }

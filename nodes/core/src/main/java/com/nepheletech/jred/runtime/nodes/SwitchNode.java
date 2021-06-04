@@ -22,6 +22,8 @@ package com.nepheletech.jred.runtime.nodes;
 
 import java.util.Objects;
 
+import org.apache.camel.Exchange;
+
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JtonArray;
@@ -97,7 +99,7 @@ public class SwitchNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     if (!valid) {
       return;
     }
@@ -204,7 +206,7 @@ public class SwitchNode extends AbstractNode {
       }
     }
 
-    send(onward);
+    send(exchange, onward);
   }
 
   private double toDouble(JtonElement value) {
