@@ -19,17 +19,15 @@ package com.nepheletech.jton;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-
-import com.nepheletech.jton.JtonArray;
-import com.nepheletech.jton.JtonElement;
-import com.nepheletech.jton.JtonNull;
-import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JtonPrimitive;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * A class representing an array type in Jton. An array is a list of
@@ -41,6 +39,21 @@ import com.nepheletech.jton.JtonPrimitive;
  * @author Joel Leitch
  */
 public final class JtonArray extends JtonElement implements List<JtonElement> {
+  
+  public static JtonArray of(JtonElement... elements) {
+    return of(Arrays.stream(elements));
+  }
+  
+  public static JtonArray of(int... values) {
+    return of(IntStream.of(values).boxed().map(JtonPrimitive::new));
+  }
+  
+  public static JtonArray of(Stream<JtonElement> stream) {
+    return new JtonArray(stream.collect(Collectors.toList()));
+  }
+  
+  // ---
+  
   private final List<JtonElement> elements;
 
   /**
@@ -57,6 +70,10 @@ public final class JtonArray extends JtonElement implements List<JtonElement> {
   public JtonArray(Collection<? extends JtonElement> c) {
     elements = new ArrayList<JtonElement>();
     addAll(c);
+  }
+  
+  private JtonArray(List<JtonElement> elements) {
+    this.elements = elements;
   }
 
   /**

@@ -19,6 +19,7 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 
 import com.nepheletech.dao.NepheleDao;
@@ -47,7 +48,7 @@ public class SqlQueryNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(final JtonObject msg) {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     logger.trace(">>> trace: id={}, msg={}", getId(), msg);
 
     final NepheleDao dao = msg.has("dao")
@@ -113,6 +114,6 @@ public class SqlQueryNode extends AbstractNode {
       logger.info("\tNumberOfSuccessfulCalls={}", circuitBreaker.getMetrics().getNumberOfSuccessfulCalls());
     }
 
-    send(msg);
+    send(exchange, msg);
   }
 }

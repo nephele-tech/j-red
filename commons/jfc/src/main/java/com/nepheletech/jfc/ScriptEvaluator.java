@@ -28,6 +28,7 @@ import javax.script.ScriptException;
 
 import com.nepheletech.jfc.JFunctionScriptEngine.JavaCompiledScript;
 
+
 public final class ScriptEvaluator<T> {
   private static final AtomicLong nextClassNum = new AtomicLong();
 
@@ -42,13 +43,13 @@ public final class ScriptEvaluator<T> {
 
   private JavaCompiledScript compiledScript;
 
-  public ScriptEvaluator(String[] javaImports, String javaCodeBlock, Class<T> returnType,
-      String[] parameterNames, Class<?>[] parameterTypes, String parseLocation) {
-    this(javaImports, javaCodeBlock, returnType, parameterNames, parameterTypes, new Class[0], parseLocation);
+  public ScriptEvaluator(String[] javaImports, String javaCodeBlock, 
+      Class<T> returnType, String[] parameterNames, Class<?>[] parameterTypes) {
+    this(javaImports, javaCodeBlock, returnType, parameterNames, parameterTypes, new Class[0]);
   }
 
-  public ScriptEvaluator(String[] javaImports, String javaCodeBlock, Class<T> returnType,
-      String[] parameterNames, Class<?>[] parameterTypes, Class<?>[] throwTypes, String parseLocation) {
+  public ScriptEvaluator(String[] javaImports, String javaCodeBlock, 
+      Class<T> returnType, String[] parameterNames, Class<?>[] parameterTypes, Class<?>[] throwTypes) {
 
     if (parameterNames == null) {
       parameterNames = new String[0];
@@ -78,15 +79,16 @@ public final class ScriptEvaluator<T> {
   public void compile() throws ScriptException {
     final JFunctionScriptEngine engine = new JFunctionScriptEngine();
     final ScriptContext context = engine.getContext();
-    final String fileName = File.separator 
-        + packageName.replace('.', File.separatorChar) + File.separator + className + ".java";
+    final String fileName = packageName.replace('.', File.separatorChar) + File.separator + className + ".java";
     context.setAttribute(ScriptEngine.FILENAME, fileName, ScriptContext.ENGINE_SCOPE);
     context.setAttribute("className", packageName + '.' + className, ScriptContext.ENGINE_SCOPE);
     context.setAttribute("parameterTypes", parameterTypes, ScriptContext.ENGINE_SCOPE);
     compiledScript = (JavaCompiledScript) engine.compile(script);
   }
 
-  public String getScript() { return script; }
+  public String getScript() {
+    return script;
+  }
 
   @SuppressWarnings("unchecked")
   public T evaluate(Object... params) throws ScriptException {
@@ -98,7 +100,8 @@ public final class ScriptEvaluator<T> {
   }
 
   private String createJavaClass(String className, String packageName, String[] javaImports,
-      String javaCodeBlock, String returnTypeName, String[] parameterNames, Class<?>[] parameterTypes, Class<?>[] throwTypes) {
+      String javaCodeBlock, String returnTypeName, String[] parameterNames, Class<?>[] parameterTypes,
+      Class<?>[] throwTypes) {
     final StringBuilder sb = new StringBuilder();
     sb.append("package ").append(packageName).append(";\n");
     if (javaImports != null && javaImports.length > 0) {
@@ -139,7 +142,7 @@ public final class ScriptEvaluator<T> {
             "      System.out.println(s);\n" +
             "}\n" +
             "return \"Hello, World!!!\";",
-        String.class, null, null, "math");
+        String.class, null, null);
     e.compile();
     System.out.println(e.evaluate());
   }

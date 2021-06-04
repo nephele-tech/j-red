@@ -24,20 +24,23 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonParseException;
 import com.nepheletech.jred.runtime.storage.util.Crypto;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonParseException;
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 
 public class LocalFileSystemStorage implements Storage {
   private static final Logger logger = LoggerFactory.getLogger(LocalFileSystemStorage.class);
@@ -50,7 +53,6 @@ public class LocalFileSystemStorage implements Storage {
   private final Path credentialsFile;
   private final Path credentialsBackupFile;
 
-  @SuppressWarnings("unused")
   private final Path libDir;
 
   public LocalFileSystemStorage(String baseDir) {
@@ -140,15 +142,151 @@ public class LocalFileSystemStorage implements Storage {
   }
 
   @Override
-  public String getLibraryEntry(String type, String path) {
-    // TODO Auto-generated method stub
-    return null;
+  public Object getLibraryEntry(String type, String path) throws IOException {
+    final Path fn = Paths.get(libDir.toString(), path);
+        
+        logger.info("---------------------------------{}", fn);
+
+    if (fn.toFile().isFile()) {
+      if ("flows".equals(type)) {
+        try {
+          return JtonParser.parse(new String(Files.readAllBytes(fn), "UTF-8"));
+        } catch (JsonParseException e) {
+          throw new RuntimeException(e);
+        }
+      } else {
+        return readFile(fn);
+      }
+    } else {
+      final JtonArray entries = new JtonArray();
+      final File parent = fn.toFile();
+      if (parent.isDirectory()) {
+        final File[] files = fn.toFile().listFiles();
+        if (files != null) {
+          Arrays.sort(files);
+
+          for (File dir : files) {
+            if (dir.isDirectory()) {
+              entries.push(dir.getName());
+            }
+          }
+
+          for (File file : files) {
+            if (file.isFile()) {
+              entries.push(getFileMeta(file.getAbsolutePath()));
+            }
+          }
+        }
+      }
+      return entries;
+    }
+  }
+
+  private static JtonObject getFileMeta(final String path) throws IOException {
+    final Path fn = Paths.get(path);
+    final JtonObject meta = new JtonObject();
+    final String[] lines = new String(Files.readAllBytes(fn), "UTF-8").split("\n");
+    for (String line : lines) {
+      if (path.endsWith(".jsp")) {
+        if (line.startsWith("<%-- meta:") && line.endsWith(" --%>")) {
+          final String[] pair = line.substring(10, line.length() - 5).split(":");
+          if (pair.length == 2) {
+            meta.set(pair[0].trim(), pair[1].trim());
+            continue;
+          }
+        }
+        break;
+      } else {
+        if (line.startsWith("// meta:")) {
+          final String[] pair = line.substring(8).split(":");
+          if (pair.length == 2) {
+            meta.set(pair[0].trim(), pair[1].trim());
+            continue;
+          }
+        }
+        break;
+      }
+    }
+    meta.set("fn", fn.toFile().getName());
+    return meta;
   }
 
   @Override
-  public void setLibraryEntry(String type, String path, JtonObject meta, String body) {
-    // TODO Auto-generated method stub
+  public void saveLibraryEntry(String type, String path, JtonObject meta, String text) throws IOException {
+    logger.trace(">>> saveLibraryEntry: type={}, path={}, meta={}", type, path, meta);
+    
+    final Path fn;
+    if ("flows".equals(type) && !path.endsWith(".json")) {
+      fn = Paths.get(libDir.toString(), path + ".json");
+    } else {
+      fn = Paths.get(libDir.toString(), path);
+    }
 
+    Files.createDirectories(fn.getParent());
+    
+    logger.info("-----------------------{}", fn);
+
+    final StringBuilder sb = new StringBuilder();
+    for (Entry<String, JtonElement> entry : meta.entrySet()) { // headers
+      final String key = entry.getKey();
+      final String value = entry.getValue().asString();
+      if (path.endsWith(".jsp")) {
+        sb.append("<%-- meta:").append(key)
+            .append(':')
+            .append(value)
+            .append(" --%>\n");
+      } else {
+        sb.append("// meta:").append(key)
+            .append(':')
+            .append(value)
+            .append('\n');
+      }
+    }
+    sb.append(text);
+
+    writeFile(fn, sb.toString());
+  }
+
+  @Override
+  public JtonObject listFlows(String path) throws IOException {
+    logger.trace(">>> listFlows: path={}", path);
+    final Path fn = Paths.get(libDir.toString(), path);
+    return listFlows(fn);
+  }
+
+  private JtonObject listFlows(Path fn) {
+    final JtonObject result = new JtonObject();
+    final File parent = fn.toFile();
+    if (parent.isDirectory()) {
+      final File[] files = fn.toFile().listFiles();
+      if (files != null) {
+        Arrays.sort(files);
+
+        final JtonObject d = new JtonObject();
+        for (File dir : files) {
+          if (dir.isDirectory()) {
+            d.set(dir.getName(), listFlows(dir.toPath()));
+          }
+        }
+
+        if (d.size() > 0) {
+          result.set("d", d);
+        }
+
+        final JtonArray f = new JtonArray();
+        for (File file : files) {
+          if (file.isFile()) {
+            f.push(file.getName().replaceAll(".json$", ""));
+          }
+        }
+
+        if (f.size() > 0) {
+          result.set("f", f);
+        }
+      }
+    }
+
+    return result;
   }
 
   // ---
@@ -157,13 +295,13 @@ public class LocalFileSystemStorage implements Storage {
     String data = readFile(path, backupPath);
     if (data != null) {
       try {
-        return JsonParser.parse(data);
+        return JtonParser.parse(data);
       } catch (JsonParseException e1) {
         logger.debug(e1.getMessage(), e1);
         // try again with backup file only
         data = readFile(backupPath);
         try {
-          return JsonParser.parse(data);
+          return JtonParser.parse(data);
         } catch (JsonParseException e2) {
           logger.debug(e1.getMessage(), e2);
           return JtonNull.INSTANCE;
@@ -176,7 +314,7 @@ public class LocalFileSystemStorage implements Storage {
 
   private static String readFile(Path path, Path backupPath) {
     String data = StringUtils.trimToNull(readFile(path));
-    
+
     if (data == null) {
       // read backup file
       data = StringUtils.trimToNull(readFile(backupPath));
@@ -195,7 +333,7 @@ public class LocalFileSystemStorage implements Storage {
   }
 
   private static void writeFile(Path path, String data) throws IOException {
-    Files.write(path, data.getBytes("UTF-8"), 
+    Files.write(path, data.getBytes("UTF-8"),
         StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
   }
 }

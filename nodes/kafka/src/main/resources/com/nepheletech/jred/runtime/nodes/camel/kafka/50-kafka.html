@@ -14,11 +14,36 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="kafka in">
+<script type="text/x-red" data-template-name="kafka-broker">
     <div class="form-row">
-        <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
-        <input type="text" id="node-input-context">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input id="node-config-input-name" type="text" placeholder="Name">
+	</div>
+	
+	<div class="form-row">
+        <label for="node-config-input-hosts"><i class="fa fa-list"></i> Hosts</label>
+        <input  id="node-config-input-hosts" type="text" placeholder="example1.com:9092,example2.com:9092,..." >
     </div>
+</script>
+
+<script type="text/javascript">
+RED.nodes.registerType('kafka-broker',{
+	category: 'config',
+	icon: "setting.png",
+	defaults: {
+		name: {required:false},
+		hosts: {required: true}
+	},
+	label: function() {
+		return this.name||this._("kafka-broker");
+	},
+	labelStyle: function() {
+		return "node_label_italic";
+	}
+});
+</script>
+
+<script type="text/x-red" data-template-name="kafka in">
     <div class="form-row">
         <label for="node-input-broker"><i class="fa fa-globe"></i> <span">Broker</span></label>
         <input type="text" id="node-input-broker" placeholder="localhost:9092">
@@ -29,7 +54,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-groupId"><i class="fa fa-tags"></i> <span">Group Id</span></label>
-        <input type="text" id="node-input-groupId" placeholder="localhost:9092">
+        <input type="text" id="node-input-groupId" placeholder="Group Id">
     </div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
@@ -42,10 +67,9 @@ RED.nodes.registerType('kafka in',{
     category: 'input',
     defaults: {
         name: {value:""},
-        broker: {value:"",required:true},
+        broker: {type:"kafka-broker"},
         topic: {value:"",required:true},
-        groupId: {value:""},
-        context: {type:'camel context',required:true},
+        groupId: {value:""}
     },
     color:"#d8bfd8",
     inputs:0,
@@ -62,10 +86,6 @@ RED.nodes.registerType('kafka in',{
 
 
 <script type="text/x-red" data-template-name="kafka out">
-    <div class="form-row">
-        <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
-        <input type="text" id="node-input-context">
-    </div>
     <div class="form-row">
         <label for="node-input-broker"><i class="fa fa-globe"></i> <span">Broker</span></label>
         <input type="text" id="node-input-broker" placeholder="localhost:9092">
@@ -85,9 +105,8 @@ RED.nodes.registerType('kafka out',{
     category: 'output',
     defaults: {
         name: {value:""},
-        broker: {value:"",required:true},
-        topic: {value:"",required:true},
-        context: {type:'camel context',required:true},
+        broker: {type:"kafka-broker"},
+        topic: {value:"",required:true}
     },
     color:"#d8bfd8",
     inputs:1,
@@ -118,6 +137,9 @@ RED.nodes.registerType('kafka out',{
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
+<script type="text/x-red" data-help-name="kafka-broker">
+<p>Apache Camel context configuratio node.</p>
+</script>
 
 <script type="text/x-red" data-help-name="kafka in">
 <p>Apache Camel Kafka In node.</p>

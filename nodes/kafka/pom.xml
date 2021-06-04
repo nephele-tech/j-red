@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.nepheletech</groupId>
 		<artifactId>jred-nodes</artifactId>
-		<version>0.0.3</version>
+		<version>0.0.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>jred-kafka-nodes</artifactId>
 	<dependencies>
@@ -17,11 +17,6 @@
 
 		<!-- Camel Kafka support -->
 
-    <dependency>
-      <groupId>org.apache.camel</groupId>
-      <artifactId>camel-core</artifactId>
-      <version>${apache.camel.version}</version>
-    </dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-kafka</artifactId>
@@ -37,9 +32,10 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
+				<!-- 
 					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<!-- <release>${java.version}</release> -->
+					<target>${java.version}</target> -->
+					<release>${java.version}</release>
 				</configuration>
 			</plugin>
 		</plugins>

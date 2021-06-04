@@ -22,6 +22,7 @@ package com.nepheletech.jred.runtime.nodes;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 
+import org.apache.camel.Exchange;
 import org.apache.commons.codec.binary.Hex;
 
 import com.nepheletech.jred.runtime.flows.Flow;
@@ -32,6 +33,9 @@ import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
 public final class DebugNode extends AbstractNode {
+  
+  private final int DEBUG_MAX_LENGTH = 1000;
+  private final boolean USE_COLORS = false;
 
   private boolean active;
 
@@ -84,7 +88,7 @@ public final class DebugNode extends AbstractNode {
   public boolean isTostatus() { return tostatus; }
 
   @Override
-  protected void onMessage(final JtonObject msg) {
+  protected void onMessage(Exchange exchange, JtonObject msg) {
     logger.trace(">>> onMessage: id={}, msg={}", getId(), msg);
 
     if ("true".equals(complete)) {

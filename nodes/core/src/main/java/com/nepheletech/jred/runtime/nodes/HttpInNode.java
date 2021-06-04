@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,13 +47,17 @@ public class HttpInNode extends AbstractNode {
 
     if (mappings.containsKey(path)) {
       final WeakReference<HttpInNode> value = mappings.get(path);
-      if (value != null) { return value.get(); }
+      if (value != null) {
+        return value.get();
+      }
     } else {
       for (final Entry<String, WeakReference<HttpInNode>> entry : mappings.entrySet()) {
 
         logger.info("-------------{} --------------- {}", path, entry.getKey());
 
-        if (path.matches(entry.getKey())) { return entry.getValue().get(); }
+        if (path.matches(entry.getKey())) {
+          return entry.getValue().get();
+        }
       }
     }
 
@@ -61,11 +66,14 @@ public class HttpInNode extends AbstractNode {
 
   // ---
 
+  @SuppressWarnings("unused")
   private final String url;
+  @SuppressWarnings("unused")
   private final String method;
+  @SuppressWarnings("unused")
   private final boolean upload;
 
-  private List<String> params = null;
+  private final List<String> params = new ArrayList<>();
 
   private final String key;
 
@@ -73,7 +81,9 @@ public class HttpInNode extends AbstractNode {
     super(flow, config);
 
     final String url = config.get("url").asString(null);
-    if (url == null) { throw new RuntimeException("missing url"); }
+    if (url == null) {
+      throw new RuntimeException("missing url");
+    }
 
     // normalize url
     this.url = (url.charAt(0) != '/') ? '/' + url : url;
@@ -83,18 +93,16 @@ public class HttpInNode extends AbstractNode {
     final String[] parts = url.split("/");
     for (String part : parts) {
       logger.info("------------------- {}", part);
-      
+
       if (StringUtils.trimToNull(part) == null) {
         continue;
       }
 
       if (part.startsWith(":")) {
-        if (this.params == null) {
-          this.params = new ArrayList<>();
-        }
         this.params.add(part.substring(1));
         sb.append("/(.+)");
       } else {
+        this.params.add(null);
         sb.append("/")
             .append(part);
       }
@@ -120,8 +128,8 @@ public class HttpInNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace(">>> onMessage: {}", getId());
 
     // TODO uploads...
 
@@ -131,26 +139,32 @@ public class HttpInNode extends AbstractNode {
 
     final String pathInfo = JtonUtil.getProperty(msg, "req._pathInfo").asString(null);
 
+    logger.debug("-------------------params={}", params);
+    logger.debug("-------------------pathInfo={}", pathInfo);
+
     final JtonObject _params = new JtonObject();
     JtonUtil.setProperty(msg, "req.params", _params, true);
 
-    if (this.params != null) {
+    if (this.params.size() > 0) {
 
       if (pathInfo != null) {
         final String[] parts = pathInfo.split("/");
-        for (int i = 0, n = this.params.size(); i < n; i++) {
+        for (int i = 0, n = params.size(); i < n; i++) {
           if (parts.length > i + 1) {
-            _params.set(this.params.get(i), parts[i + 1]);
+            final String name = params.get(i);
+            if (name != null) {
+              _params.set(name, parts[i + 1]);
+            }
           }
         }
 
-        send(msg);
+        send(exchange, msg);
       }
 
     } else {
 
       if (pathInfo == null) {
-        send(msg);
+        send(exchange, msg);
       }
     }
   }

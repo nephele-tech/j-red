@@ -19,43 +19,39 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.kafka.KafkaConstants;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 
-public class KafkaInNode extends AbstractCamelNode implements Processor {
+public class KafkaInNode extends AbstractNode implements Processor {
 
-  private final String broker;
+  private final String brokers;
   private final String topic;
   private final String groupId;
 
   public KafkaInNode(Flow flow, JtonObject config) {
     super(flow, config);
 
-    this.broker = config.getAsString("broker");
+    final String brokerRef = config.getAsString("broker");
+    this.brokers = (brokerRef != null) ? ((KafkaBrokerNode) flow.getNode(brokerRef)).getHosts() : null;
+
     this.topic = config.getAsString("topic");
     this.groupId = config.getAsString("groupId", getId());
   }
 
-  protected void addRoutes(CamelContext camelContext) throws Exception {
-    logger.trace(">>> addRoutes: {}", getId());
+  @Override
+  public void configure() throws Exception {
+    super.configure();
 
-    camelContext.addRoutes(new RouteBuilder() {
-      // onException(Exception.class)
-
-      @Override
-      public void configure() throws Exception {
-        from("kafka:" + topic + "?brokers=" + broker + "&groupId=" + groupId)
-            .to("log:DEBUG?showBody=true&showHeaders=true")
-            .process(KafkaInNode.this);
-      }
-    });
+    fromF("kafka:%s?brokers=%s&groupId=%s", topic, brokers, groupId)
+        .toF("log:%s?level=DEBUG&showBody=false&showHeaders=true", logger.getName())
+        .process(KafkaInNode.this)
+        .toF("direct:%s", getId());
   }
 
   @Override
@@ -63,15 +59,31 @@ public class KafkaInNode extends AbstractCamelNode implements Processor {
     logger.trace(">>> process: exchange={}", exchange);
 
     final Message message = exchange.getIn();
-    receive(new JtonObject()
-        .set("_uid", exchange.getExchangeId())
-        .set("payload", JsonParser.parse(message.getBody(String.class))));
+
+    JtonObject msg = new JtonObject()
+        .set("payload", JtonParser.parse(message.getBody(String.class)))
+        .set("headers", new JtonObject()
+            .set("kafka", new JtonObject()
+                .set("TOPIC",
+                    message.getHeader(KafkaConstants.TOPIC, String.class))
+                .set("PARTITION",
+                    message.getHeader(KafkaConstants.PARTITION, Integer.class))
+                .set("TIMESTAMP",
+                    message.getHeader(KafkaConstants.TIMESTAMP, Long.class))
+                .set("OFFSET",
+                    message.getHeader(KafkaConstants.OFFSET, Long.class))
+                .set("LAST_RECORD_BEFORE_COMMIT",
+                    message.getHeader(KafkaConstants.LAST_RECORD_BEFORE_COMMIT, Boolean.class))
+                .set("LAST_POLL_RECORD",
+                    message.getHeader(KafkaConstants.LAST_POLL_RECORD, Boolean.class))
+                .set("MANUAL_COMMIT",
+                    message.getHeader(KafkaConstants.MANUAL_COMMIT, Boolean.class))));
+
+    message.setBody(msg);
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
-
-    send(msg);
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    send(exchange, msg);
   }
 }

@@ -66,6 +66,9 @@ public final class EclipseJavaCompilerSettings extends JavaCompilerSettings {
       put("9", CompilerOptions.VERSION_9);
       put("10", CompilerOptions.VERSION_10);
       put("11", CompilerOptions.VERSION_11);
+      put("12", CompilerOptions.VERSION_12);
+      put("13", CompilerOptions.VERSION_13);
+      put("14", CompilerOptions.VERSION_14);
     }
   };
 
@@ -82,8 +85,10 @@ public final class EclipseJavaCompilerSettings extends JavaCompilerSettings {
   Map<String, String> toNativeSettings() {
     final Map<String, String> map = new HashMap<String, String>(defaultEclipseSettings);
 
-    map.put(CompilerOptions.OPTION_SuppressWarnings, isWarnings() ? CompilerOptions.GENERATE : CompilerOptions.DO_NOT_GENERATE);
-    map.put(CompilerOptions.OPTION_ReportDeprecation, isDeprecations() ? CompilerOptions.GENERATE : CompilerOptions.DO_NOT_GENERATE);
+    map.put(CompilerOptions.OPTION_SuppressWarnings,
+        isWarnings() ? CompilerOptions.GENERATE : CompilerOptions.DO_NOT_GENERATE);
+    map.put(CompilerOptions.OPTION_ReportDeprecation,
+        isDeprecations() ? CompilerOptions.GENERATE : CompilerOptions.DO_NOT_GENERATE);
     map.put(CompilerOptions.OPTION_TargetPlatform, toNativeVersion(getTargetVersion()));
     map.put(CompilerOptions.OPTION_Source, toNativeVersion(getSourceVersion()));
     map.put(CompilerOptions.OPTION_Encoding, getSourceEncoding());

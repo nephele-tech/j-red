@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/icons" })
@@ -43,7 +43,7 @@ public class IconsServlet extends HttpServlet {
     logger.trace(">>> doGet: {}", req.getRequestURI());
 
     if (HttpServletUtil.acceptsJSON(req)) {
-      HttpServletUtil.sendJSON(res, JsonParser.parse("{\n" +
+      HttpServletUtil.sendJSON(res, JtonParser.parse("{\n" +
           "  \"node-red\": [\n" +
           "    \"alert.svg\",\n" +
           "    \"arduino.png\",\n" +

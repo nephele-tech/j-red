@@ -19,6 +19,7 @@
 package com.nepheletech.jred.editor.api.servlet;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -26,6 +27,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.nepheletech.jred.runtime.FlowsRuntime;
+import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
@@ -33,15 +39,58 @@ import com.nepheletech.servlet.utils.HttpServletUtil;
 public class ContextServlet extends HttpServlet {
   private static final long serialVersionUID = 5970804334034275774L;
 
+  private static final Logger logger = LoggerFactory.getLogger(ContextServlet.class);
+
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-    final String pathInfo = req.getPathInfo();
-    if (pathInfo != null && pathInfo.startsWith("flow/")) {
-      HttpServletUtil.sendJSON(res, new JtonObject()
-          .set("memory", new JtonObject()));
+    logger.trace(">>> doGet: pathInfo={} (accepts={})", req.getPathInfo(), req.getHeader("Accept"));
+
+    if (HttpServletUtil.acceptsJSON(req)) {
+      final String pathInfo = req.getPathInfo();
+
+      if (pathInfo != null) {
+        final String[] parts = pathInfo.split("/");
+        
+        logger.debug("parts: {}", Arrays.asList(parts));
+
+        if (parts.length > 1) {
+          final String type = parts[1];
+          if ("node".equals(type)) {
+            if (parts.length > 2) {
+              final String id = parts[2];
+              final FlowsRuntime runtime = getRuntime();
+              final Node node = runtime.getNode(id);
+               node.getContext(type);
+            }
+          } else if ("flow".equals(type)) {
+            if (parts.length > 2) {
+              final String id = parts[2];
+              final FlowsRuntime runtime = getRuntime();
+              final Node node = runtime.getNode(id);
+               node.getContext(type);
+            }
+          } else if ("global".equals(type)) {
+            final FlowsRuntime runtime = getRuntime();
+            HttpServletUtil.sendJSON(res, runtime.getGlobalContext());
+            return;
+          }
+        }
+        logger.warn("invalid request (pathInfo={})", pathInfo);
+      }
+
+      if (pathInfo != null && pathInfo.startsWith("flow/")) {
+        HttpServletUtil.sendJSON(res, new JtonObject()
+            .set("memory", new JtonObject()));
+      } else {
+        HttpServletUtil.sendJSON(res, new JtonObject()
+            .set("memory", new JtonObject()));
+      }
     } else {
-      HttpServletUtil.sendJSON(res, new JtonObject()
-          .set("memory", new JtonObject()));
+      res.sendError(HttpServletResponse.SC_BAD_REQUEST);
     }
+  }
+
+  private final FlowsRuntime getRuntime() {
+    return (FlowsRuntime) getServletContext().getAttribute(FlowsRuntime.class.getName());
   }
 }

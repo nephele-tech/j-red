@@ -45,11 +45,11 @@ public class MainServlet extends HttpServlet {
     if (req.getParameter("logout") != null) {
       req.logout();
       res.sendRedirect(req.getContextPath());
-    } else if (!req.getRequestURI().endsWith("/")) {
+    //} else if (!req.getRequestURI().endsWith("/")) {
       // XXX normalize request url, required by Node-RED's comms client.
-      String queryString = req.getQueryString();
-      queryString = (queryString != null) ? "?" + queryString : "";
-      res.sendRedirect(req.getContextPath() + queryString);
+      //String queryString = req.getQueryString();
+      //queryString = (queryString != null) ? "?" + queryString : "";
+      //res.sendRedirect(req.getContextPath() + queryString);
     } else {
       final Object template = req.getAttribute(TEMPLATE_PARAMETER);
       if (template != null && template instanceof String) {

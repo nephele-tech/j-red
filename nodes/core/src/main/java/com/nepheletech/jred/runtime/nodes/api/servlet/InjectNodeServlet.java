@@ -47,7 +47,7 @@ public class InjectNodeServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-    logger.trace(">>> doPost: pathInfo={}, queryString={}", req.getPathInfo(), req.getQueryString());
+    logger.trace(">>> doPost: pathInfo={}", req.getPathInfo());
 
     final String nodeId = getNodeId(req);
     if (nodeId == null) {
@@ -57,7 +57,7 @@ public class InjectNodeServlet extends HttpServlet {
     }
 
     final InjectNode node = getInjectNode(nodeId);
-    if (node instanceof InjectNode) {
+    if (node != null) {
       try {
         node.receive(null);
       } catch (Exception e) {
@@ -73,8 +73,7 @@ public class InjectNodeServlet extends HttpServlet {
   }
 
   private InjectNode getInjectNode(String nodeId) {
-    final FlowsRuntime flowsRuntime = getFlowsRuntime();
-    final Node node = flowsRuntime.getNode(nodeId);
+    final Node node = getFlowsRuntime().getNode(nodeId);
     if (node instanceof InjectNode) {
       return (InjectNode) node;
     } else {
@@ -83,7 +82,8 @@ public class InjectNodeServlet extends HttpServlet {
   }
 
   private final FlowsRuntime getFlowsRuntime() {
-    return (FlowsRuntime) getServletContext().getAttribute(FlowsRuntime.class.getName());
+    return (FlowsRuntime) getServletContext()
+        .getAttribute(FlowsRuntime.class.getName());
   }
 
   private static final String getNodeId(HttpServletRequest req) {

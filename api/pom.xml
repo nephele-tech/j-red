@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.nepheletech</groupId>
 		<artifactId>jred</artifactId>
-		<version>0.0.3</version>
+		<version>0.0.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>jred-api</artifactId>
 	<dependencies>
 		<dependency>
 			<groupId>com.nepheletech</groupId>
-			<artifactId>jton</artifactId>
+			<artifactId>jton-path</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -23,6 +23,13 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>${apache.commons-lang3.version}</version>
+		</dependency>
+		
+		
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-core</artifactId>
+			<version>${apache.camel.version}</version>
 		</dependency>
 	</dependencies>
 	<build>

@@ -21,6 +21,8 @@ package com.nepheletech.jred.runtime;
 
 import java.io.IOException;
 
+import org.apache.camel.CamelContext;
+
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jred.runtime.storage.Storage;
 import com.nepheletech.jton.JtonArray;
@@ -69,4 +71,8 @@ public interface FlowsRuntime {
   // ---
 
   Storage getStorage();
+
+  CamelContext getCamelContext();
+  
+  JtonObject getGlobalContext();
 }

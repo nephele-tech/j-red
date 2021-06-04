@@ -21,6 +21,7 @@ package com.nepheletech.jred.runtime.flows;
 
 import java.util.UUID;
 
+import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +108,7 @@ public class Subflow extends FlowImpl {
 
       this.statusNode = new AbstractNode(this, subflowStatusConfig) {
         @Override
-        protected void onMessage(JtonObject msg) {
+        protected void onMessage(final Exchange exchange, final JtonObject msg) {
           if (msg.has("payload")) {
             final JtonElement payload = msg.get("payload");
             if (payload.isJtonPrimitive() && payload.asJtonPrimitive().isString()) {
@@ -117,15 +118,16 @@ public class Subflow extends FlowImpl {
               if (_payload.has("text") || _payload.has("fill") || _payload.has("shape")
                   || _payload.keySet().size() == 0) {
                 // msg.payload is an object that looks like a status object
-                // TODO status
-                return;
+                throw new UnsupportedOperationException("status");
+                //return;
               }
             }
 
             // Anything else - inspect it and use as status text
             // TODO
           } else if (msg.has("status")) {
-
+            // if msg.status exists
+            throw new UnsupportedOperationException("if status");
           }
         }
       };

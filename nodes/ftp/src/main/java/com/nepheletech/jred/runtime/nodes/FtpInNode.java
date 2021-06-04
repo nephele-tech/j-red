@@ -19,12 +19,12 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
-import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonObject;
 
-public class FtpInNode extends AbstractCamelNode implements HasCredentials {
+public class FtpInNode extends AbstractNode implements HasCredentials {
 
   public FtpInNode(Flow flow, JtonObject config) {
     super(flow, config);
@@ -38,15 +38,8 @@ public class FtpInNode extends AbstractCamelNode implements HasCredentials {
   }
 
   @Override
-  protected void addRoutes(CamelContext camelContext) throws Exception {
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
     // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  protected void onMessage(JtonObject msg) {
-    // TODO Auto-generated method stub
-    
   }
 
 }

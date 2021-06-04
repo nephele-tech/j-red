@@ -70,7 +70,8 @@ public class HttpInNodeServlet extends HttpServlet {
         .set("headers", getHeaders(req))
         .set("query", getQuery(req))
         // TODO params
-        .set("cookies", getCookies(req));
+        .set("cookies", getCookies(req))
+        .set("_pathInfo", pathInfo);
     
     //
     // AsyncContext object
@@ -78,6 +79,7 @@ public class HttpInNodeServlet extends HttpServlet {
     
     final AsyncContext ac = req.startAsync();
     //ac.setTimeout(TimeUnit.MINUTES.toMillis(10));
+    logger.info("timeout: {}", ac.getTimeout());
 
     //
     // Message object.
@@ -85,8 +87,7 @@ public class HttpInNodeServlet extends HttpServlet {
 
     final JtonObject msg = new JtonObject()
         .set("req", request)
-        .set("_req", req, true)
-        .set("_res", ac, true);
+        .set(AsyncContext.class.getName(), ac, true);
 
     //
     // For a GET request, 'payload', contains an object of any query string
@@ -102,7 +103,7 @@ public class HttpInNodeServlet extends HttpServlet {
     //
     // Dispatcher...
     //
-    
+
     final HttpInNode node = HttpInNode.byPath(pathInfo);
     if (node != null) {
       node.receive(msg);

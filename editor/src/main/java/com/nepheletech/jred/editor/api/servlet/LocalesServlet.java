@@ -41,9 +41,9 @@ import org.reflections.util.FilterBuilder;
 
 import com.google.common.base.Predicate;
 import com.google.common.io.Resources;
+import com.google.gson.JsonSyntaxException;
 import com.nepheletech.jred.runtime.nodes.Node;
-import com.nepheletech.jton.JsonParser;
-import com.nepheletech.jton.JsonSyntaxException;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
@@ -66,7 +66,7 @@ public class LocalesServlet extends HttpServlet {
     logger.fine(() -> String.format("bundle: %s, lng: %s, file: %s", bundle, lng, file));
 
     if (file.exists() && file.isFile()) {
-      final JtonObject data = JsonParser
+      final JtonObject data = JtonParser
           .parse(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8))
           .asJtonObject(true);
 
@@ -80,7 +80,7 @@ public class LocalesServlet extends HttpServlet {
         resourceSet.forEach(resourceName -> {
           if (resourceName.contains(DEFAULT_LNG_VALUE)) {
             try {
-              data.putAll(JsonParser
+              data.putAll(JtonParser
                   .parse(Resources.toString(Resources.getResource(resourceName), StandardCharsets.UTF_8))
                   .asJtonObject(true));
             } catch (JsonSyntaxException | IOException e) {
@@ -94,7 +94,7 @@ public class LocalesServlet extends HttpServlet {
           resourceSet.forEach(resourceName -> {
             if (resourceName.contains(lng)) {
               try {
-                data.putAll(JsonParser
+                data.putAll(JtonParser
                     .parse(Resources.toString(Resources.getResource(resourceName), StandardCharsets.UTF_8))
                     .asJtonObject(true));
               } catch (JsonSyntaxException | IOException e) {

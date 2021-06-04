@@ -19,6 +19,8 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import org.apache.camel.Exchange;
+
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonObject;
 
@@ -27,8 +29,14 @@ public abstract class AbstractConfigurationNode extends AbstractNode implements 
   public AbstractConfigurationNode(final Flow flow, final JtonObject config) {
     super(flow, config);
   }
+  
+  @Override
+  public final void configure() throws Exception {
+    // no-op
+  }
 
-  protected final void onMessage(JtonObject msg) {
+  @Override
+  protected final void onMessage(Exchange exchange, JtonObject msg) {
     throw new UnsupportedOperationException();
   }
 }

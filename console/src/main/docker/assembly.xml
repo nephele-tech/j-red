@@ -19,14 +19,10 @@
 			<outputDirectory>webapps/ROOT</outputDirectory>
 			<filtered>true</filtered>
 		</file>
+    <file>
+      <source>src/main/docker/settings.xml</source>
+      <outputDirectory></outputDirectory>
+      <filtered>false</filtered>
+    </file>
 	</files>
-	<fileSets>
-		<fileSet>
-			<directory>/Users/ggeorg/.m2/repository/com/nepheletech</directory>
-			<includes>
-				<include>**/*</include>
-			</includes>
-			<outputDirectory>nepheletech</outputDirectory>
-		</fileSet>
-	</fileSets>
 </assembly>

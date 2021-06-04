@@ -19,76 +19,78 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import static com.nepheletech.jton.JtonUtil.getProperty;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.Processor;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.RouteBuilder;
+import java.util.Optional;
+import java.util.Set;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
-public class KafkaOutNode extends AbstractCamelNode {
+public class KafkaOutNode extends AbstractNode {
 
-  private final String broker;
+  private final String brokers;
   private final String topic;
+
+  private final Set<String> KAFKA_KEYS = new HashSet<>(asList(new String[] {
+      "KEY",
+      "OVERRIDE_TOPIC",
+      "OVERRIDE_TIMESTAMP",
+      "PARTITION_KEY"
+  }));
 
   public KafkaOutNode(Flow flow, JtonObject config) {
     super(flow, config);
 
-    this.broker = config.getAsString("broker");
+    final String brokerRef = config.getAsString("broker");
+    this.brokers = (brokerRef != null) ? ((KafkaBrokerNode) flow.getNode(brokerRef)).getHosts() : null;
+
     this.topic = config.getAsString("topic");
   }
 
   @Override
-  protected void addRoutes(CamelContext camelContext) throws Exception {
-    logger.trace("----------------------------------------------------------------------->>> addRoutes {}", getId());
+  public void configure() throws Exception {
+    super.configure();
 
-    camelContext.addRoutes(new RouteBuilder() {
-      // onException(Exception.class)
-
-      @Override
-      public void configure() throws Exception {
-        from("direct:" + getId())
-            .to("log:DEBUG?showBody=true&showHeaders=true")
-            .to("kafka:" + topic + "?brokers=" + broker);
-      }
-    });
+    fromF("direct:%s#kafka", getId())
+        .toF("log:%s?level=TRACE&showBody=false&showHeaders=true", logger.getName())
+        .toF("kafka:%s?brokers=%s", topic, brokers);
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
+  protected String getAdditionalFlow() {
+    return format("direct:%s#kafka", getId());
+  }
 
-    final ProducerTemplate template = getCamelContext().createProducerTemplate();
-    template.send("direct:" + getId(), new Processor() {
-      @Override
-      public void process(Exchange exchange) throws Exception {
-        final Message in = exchange.getIn();
+  @Override
+  protected void onMessage(Exchange exchange, JtonObject msg) {
+    logger.trace(">>> onMessage: exchange={}, msg={}", exchange, msg);
 
-        in.setBody(msg.get("payload").toString(), String.class);
-
-        final JtonObject headers = msg.getAsJtonObject("headers", false);
-        if (headers != null) {
-          for (Entry<String, JtonElement> entry : headers.entrySet()) {
-            final String key = entry.getKey();
-            final JtonElement value = entry.getValue();
-            if (value.isJtonPrimitive()) {
-              final JtonPrimitive _value = value.asJtonPrimitive();
-              if (_value.isJtonTransient()) {
-                in.getHeaders().put(key, _value.getValue());
-              } else {
-                in.getHeaders().put(key, _value);
-              }
-            }
+    final Map<String, Object> kafkaHeaders = new HashMap<>();
+    final Optional<JtonObject> headers = getProperty(msg, "headers.kafka").asOptJtonObject();
+    if (headers.isPresent()) {
+      for (Entry<String, JtonElement> entry : headers.get().entrySet()) {
+        final String key = entry.getKey().toUpperCase();
+        if (KAFKA_KEYS.contains(key)) {
+          final Optional<JtonPrimitive> value = entry.getValue().asOptJtonPrimitive();
+          if (value.isPresent()) {
+            kafkaHeaders.put("kafka." + key, value.get().getValue());
           }
         }
       }
-    });
+    }
+
+    exchange.getIn().getHeaders().putAll(kafkaHeaders);
+    exchange.getIn().setBody(msg.get("payload"));
   }
 }

@@ -30,11 +30,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.commons.io.IOUtils;
 
 import com.nepheletech.jred.runtime.flows.Flow;
@@ -42,15 +40,18 @@ import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
-public class EMailInNode extends AbstractCamelNode implements Processor, HasCredentials {
+public class EMailInNode extends AbstractNode implements Processor, HasCredentials {
   private final String protocol;
   private final String server;
   private final boolean useSSL;
   private final String port;
   private final String box; // For IMAP, The mailbox to process
   private final String disposition; // For IMAP, the disposition of the read email
+  @SuppressWarnings("unused")
   private final String criteria;
+  @SuppressWarnings("unused")
   private final String repeat;
+  @SuppressWarnings("unused")
   private final String fetch;
 
   private String userid;
@@ -81,31 +82,26 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
   }
 
   @Override
-  protected void addRoutes(CamelContext camelContext) throws Exception {
+  public void configure() throws Exception {
+    logger.trace(">>> configure: {}", this);
+
     final String emailUrl = String
-        .format("%s%s://%s:%s?username=%s&password=%s&folderName=%s&delete=%b"
-            + "&unseen=true&consumer.delay=30000"
+        .format("%s%s://%s:%s?username=%s&password=%s&folderName=%s&delete=%b&unseen=true&delay=30000"
             + "&skipFailedMessage=false&handleFailedMessage=true",
             protocol.toLowerCase(), (useSSL ? "s" : ""),
             server, port, userid, password, box, "Delete".equals(disposition));
 
-    camelContext.addRoutes(new RouteBuilder() {
-      // onException(Exception.class)
+    from(emailUrl)
+        .to(String.format("log:DEBUG?showBody=false&showHeaders=%b", logger.isDebugEnabled()))
+        .process(EMailInNode.this);
 
-      @Override
-      public void configure() throws Exception {
-        from(emailUrl)
-            .to(String.format("log:DEBUG?showBody=false&showHeaders=%b", logger.isDebugEnabled()))
-            .process(EMailInNode.this);
-      }
-    });
   }
 
   @Override
   public void process(Exchange exchange) throws Exception {
     logger.trace(">>> process: exchange={}", exchange);
 
-    final Message message = exchange.getIn();
+    final AttachmentMessage message = exchange.getMessage(AttachmentMessage.class);
 
     final JtonObject headers = new JtonObject();
     message.getHeaders().entrySet().forEach(e -> {
@@ -119,7 +115,7 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
         } else {
           if (key.equals("Subject")) {
             try {
-              headers.set(key, MimeUtility.decodeText((String)e.getValue()));
+              headers.set(key, MimeUtility.decodeText((String) e.getValue()));
             } catch (UnsupportedEncodingException e1) {
               headers.set(key, e.getValue(), false);
             }
@@ -133,29 +129,31 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
       }
     });
 
-    final JtonObject attachments = new JtonObject();
-    message.getAttachments().entrySet().forEach(a -> {
-      final JtonObject _attachment = new JtonObject();
-      final DataHandler attachment = a.getValue();
-      _attachment.set("name", attachment.getName());
-      _attachment.set("contentType", attachment.getContentType());
-      attachments.set(a.getKey(), _attachment);
-    });
-    
     final JtonObject msg = new JtonObject()
         .set("headers", headers)
         .set("topic", MimeUtility.decodeText(headers.getAsString("Subject", "")))
         .set("from", headers.get("From"));
 
+    if (message.hasAttachments()) {
+      final JtonObject attachments = new JtonObject();
+      msg.set("attachments", attachments);
+      message.getAttachments().entrySet().forEach(entry -> {
+        final JtonObject attachment = new JtonObject();
+        final DataHandler value = entry.getValue();
+        attachment.set("name", value.getName());
+        attachment.set("contentType", value.getContentType());
+        attachments.set(entry.getKey(), attachment);
+      });
+    }
+
     final Object body = message.getBody();
     if (body instanceof MimeMultipart) {
       msg.set("body", handleMultipart(msg, (MimeMultipart) body));
     } else {
-      logger.info("body--------------------------------------------------> {}",
-          body.getClass());
+      logger.info("body> {}", body.getClass());
     }
 
-    send(msg);
+    //send(msg);
   }
 
   private JtonObject handleMultipart(JtonObject msg, MimeMultipart multipart)
@@ -215,9 +213,9 @@ public class EMailInNode extends AbstractCamelNode implements Processor, HasCred
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace(">>> onMessage: {}", getId());
 
-    send(msg);
+    send(exchange, msg);
   }
 }

@@ -9,7 +9,7 @@ import com.nepheletech.jton.JtonPrimitive;
 
 public class JtonPrimitiveTests {
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = NullPointerException.class)
   public void nullValue() {
     new JtonPrimitive(null, false);
   }

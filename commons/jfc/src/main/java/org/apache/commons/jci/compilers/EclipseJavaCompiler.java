@@ -56,6 +56,7 @@ import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
  * @author tcurdt
  */
 public final class EclipseJavaCompiler extends AbstractJavaCompiler {
+
   private final Log log = LogFactory.getLog(EclipseJavaCompiler.class);
   private final EclipseJavaCompilerSettings defaultSettings;
 
@@ -111,8 +112,7 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
 
       if (content == null) {
         return null;
-        // throw new RuntimeException("resource " + fileName + " could not be
-        // found");
+        // throw new RuntimeException("resource " + fileName + " could not be found");
       }
 
       return new String(content).toCharArray();
@@ -227,8 +227,7 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
           result.append('.');
         }
 
-        // log.debug("finding typeName=" + new String(typeName) + "
-        // packageName=" + result.toString());
+//                log.debug("finding typeName=" + new String(typeName) + " packageName=" + result.toString());
 
         result.append(pTypeName);
         return findType(result.toString());
@@ -323,11 +322,11 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
         }
 
         /*
-         * See https://issues.apache.org/jira/browse/JCI-59 At present, the code
-         * assumes that anything else is a package name This is wrong, as for
-         * example jci.AdditionalTopLevel is not a package name. It's not clear
-         * how to fix this in general. It would seem to need access to the input
-         * classpath and/or the generated classes.
+         * See https://issues.apache.org/jira/browse/JCI-59 At present, the code assumes
+         * that anything else is a package name This is wrong, as for example
+         * jci.AdditionalTopLevel is not a package name. It's not clear how to fix this
+         * in general. It would seem to need access to the input classpath and/or the
+         * generated classes.
          */
         return true;
       }
@@ -343,8 +342,7 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
           }
         }
 
-        // log.debug("isPackage parentPackageName=" + result.toString() + "
-        // packageName=" + new String(packageName));
+//                log.debug("isPackage parentPackageName=" + result.toString() + " packageName=" + new String(packageName));
 
         if (parentPackageName != null && parentPackageName.length > 0) {
           result.append('.');
@@ -386,7 +384,8 @@ public final class EclipseJavaCompiler extends AbstractJavaCompiler {
       }
     };
 
-    final Compiler compiler = new Compiler(nameEnvironment, policy, new CompilerOptions(settingsMap), compilerRequestor, problemFactory);
+    final Compiler compiler = new Compiler(nameEnvironment, policy, new CompilerOptions(settingsMap), compilerRequestor,
+        problemFactory);
 
     compiler.compile(compilationUnits);
 

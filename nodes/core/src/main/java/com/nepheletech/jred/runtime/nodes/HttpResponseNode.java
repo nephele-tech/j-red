@@ -25,6 +25,7 @@ import javax.servlet.AsyncContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 
 import com.nepheletech.jred.runtime.flows.Flow;
@@ -50,17 +51,17 @@ public class HttpResponseNode extends AbstractNode {
   }
 
   @Override
-  protected void onMessage(JtonObject msg) {
-    logger.trace(">>> onMessage: msg={}", msg);
+  protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace("---------------------------- >>> onMessage: {}", msg);
 
-    final JtonElement _res = msg.remove("_res");
-    if (_res.isJtonPrimitive() 
-        && _res.asJtonPrimitive().isJtonTransient()
-        && _res.asJtonPrimitive().getValue() instanceof AsyncContext) {
+    final JtonElement asyncContextWrapper = msg.remove(AsyncContext.class.getName());
+    if (asyncContextWrapper.isJtonPrimitive() 
+        && asyncContextWrapper.asJtonPrimitive().isJtonTransient()
+        && asyncContextWrapper.asJtonPrimitive().getValue() instanceof AsyncContext) {
       
-      AsyncContext ac = (AsyncContext) _res.asJtonPrimitive().getValue();
+      AsyncContext ac = (AsyncContext) asyncContextWrapper.asJtonPrimitive().getValue();
       
-      final HttpServletResponse res = (HttpServletResponse) ac.getResponse();// (HttpServletResponse) _res.asJtonPrimitive().getValue();
+      final HttpServletResponse res = (HttpServletResponse) ac.getResponse();
       final int statusCode = (this.statusCode == -1) ? msg.get("statusCode").asInt(200) : this.statusCode;
       final JtonObject headers = (this.headers == null || this.headers.size() == 0)
           ? msg.get("headers").asJtonObject(true)
@@ -123,6 +124,9 @@ public class HttpResponseNode extends AbstractNode {
         } else {
           HttpServletUtil.sendJSON(res, msg.get("payload"));
         }
+        
+
+logger.info("---------------------------------------------------------------------------Complete");
         
         ac.complete();
 

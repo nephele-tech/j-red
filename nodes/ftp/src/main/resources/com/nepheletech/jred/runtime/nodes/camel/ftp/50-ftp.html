@@ -16,10 +16,6 @@
 
 <script type="text/x-red" data-template-name="ftp in">
     <div class="form-row">
-        <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
-        <input type="text" id="node-input-context">
-    </div>
-    <div class="form-row">
         <label for="node-input-host"><i class="fa fa-globe"></i> <span>Host</span></label>
         <input type="text" id="node-input-host" placeholder="Host name">
     </div>
@@ -48,8 +44,7 @@
 RED.nodes.registerType('ftp in',{
     category: 'storage',
     defaults: {
-        name: {value:""},
-        context: {type:'camel context',required:true},
+        name: {value:""}
     },
     color:"rgb(231, 231, 174)",
     inputs:0,
@@ -65,10 +60,6 @@ RED.nodes.registerType('ftp in',{
 </script>
 
 <script type="text/x-red" data-template-name="ftp">
-    <div class="form-row">
-        <label for="node-input-context"><i class="fa fa-globe"></i> <span>Context</span></label>
-        <input type="text" id="node-input-context">
-    </div>
     <div class="form-row">
         <label for="node-input-host"><i class="fa fa-globe"></i> <span>Host</span></label>
         <input type="text" id="node-input-host" placeholder="Host name">
@@ -106,8 +97,7 @@ RED.nodes.registerType('ftp',{
         port: {value:"",required:true},
         secure: {value: true},
         path: {value: ""},
-        name: {value:""},
-        context: {type:'camel context',required:true},
+        name: {value:""}
     },
     credentials: {
         username: {type:"text"},

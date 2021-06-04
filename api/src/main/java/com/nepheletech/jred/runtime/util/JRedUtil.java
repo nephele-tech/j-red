@@ -24,19 +24,28 @@ import org.slf4j.LoggerFactory;
 
 import com.jayway.jsonpath.JsonPath;
 import com.nepheletech.jred.runtime.nodes.Node;
-import com.nepheletech.jton.JsonParser;
-import com.nepheletech.jton.JtonUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.jton.JtonPrimitive;
+import com.nepheletech.jton.JtonUtil;
+import com.nepheletech.jton.jsonpath.JtonPathConfiguration;
 import com.nepheletech.messagebus.MessageBus;
 
 public final class JRedUtil {
   private static final Logger logger = LoggerFactory.getLogger(JRedUtil.class);
 
-  private JRedUtil() {}
+  /**
+   * Initialize JsonPath to use JTON objects.
+   */
+  static {
+    JtonPathConfiguration.configure();
+  }
+
+  private JRedUtil() {
+  }
 
   /**
    * 
@@ -61,19 +70,19 @@ public final class JRedUtil {
       return new JtonPrimitive(value != null ? value : "");
     } else if ("num".equals(type)) {
       try {
-        final JtonPrimitive num = JsonParser.parse(value).asJtonPrimitive();
+        final JtonPrimitive num = JtonParser.parse(value).asJtonPrimitive();
         return new JtonPrimitive(num.isNumber() ? num.asNumber() : Double.NaN);
       } catch (RuntimeException e) {
         return new JtonPrimitive(Double.NaN);
       }
     } else if ("json".equals(type)) {
-      return JsonParser.parse(value);
+      return JtonParser.parse(value);
     } else if ("re".equals(type)) {
       throw new UnsupportedOperationException();
     } else if ("date".equals(type)) {
       return new JtonPrimitive(System.currentTimeMillis());
     } else if ("bin".equals(type)) {
-      final JtonArray byteArray = JsonParser.parse(value).asJtonArray();
+      final JtonArray byteArray = JtonParser.parse(value).asJtonArray();
       return new JtonPrimitive(JRedUtil.toBuffer(byteArray));
     } else if ("msg".equals(type) && msg != null) {
       return getMessageProperty(msg, value);

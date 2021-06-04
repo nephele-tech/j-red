@@ -41,7 +41,9 @@ public interface Storage {
 
   /* Library Functions */
 
-  String getLibraryEntry(String type, String path);
+  Object getLibraryEntry(String type, String path) throws IOException;
 
-  void setLibraryEntry(String type, String path, JtonObject meta, String body);
+  void saveLibraryEntry(String type, String path, JtonObject meta, String text) throws IOException;
+
+  JtonObject listFlows(String path) throws IOException;
 }

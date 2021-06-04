@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.nepheletech.jred.editor.Constants;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonObject;
-import com.nepheletech.jton.JsonParser;
+import com.nepheletech.jton.JtonParser;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
 @WebServlet(urlPatterns = { "/settings/*" })
@@ -61,6 +61,7 @@ public class SettingsServlet extends HttpServlet implements Constants {
       } else {
         final String contextPath = req.getContextPath();
         result = new JtonObject()
+            .set("apiRootUrl", HttpServletUtil.getBaseUrl(req))
             .set("httpNodeRoot", contextPath + "/http-in/")
             .set("version", NODE_RED_VERSION)
             .set("context", new JtonObject()
@@ -73,13 +74,17 @@ public class SettingsServlet extends HttpServlet implements Constants {
                         .set("label", "J-RED website")
                         .set("url", "https://github.com/nephele-tech/j-red")))
                 .set("palette", new JtonObject()
-                    .set("editable", false))
+                    .set("editable", false)) // !!! deprecated
                 .set("languages", new JtonArray()
                     .push("de")
                     .push("en-US")
                     .push("ja")
                     .push("ko")
                     .push("zh-CN")))
+            .set("externalModules", new JtonObject()
+                .set("palette", new JtonObject()
+                    .set("allowInstall", false)
+                    .set("allowUpload", false)))
             .set("flowEncryptionType", "system")
             .set("tlsConfigDisableLocalFiles", false);
       }
@@ -97,7 +102,7 @@ public class SettingsServlet extends HttpServlet implements Constants {
       if (HttpServletUtil.acceptsJSON(req)) {
         try {
           final HttpSession session = req.getSession();
-          session.setAttribute("/settins/user", JsonParser.parse(HttpServletUtil.getBody(req)));
+          session.setAttribute("/settins/user", JtonParser.parse(HttpServletUtil.getBody(req)));
           res.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } catch (RuntimeException e) {
           // LOG.w(e, ExceptionUtils.getRootCauseMessage(e));

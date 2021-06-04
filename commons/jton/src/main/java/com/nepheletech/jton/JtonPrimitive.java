@@ -7,29 +7,25 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import com.google.gson.internal.$Gson$Preconditions;
+
 import javax.xml.bind.DatatypeConverter;
 
-import com.nepheletech.jton.JtonPrimitive;
-import com.nepheletech.jton.internal.$Gson$Preconditions;
-import com.nepheletech.jton.internal.LazilyParsedNumber;
+import com.google.gson.internal.LazilyParsedNumber;
 
 /**
  * A class representing a Json primitive value. A primitive value is either a
  * String, a Java primitive, or a Java primitive wrapper type.
- *
- * @author ggeorg
- * @author Inderjeet Singh
- * @author Joel Leitch
  */
 public final class JtonPrimitive extends JtonElement {
 
   private static final Class<?>[] PRIMITIVE_TYPES = { int.class, long.class, short.class,
-      float.class, double.class, byte.class, byte[].class, boolean.class, char.class, Integer.class, Long.class,
-      Short.class, Float.class, Double.class, Byte.class, Boolean.class, Character.class, Date.class };
+      float.class, double.class, byte.class, byte[].class, boolean.class, char.class,
+      Number.class, Boolean.class, Character.class, Date.class };
 
   private Object value;
 
-  private boolean jtonTransient;
+  private boolean jtonTransient = false;
 
   /**
    * Create a primitive containing a boolean value.
@@ -37,7 +33,7 @@ public final class JtonPrimitive extends JtonElement {
    * @param bool the value to create the primitive with.
    */
   public JtonPrimitive(Boolean bool) {
-    setValue(bool);
+    value = $Gson$Preconditions.checkNotNull(bool);
   }
 
   /**
@@ -46,7 +42,7 @@ public final class JtonPrimitive extends JtonElement {
    * @param number the value to create the primitive with.
    */
   public JtonPrimitive(Number number) {
-    setValue(number);
+    value = $Gson$Preconditions.checkNotNull(number);
   }
 
   /**
@@ -55,7 +51,7 @@ public final class JtonPrimitive extends JtonElement {
    * @param string the value to create the primitive with.
    */
   public JtonPrimitive(String string) {
-    setValue(string);
+    value = $Gson$Preconditions.checkNotNull(string);
   }
 
   /**
@@ -65,7 +61,9 @@ public final class JtonPrimitive extends JtonElement {
    * @param c the value to create the primitive with.
    */
   public JtonPrimitive(Character c) {
-    setValue(c);
+    // convert characters to string since in JSON, characters are represented as a
+    // single character string
+    value = $Gson$Preconditions.checkNotNull(c).toString();
   }
 
   /**
@@ -74,7 +72,7 @@ public final class JtonPrimitive extends JtonElement {
    * @param date the value to create the primitive with.
    */
   public JtonPrimitive(Date date) {
-    setValue(date);
+    value = $Gson$Preconditions.checkNotNull(date);
   }
 
   /**
@@ -83,7 +81,7 @@ public final class JtonPrimitive extends JtonElement {
    * @param bytes the value to create the primitive with.
    */
   public JtonPrimitive(byte[] bytes) {
-    setValue(bytes);
+    value = $Gson$Preconditions.checkNotNull(bytes);
   }
 
   /**
@@ -93,45 +91,34 @@ public final class JtonPrimitive extends JtonElement {
    * @param jtonTransient
    */
   public JtonPrimitive(Object primitive, boolean jtonTransient) {
-    setValue(primitive, jtonTransient);
+    if (jtonTransient) {
+      this.value = primitive;
+      this.jtonTransient = true;
+    } else {
+      $Gson$Preconditions.checkNotNull(primitive);
+      $Gson$Preconditions.checkArgument(isPrimitiveOrString(primitive));
+      
+      if (primitive instanceof Character) {
+        // convert characters to strings since in JSON, characters are represented as a
+        // single character string
+        this.value = primitive.toString();
+      } else {
+        this.value = primitive;
+      }
+    }
   }
 
   /**
    * Returns the same value as primitives are immutable.
-   * 
-   * @since 2.8.2
    */
   @Override
   public JtonPrimitive deepCopy() {
     return this;
   }
 
-  public Object getValue() { return value; }
-
-  private void setValue(Object primitive) {
-    setValue(primitive, false);
-  }
-
-  private void setValue(Object primitive, boolean jtonTransient) {
-    if (primitive == null) { throw new IllegalArgumentException("primitive can't be null"); }
-
-    this.jtonTransient = jtonTransient;
-
-    if (primitive instanceof Character) {
-      // convert characters to strings since in JSON, characters are represented as a
-      // single character string
-      char c = ((Character) primitive).charValue();
-      this.value = String.valueOf(c);
-    } else {
-      if (!this.jtonTransient) {
-        $Gson$Preconditions.checkArgument(primitive instanceof Number
-            || isPrimitiveOrString(primitive));
-      }
-      this.value = primitive;
-    }
-  }
-
   public boolean isJtonTransient() { return jtonTransient; }
+
+  public Object getValue() { return value; }
 
   /**
    * Check whether this primitive contains a boolean value.
@@ -232,7 +219,7 @@ public final class JtonPrimitive extends JtonElement {
     if (value instanceof BigInteger) {
       return (BigInteger) value;
     } else if (value instanceof LazilyParsedNumber) {
-      return ((LazilyParsedNumber) value).toBigInteger();
+      return new BigInteger(((LazilyParsedNumber) value).toString());
     } else if (value instanceof Number) {
       return asBigDecimal().toBigInteger();
     } else if (value instanceof Boolean) {
@@ -270,7 +257,7 @@ public final class JtonPrimitive extends JtonElement {
     } else if (value instanceof Double) {
       return new BigDecimal((Double) value);
     } else if (value instanceof LazilyParsedNumber) {
-      return ((LazilyParsedNumber) value).toBigDecimal();
+      return new BigDecimal(((LazilyParsedNumber) value).toString());
     } else if (value instanceof Boolean) {
       return ((Boolean) value) ? BigDecimal.ONE : BigDecimal.ZERO;
     } else if (value instanceof Date) {

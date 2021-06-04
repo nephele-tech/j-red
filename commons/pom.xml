@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.nepheletech</groupId>
 		<artifactId>jred</artifactId>
-		<version>0.0.3</version>
+		<version>0.0.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>jred-commons</artifactId>
 	<packaging>pom</packaging>
@@ -15,5 +15,7 @@
 		<module>jton</module>
 		<module>messagebus</module>
 		<module>servlet-utils</module>
+		<module>jton-path</module>
+		<module>camel-cron4j</module>
 	</modules>
 </project>
