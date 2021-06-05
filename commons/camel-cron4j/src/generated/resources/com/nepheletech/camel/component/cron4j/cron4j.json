@@ -11,7 +11,7 @@
     "supportLevel": "Preview",
     "groupId": "com.nepheletech",
     "artifactId": "camel-cron4j",
-    "version": "0.0.4-SNAPSHOT",
+    "version": "0.0.5-SNAPSHOT",
     "scheme": "cron4j",
     "extendsScheme": "",
     "syntax": "cron4j:name",
