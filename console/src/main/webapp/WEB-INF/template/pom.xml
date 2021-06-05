@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.nepheletech</groupId>
 		<artifactId>jred</artifactId>
-		<version>0.0.4</version>
+		<version>0.0.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>jred-editor-template</artifactId>
 	<packaging>war</packaging>
@@ -19,8 +19,10 @@
 		</repository>
 	</repositories>
 	<properties>
-		<java.version>8</java.version>
-		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+		<java.version>11</java.version>
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<maven-war-plugin.version>3.3.1</maven-war-plugin.version>
+		<docker.repository>${workspace.name}</docker.repository>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -32,7 +34,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>jred-editor-template</finalName>
+		<finalName>${project.artifactId}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -45,7 +47,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>3.2.2</version>
+				<version>${maven-war-plugin.version}</version>
 				<configuration>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 					<overlays>
@@ -56,6 +58,37 @@
 							</excludes>
 						</overlay>
 					</overlays>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker-maven-plugin.version}</version>
+				<configuration>
+					<images>
+						<image>
+							<alias>${workspace.name}</alias>
+							<name>${docker.username}/${docker.repository}</name>
+							<!-- <name>${docker.username}/${project.artifactId}:${build.version}</name> -->
+							<!-- <registry>${docker.registry}</registry> -->
+							<build>
+								<from>ntechnology/war-runner:latest</from>
+								<assembly>
+									<mode>dir</mode>
+									<targetDir>/opt</targetDir>
+									<descriptor>assembly.xml</descriptor>
+								</assembly>
+								<cmd><![CDATA[/opt/war-runner.sh]]></cmd>
+							</build>
+							<run>
+								<ports>
+									<port>8840:8840</port>
+								</ports>
+								<env>
+								</env>
+							</run>
+						</image>
+					</images>
 				</configuration>
 			</plugin>
 		</plugins>

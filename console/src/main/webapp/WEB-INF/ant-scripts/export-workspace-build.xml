@@ -12,9 +12,16 @@
 	<target name="export" depends="init">
 		<echo>context.name='${context.name}', context.dir='${webapps.dir}'</echo>
 
+		<copy todir="${build.dir}">
+			<fileset dir="${template.dir}">
+				<include name="**" />
+			</fileset>
+		</copy>
+
 		<copy todir="${build.dir}/src/main/webapp">
 			<fileset dir="${webapps.dir}/${context.name}">
 				<include name="WEB-INF/flows/**" />
+				<include name="WEB-INF/web.xml" />
 				<include name="META-INF/context.xml" />
 			</fileset>
 		</copy>

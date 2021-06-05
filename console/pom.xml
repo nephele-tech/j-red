@@ -1,26 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>com.nepheletech</groupId>
 		<artifactId>jred</artifactId>
 		<version>0.0.5-SNAPSHOT</version>
 	</parent>
+
 	<artifactId>jred-console</artifactId>
 	<packaging>war</packaging>
+
 	<properties>
+
+		<!-- Setting maven.compiler.source to something different to 1.8 needs 
+			that you configure the sourceLevel in gwt-maven-plugin since GWT compiler 
+			2.8 requires 1.8 (see gwt-maven-plugin block below) -->
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+
+		<!-- Don't let your Mac use a crazy non-standard encoding -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<maven-invoker.version>3.1.0</maven-invoker.version>
+		
+		<ant.version>1.10.10</ant.version>
+
+		<!-- io.fabric8: docker-maven-plugin -->
 		<docker.repository>${project.artifactId}</docker.repository>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- ensure all GWT deps use the same version (unless overridden) -->
+			<dependency>
+				<groupId>com.google.gwt</groupId>
+				<artifactId>gwt</artifactId>
+				<version>2.9.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-servlet</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-dev</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- J-RED commons -->
+
+		<dependency>
 			<groupId>com.nepheletech</groupId>
-			<artifactId>jton</artifactId>
+			<artifactId>servlet-utils</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nepheletech</groupId>
-			<artifactId>servlet-utils</artifactId>
+			<artifactId>jton</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -32,39 +90,21 @@
 			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
+			<version>${logback-classic.version}</version>
 		</dependency>
 
-		<!-- JavaEE -->
+		<!-- Apache Commons -->
 
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>${servlet-api.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.websocket</groupId>
-			<artifactId>javax.websocket-api</artifactId>
-			<version>${websocket-api.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>jstl</groupId>
-			<artifactId>jstl</artifactId>
-			<version>${jstl.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
-			<version>1.1.1</version>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
 		</dependency>
 
 		<!-- Apache Tomcat -->
@@ -76,17 +116,13 @@
 			<scope>compile</scope>
 		</dependency>
 
+
 		<!-- Apache Maven Invoker/Embedder -->
 
 		<dependency>
 			<groupId>org.apache.maven.shared</groupId>
 			<artifactId>maven-invoker</artifactId>
-			<version>RELEASE</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-embedder</artifactId>
-			<version>RELEASE</version>
+			<version>${maven-invoker.version}</version>
 		</dependency>
 
 		<!-- Apache ANT -->
@@ -94,23 +130,65 @@
 		<dependency>
 			<groupId>org.apache.ant</groupId>
 			<artifactId>ant</artifactId>
-			<version>RELEASE</version>
+			<version>${ant.version}</version>
 		</dependency>
 
 	</dependencies>
+
 	<build>
+		<!-- Output classes directly into the webapp, so that IDEs and "mvn process-classes" 
+			update them in DevMode -->
+		<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
+
 		<finalName>${project.artifactId}</finalName>
+
 		<plugins>
+
+			<!-- GWT Maven Plugin -->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven-compiler-plugin.version}</version>
+				<groupId>net.ltgt.gwt.maven</groupId>
+				<artifactId>gwt-maven-plugin</artifactId>
+				<version>1.0-rc-8</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>test</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<!-- <release>${java.version}</release> -->
+					<moduleName>com.nepheletech.jred.console.JREDConsole</moduleName>
+					<moduleShortName>JREDConsole</moduleShortName>
+					<failOnError>true</failOnError>
+					<!-- GWT compiler 2.8 requires 1.8, hence define sourceLevel here if 
+						you use a different source language for java compilation -->
+					<sourceLevel>1.8</sourceLevel>
+					<!-- Compiler configuration -->
+					<compilerArgs>
+						<!-- Ask GWT to create the Story of Your Compile (SOYC) (gwt:compile) -->
+						<arg>-compileReport</arg>
+						<arg>-XcompilerMetrics</arg>
+					</compilerArgs>
+					<!-- DevMode configuration -->
+					<warDir>${project.build.directory}/${project.build.finalName}</warDir>
+					<classpathScope>compile+runtime</classpathScope>
+					<!-- URL(s) that should be opened by DevMode (gwt:devmode). -->
+					<startupUrls>
+						<startupUrl>index.html</startupUrl>
+					</startupUrls>
 				</configuration>
 			</plugin>
+
+			<!-- Skip normal test execution, we use gwt:test instead -->
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.17</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
@@ -123,7 +201,7 @@
 							<!-- <name>${docker.username}/${project.artifactId}:${build.version}</name> -->
 							<!-- <registry>${docker.registry}</registry> -->
 							<build>
-								<from>tomcat:${tomcat.version}-jre8</from>
+								<from>tomcat:${tomcat.version}-jdk11-adoptopenjdk-openj9</from>
 								<assembly>
 									<mode>dir</mode>
 									<!-- <targetDir>/opt/${project.artifactId}</targetDir> -->
@@ -131,17 +209,19 @@
 									<descriptor>assembly.xml</descriptor>
 								</assembly>
 								<env>
-									<M2_HOME>/opt/apache-maven-3.6.3</M2_HOME>
-									<MAVEN_HOME>/opt/apache-maven-3.6.3</MAVEN_HOME>
-									<PATH>/opt/apache-maven-3.6.3/bin:$PATH</PATH>
+									<M2_HOME>/opt/apache-maven-3.8.1</M2_HOME>
+									<MAVEN_HOME>/opt/apache-maven-3.8.1</MAVEN_HOME>
+									<PATH>/opt/apache-maven-3.8.1/bin:$PATH</PATH>
 								</env>
 								<runCmds>
-									<runCmd><![CDATA[apt-get update && apt-get install -y curl wget]]></runCmd>
-									<runCmd><![CDATA[cd /opt && wget http://apache.claz.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip && unzip apache-maven-3.6.3-bin.zip]]></runCmd>
-									<runCmd><![CDATA[chmod +x ./catalina-run.sh]]></runCmd>
-									<runCmd><![CDATA[mkdir -p ~/.m2 && mv settings.xml ~/.m2/settings.xml]]></runCmd>
+									<!-- https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04 -->
+									<runCmd><![CDATA[apt-get update && apt-get install -y apt-transport-https ca-certificates curl software-properties-common]]></runCmd>
+									<runCmd><![CDATA[curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable" && apt update && apt install -y docker-ce]]></runCmd>
+									<runCmd><![CDATA[curl http://apache.claz.org/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz | tar xvz -C /opt]]></runCmd>
+									<runCmd><![CDATA[chmod +x ./catalina-run.sh && mkdir -p ~/.m2 && mv settings.xml ~/.m2/settings.xml]]></runCmd>
 								</runCmds>
 								<cmd><![CDATA[./catalina-run.sh]]></cmd>
+								<!-- <cmd><![CDATA[/bin/bash]]></cmd>  -->
 							</build>
 							<run>
 								<ports>
@@ -154,6 +234,7 @@
 					</images>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
 </project>

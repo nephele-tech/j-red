@@ -1,0 +1,4 @@
+Docker image
+============================================================================
+
+mvn -Dworkspace.name=[image-name] clean package docker:build docker:push
