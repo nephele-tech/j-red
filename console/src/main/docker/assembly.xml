@@ -5,7 +5,7 @@
 	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 	<files>
 		<file>
-			<source>target/workspaces.war</source>
+			<source>target/jred-console.war</source>
 			<outputDirectory>webapps</outputDirectory>
 			<filtered>false</filtered>
 		</file>
