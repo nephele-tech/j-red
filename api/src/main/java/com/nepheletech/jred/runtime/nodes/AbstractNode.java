@@ -145,14 +145,14 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
           AbstractNode.this.error(e, msg);
         }).handled(true);
 
-    final String additionalFlow = getAdditionalFlow();
+    final String additionalFlow = getAdditionalRoute();
     logger.debug("additionalFlow={}", additionalFlow);
     
     if (additionalFlow != null) {
       fromF("direct:%s", getId())
           .toF("log:%s?level=TRACE&showHeaders=true", logger.getName())
           .process(this::onMessage)
-          .to(getAdditionalFlow());
+          .to(getAdditionalRoute());
     } else {
       fromF("direct:%s", getId())
           .toF("log:%s?level=TRACE&showHeaders=true", logger.getName())
@@ -160,14 +160,14 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
     }
   }
 
-  protected String getAdditionalFlow() {
+  protected String getAdditionalRoute() {
     return null;
   }
 
   protected final void onMessage(Exchange exchange) {
     logger.trace(">>> onMessage: {}, exchange={}", getId(), exchange);
 
-    onMessage(exchange, exchange.getIn().getBody(JtonObject.class));
+    onMessage(exchange, getMsg(exchange));
   }
 
   protected abstract void onMessage(Exchange exchange, JtonObject msg);
@@ -402,21 +402,29 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
 
   private void send(Exchange exchange, JtonObject msg, String nodeId) {
     logger.trace(">>> send: {} -> {}", getId(), nodeId);
-
-    exchange.getIn().setBody(ensureMsg(exchange, msg));
-    template.send("direct:" + nodeId, exchange);
+    
+    template.send("direct:" + nodeId,  
+        setMsg(exchange, ensureMsg(exchange, msg)));
   }
 
   @Override
   public final void receive(JtonObject msg) {
     logger.trace(">>> receive: msg={}", msg);
 
-    template.send(format("direct:%s", getId()), (x) -> {
-      x.getIn().setBody(ensureMsg(x, msg));
-    });
+    template.send(format("direct:%s", getId()), 
+        (x) -> setMsg(x, ensureMsg(x, msg)));
   }
 
-  protected JtonObject ensureMsg(Exchange exchange, JtonObject msg) {
+  protected static final JtonObject getMsg(Exchange exchange) {
+    return exchange.getProperty("_msg", JtonObject.class);
+  }
+
+  protected static final Exchange setMsg(Exchange exchange, JtonObject msg) {
+    exchange.setProperty("_msg", msg);
+    return exchange;
+  }
+
+  protected static JtonObject ensureMsg(Exchange exchange, JtonObject msg) {
     if (msg == null) {
       msg = new JtonObject();
     }

@@ -5,7 +5,10 @@
 		<server>
 			<id>github</id>
 			<username>nephele-tech</username>
-			<password>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</password>
+			<password>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</password>
+			<!-- 
+			 See: https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token
+			 -->
 		</server>
 	</servers>
 </settings>

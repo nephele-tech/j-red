@@ -16,5 +16,6 @@
 		<module>email</module>
 		<module>kafka</module>
 		<module>ftp</module>
+		<module>csv</module>
 	</modules>
 </project>

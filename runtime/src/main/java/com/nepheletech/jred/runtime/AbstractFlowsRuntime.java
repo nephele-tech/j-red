@@ -41,6 +41,8 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
     this.flowsManager = new FlowsManager(this);
     this.camelContext = new DefaultCamelContext();
     this.camelContext.disableJMX();
+    //this.camelContext.getShutdownStrategy().setSuppressLoggingOnTimeout(true);
+    //this.camelContext.getShutdownStrategy().setLogInflightExchangesOnTimeout(false);
   }
 
   @Override

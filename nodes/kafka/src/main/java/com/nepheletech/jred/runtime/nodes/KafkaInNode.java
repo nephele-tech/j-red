@@ -79,11 +79,13 @@ public class KafkaInNode extends AbstractNode implements Processor {
                 .set("MANUAL_COMMIT",
                     message.getHeader(KafkaConstants.MANUAL_COMMIT, Boolean.class))));
 
-    message.setBody(msg);
+    setMsg(exchange, msg);
   }
 
   @Override
   protected void onMessage(final Exchange exchange, final JtonObject msg) {
+    logger.trace(">>> onMessage: {}, {}", getId(), msg.keys());
+    
     send(exchange, msg);
   }
 }

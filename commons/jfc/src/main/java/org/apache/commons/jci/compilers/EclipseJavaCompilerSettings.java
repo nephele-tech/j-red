@@ -1,6 +1,4 @@
 /*
- * Copyright NepheleTech, http://www.nephelerech.com
- *
  * This file is part of J-RED Commons project.
  *
  * J-RED Commons is free software; you can redistribute it and/or
@@ -69,6 +67,8 @@ public final class EclipseJavaCompilerSettings extends JavaCompilerSettings {
       put("12", CompilerOptions.VERSION_12);
       put("13", CompilerOptions.VERSION_13);
       put("14", CompilerOptions.VERSION_14);
+      put("15", CompilerOptions.VERSION_15);
+      put("16", CompilerOptions.VERSION_16);
     }
   };
 

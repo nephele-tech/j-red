@@ -45,6 +45,11 @@
 			<artifactId>jred-ftp-nodes</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.nepheletech</groupId>
+			<artifactId>jred-csv-nodes</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- SLF4J -->
 

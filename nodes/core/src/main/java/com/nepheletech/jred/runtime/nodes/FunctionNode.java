@@ -81,8 +81,10 @@ public class FunctionNode extends AbstractNode {
     // create script evaluator
 
     final String[] _imports = imports.toArray(new String[imports.size()]);
-    final String[] parameterNames = new String[] { "node", "msg", "env",
-        "context", "flow", "global" };
+    final String[] parameterNames = new String[] {
+        "node", "msg", "env", 
+        "context", "flow", "global"
+    };
     final Class<?>[] parameterTypes = new Class<?>[] {
         FunctionNode.class, JtonObject.class, Env.class,
         JtonObject.class, JtonObject.class, JtonObject.class
@@ -133,8 +135,10 @@ public class FunctionNode extends AbstractNode {
     logger.trace(">>> onMessage: msg={}", msg);
 
     try {
-      send(exchange, se.evaluate(new Object[] { this, msg, this.env,
-          this.nodeContext, this.getFlowContext(), this.getGlobalContext() }));
+      send(exchange, se.evaluate(new Object[] {
+          this, msg, this.env,
+          this.nodeContext, this.getFlowContext(), this.getGlobalContext()
+      }));
     } catch (ScriptException e) {
       final JtonArray sourceCode = new JtonArray()
           .push("// JFunction1.java");

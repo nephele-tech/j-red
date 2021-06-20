@@ -30,9 +30,9 @@ import com.nepheletech.jton.JtonObject;
 
 public interface Flow {
 
-  Node getNode(String id);
+  <T extends Node> T getNode(String id);
 
-  Node getNode(String id, boolean cancelBubble);
+  <T extends Node> T getNode(String id, boolean cancelBubble);
 
   Map<String, Node> getActiveNodes();
 

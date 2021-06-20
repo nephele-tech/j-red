@@ -1,6 +1,4 @@
 /*
- * Copyright NepheleTech, http://www.nephelerech.com
- *
  * This file is part of J-RED Commons project.
  *
  * J-RED Commons is free software; you can redistribute it and/or

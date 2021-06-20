@@ -68,7 +68,7 @@ public class KafkaOutNode extends AbstractNode {
   }
 
   @Override
-  protected String getAdditionalFlow() {
+  protected String getAdditionalRoute() {
     return format("direct:%s#kafka", getId());
   }
 

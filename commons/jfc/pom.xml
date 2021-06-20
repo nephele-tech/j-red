@@ -20,32 +20,11 @@
 			<artifactId>commons-jci-eclipse</artifactId>
 			<version>1.1</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.eclipse.jdt.core.compiler</groupId>
-			<artifactId>ecj</artifactId>
-			<version>RELEASE</version>
-		</dependency>
  -->
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>ecj</artifactId>
-			<version>3.22.0</version>
+			<version>3.26.0</version>
 		</dependency>
 	</dependencies>
-	<build>
-		<finalName>${project.artifactId}</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven-compiler-plugin.version}</version>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<!-- <release>${java.version}</release> -->
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

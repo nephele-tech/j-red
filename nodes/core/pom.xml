@@ -57,22 +57,10 @@
 		<!-- InjectNode dependencies -->
 		
 		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-cron</artifactId>
-			<version>${apache-camel.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.nepheletech</groupId>
 			<artifactId>camel-cron4j</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.camel/camel-quartz -->
-<dependency>
-    <groupId>org.apache.camel</groupId>
-    <artifactId>camel-quartz</artifactId>
-    <version>3.10.0</version>
-</dependency>
-		
 
 		<!-- TemplateNode dependencies -->
 
@@ -138,19 +126,4 @@
 		</dependency>
 
 	</dependencies>
-	<build>
-		<finalName>${project.artifactId}</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven-compiler-plugin.version}</version>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<!-- <release>${java.version}</release> -->
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

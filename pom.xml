@@ -32,15 +32,14 @@
 		<logback-classic.version>1.2.3</logback-classic.version>
 
 		<!-- Apache Camel -->
-		<apache.camel.version>3.9.0</apache.camel.version>
-		<apache-camel.version>3.9.0</apache-camel.version>
+		<apache-camel.version>3.10.0</apache-camel.version>
 
 		<!-- Apache Commons -->
 		<apache.commons-lang3.version>3.12.0</apache.commons-lang3.version>
 
 		<!-- Apache Tomcat -->
 		<tomcat.version>9.0.46</tomcat.version>
-		
+
 		<!-- Jetty Maven Plugin (used by jred-editor-template) -->
 		<jetty-maven-plugin.version>9.4.41.v20210516</jetty-maven-plugin.version>
 
@@ -54,6 +53,18 @@
 		<build.version>${project.version}</build.version>
 		<docker.username>ntechnology</docker.username>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-bom</artifactId>
+				<version>${apache-camel.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
@@ -83,8 +94,8 @@
 	</build>
 
 	<modules>
-		<module>commons</module>
 		<module>api</module>
+		<module>commons</module>
 		<module>runtime</module>
 		<module>nodes</module>
 		<module>editor</module>

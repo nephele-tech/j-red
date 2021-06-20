@@ -555,12 +555,12 @@ public class JREDManagerServlet extends ManagerServlet {
       e.printStackTrace();
       return smClient.getString("htmlManagerServlet.deployUploadFail", new Object[] { e.getMessage() });
     } finally {
-      if (tmpDir != null)
-        try {
-          FileUtils.deleteDirectory(tmpDir.toFile());
-        } catch (IOException e) {
-          e.printStackTrace();
-        }  
+//      if (tmpDir != null)
+//        try {
+//          FileUtils.deleteDirectory(tmpDir.toFile());
+//        } catch (IOException e) {
+//          e.printStackTrace();
+//        }  
     } 
     return "OK - '" + cn.getBaseName() + "' pushed";
   }

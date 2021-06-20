@@ -22,7 +22,6 @@ package com.nepheletech.jred.runtime.nodes;
 import static com.nepheletech.jred.runtime.util.JRedUtil.evaluateNodeProperty;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +31,7 @@ import com.nepheletech.jton.JtonObject;
 /**
  * 
  */
-public class InjectNode extends AbstractNode implements Processor {
+public class InjectNode extends AbstractNode {
   private final Logger logger = LoggerFactory.getLogger(InjectNode.class);
 
   private final String topic;
@@ -62,31 +61,23 @@ public class InjectNode extends AbstractNode implements Processor {
       final long delay = onceDelay;
       fromF("timer:%s?delay=%d&repeatCount=1", getId(), delay)
           .toF("log:%s?level=TRACE", logger.getName())
-          .process(InjectNode.this)
           .toF("direct:%s", getId());
     } else if (this.repeat > 0L) {
       final long period = repeat * 1000L;
       fromF("timer:%s?period=%d&delay=%d", getId(), period, period)
           .toF("log:%s?level=TRACE", logger.getName())
-          .process(InjectNode.this)
           .toF("direct:%s", getId());
     } else if (this.crontab != null) {
       final String schedule = crontab.replace(' ', '+');
       fromF("cron4j:%s?schedule=%s", getId(), schedule)
           .toF("log:%s?level=TRACE", logger.getName())
-          .process(InjectNode.this)
           .toF("direct:%s", getId());
     }
   }
 
   @Override
-  public void process(Exchange exchange) throws Exception {
-    exchange.getIn().setBody(ensureMsg(exchange, null));
-  }
-
-  @Override
   protected void onMessage(final Exchange exchange, final JtonObject msg) {
-    logger.trace(">>> onMessage: {}", getId());
+    logger.trace(">>> onMessage: {}, {}", getId(), msg);
 
     msg.set("topic", topic);
 

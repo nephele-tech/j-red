@@ -78,6 +78,9 @@
 									<targetDir>/opt</targetDir>
 									<descriptor>assembly.xml</descriptor>
 								</assembly>
+								<runCmds>
+									<runCmd><![CDATA[chmod +x /opt/setup.sh]]></runCmd>
+								</runCmds>
 								<cmd><![CDATA[/opt/war-runner.sh]]></cmd>
 							</build>
 							<run>

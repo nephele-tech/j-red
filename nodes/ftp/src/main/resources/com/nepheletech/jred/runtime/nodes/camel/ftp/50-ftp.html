@@ -1,5 +1,5 @@
 <!--
-  Copyright NepheleTech and other contributors, http://www.nepheletech.com
+  Copyright NepheleTech and other contributors.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,75 +14,199 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="ftp in">
+<script type="text/html" data-template-name="ftp-server">
     <div class="form-row">
-        <label for="node-input-host"><i class="fa fa-globe"></i> <span>Host</span></label>
-        <input type="text" id="node-input-host" placeholder="Host name">
+        <label for="node-config-input-host"><i class="fa fa-globe"></i> <span>Host</span></label>
+        <input type="text" id="node-config-input-host" placeholder="Host name">
     </div>
     <div class="form-row">
-        <label for="node-input-port"><i class="fa fa-random"></i> <span>Port</span></label>
-        <input type="text" id="node-input-port" placeholder="ftp=21, sftp=22" style="width:100px">
+        <label for="node-config-input-port"><i class="fa fa-random"></i> <span>Port</span></label>
+        <input type="text" id="node-config-input-port" placeholder="21" style="width:100px">
         <label style="width:40px"> </label>
-        <input type="checkbox" id="node-input-secure" style="display:inline-block; width:20px; vertical-align:baseline;">
+        <input type="checkbox" id="node-config-input-secure" style="display:inline-block; width:20px; vertical-align:baseline;">
         <span data-i18n="email.label.useSecureConnection"></span>
     </div>
     <div class="form-row">
-        <label for="node-input-username"><i class="fa fa-user"></i> <span data-i18n="email.label.userid"></span></label>
-        <input type="text" id="node-input-username">
+        <label for="node-input-username"><i class="fa fa-user"></i> <span data-i18n="common.label.username"></span></label>
+        <input type="text" id="node-config-input-username">
     </div>
     <div class="form-row">
-        <label for="node-input-password"><i class="fa fa-lock"></i> <span data-i18n="email.label.password"></span></label>
-        <input type="password" id="node-input-password">
+        <label for="node-input-password"><i class="fa fa-lock"></i> <span data-i18n="common.label.password"></span></label>
+        <input type="password" id="node-config-input-password">
     </div>
+	<div class="form-row">
+		<label for="node-config-input-passiveMode"> </label>
+		<label for="node-config-input-passiveMode" style="width:70%">
+			<input type="checkbox" id="node-config-input-passiveMode" style="display:inline-block; width:20px; vertical-align:baseline;"><span>Passive Mode</span>
+		</label>
+	</div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
-        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
+        <input type="text" id="node-config-input-name" data-i18n="[placeholder]common.label.name">
     </div>
 </script>
 
 <script type="text/javascript">
-RED.nodes.registerType('ftp in',{
-    category: 'storage',
+RED.nodes.registerType('ftp-server',{
+	category: 'config',
     defaults: {
-        name: {value:""}
+	        name: {value:''},
+	    	host: {value:'', required:true},
+	    	port: {value:'', required:true},
+	      secure: {value:false, required:true},
+	 passiveMode: {value:false}
     },
-    color:"rgb(231, 231, 174)",
-    inputs:0,
-    outputs:1,
-    icon: "file-in.svg",
+    credentials: {
+    	username: {type:'text'},
+    	password: {type:'password'}
+    },
     label: function() {
-        return this.name||this.topic||"ftp";
-    },
-    labelStyle: function() {
-        return this.name?"node_label_italic":"";
+        return this.name||this.host||('ftp-server:' + this.id);
     }
 });
 </script>
 
-<script type="text/x-red" data-template-name="ftp">
+<script type="text/html" data-template-name="ftp in">
     <div class="form-row">
-        <label for="node-input-host"><i class="fa fa-globe"></i> <span>Host</span></label>
-        <input type="text" id="node-input-host" placeholder="Host name">
+        <label for="node-input-server"><i class="fa fa-globe"></i> <span>FTP Server</span></label>
+        <input type="text" id="node-input-server" placeholder="localhost:21">
     </div>
     <div class="form-row">
-        <label for="node-input-port"><i class="fa fa-random"></i> <span>Port</span></label>
-        <input type="text" id="node-input-port" placeholder="ftp=21, sftp=22" style="width:100px">
-        <label style="width:40px"> </label>
-        <input type="checkbox" id="node-input-secure" style="display:inline-block; width:20px; vertical-align:baseline;">
-        <span data-i18n="email.label.useSecureConnection"></span>
+        <label for="node-input-dirname"><i class="fa fa-folder-open"></i> Directory</span></label>
+        <input type="text" id="node-input-dirname" placeholder="Directory name">
+    </div>
+	
+	<div class="form-row">
+		<input type="checkbox" id="node-input-binary" style="display: inline-block; width: auto; vertical-align: top;">
+		<label for="node-input-binary" style="width: auto">Binary file transfer mode (default is ASCII)</label>
+	</div>
+	<div class="form-row">
+		<input type="checkbox" id="node-input-recursive" style="display:inline-block; width: auto; vertical-align: top;">
+		<label for="node-input-recursive" style="width: auto">Recursive (look for files in all the sub-directories as well)</label>
+	</div>
+	
+	<div class="form-row ftp-time-row">
+        <label for=""><i class="fa fa-repeat"></i> <span>Poll</span></label>
+		<span data-i18n="inject.every"></span>
+		<input id="ftp-time-interval-count" class="ftp-time-count" value="1"></input>
+        <select style="width:100px" id="ftp-time-interval-units">
+            <option value="s" data-i18n="inject.seconds"></option>
+            <option value="m" data-i18n="inject.minutes"></option>
+            <option value="h" data-i18n="inject.hours"></option>
+        </select><br/>
+        <input type="hidden" id="node-input-repeat">
+	</div>
+	
+	<div class="form-row">
+        <label for="node-input-ret"><i class="fa fa-arrow-left"></i> <span data-i18n="httpin.label.return"></span></label>
+        <select type="text" id="node-input-ret" style="width:70%;">
+	        <option value="txt" data-i18n="httpin.utf8"></option>
+	        <option value="bin" data-i18n="httpin.binary"></option>
+	        <option value="obj" data-i18n="httpin.json"></option>
+        </select>
     </div>
     <div class="form-row">
-        <label for="node-input-path"><i class="fa fa-folder"></i> <span>Path</span></label>
-        <input type="text" id="node-input-path" placeholder="Path name">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
+    </div>
+    <div class="form-tips" id="tip-json" hidden><span data-i18n="httpin.tip.req"></span></div>
+</script>
+
+<style>
+    .ftp-time-row select {
+        margin: 3px 0;
+    }
+    .ftp-time-count {
+        width: 40px !important;
+    }
+</style>
+
+<script type="text/javascript">
+RED.nodes.registerType('ftp in',{
+    category: 'network',
+    defaults: {
+        name: {value:''},
+    	server: {type:'ftp-server',required:true},
+    	dirname: {value:'',required:true},
+		binary: {value:false},
+		recursive: {value:false},
+		ret: {value:'txt'},
+		repeat: {value:'', validate:function(v) { return ((v === "") || (RED.validators.number(v) && (v >= 0) && (v <= 2147483))) }}
+    },
+    color:"rgb(174, 231, 174)",
+    inputs:0,
+    outputs:1,
+    outputLabels: function(i) {
+        return ({
+            txt: this._("httpin.label.utf8String"),
+            bin: this._("httpin.label.binaryBuffer"),
+            obj: this._("httpin.label.jsonObject")
+        }[this.ret]);
+    },
+    icon: "file-in.png",
+    label: function() {
+        return this.name||"ftp";
+    },
+    labelStyle: function() {
+        return this.name?"node_label_italic":"";
+    },
+	oneditprepare: function() {
+	    $("#node-input-ret").on("change", function() {
+	        if ($("#node-input-ret").val() === "obj") {
+	            $("#tip-json").show();
+	        } else {
+	            $("#tip-json").hide();
+	        }
+	    });
+
+        $(".ftp-time-count").spinner({
+            //max:60,
+            min:1
+        });
+
+		var r = "s";
+		var c = this.repeat;
+        if (this.repeat % 60 === 0) { r = "m"; c = c/60; }
+        if (this.repeat % 1440 === 0) { r = "h"; c = c/60; }
+        $("#ftp-time-interval-count").val(c);
+        $("#ftp-time-interval-units").val(r);
+		
+	},
+	oneditsave: function() {
+		var repeat = "";
+		
+		var count = $("#ftp-time-interval-count").val();
+        var units = $("#ftp-time-interval-units").val();
+        if (units == "s") {
+            repeat = count;
+        } else {
+            if (units == "m") {
+                repeat = count * 60;
+            } else if (units == "h") {
+                repeat = count * 60 * 60;
+            }
+        }
+
+        $("#node-input-repeat").val(repeat);
+	}
+});
+</script>
+
+<script type="text/html" data-template-name="ftp out">
+    <div class="form-row">
+        <label for="node-input-server"><i class="fa fa-globe"></i> <span>FTP Server</span></label>
+        <input type="text" id="node-input-server" placeholder="localhost:21">
     </div>
     <div class="form-row">
-        <label for="node-input-username"><i class="fa fa-user"></i> <span data-i18n="email.label.userid"></span></label>
-        <input type="text" id="node-input-username">
+        <label for="node-input-dirname"><i class="fa fa-folder-open"></i> Directory</span></label>
+        <input type="text" id="node-input-dirname" placeholder="Directory name">
     </div>
-    <div class="form-row">
-        <label for="node-input-password"><i class="fa fa-lock"></i> <span data-i18n="email.label.password"></span></label>
-        <input type="password" id="node-input-password">
-    </div>
+	
+	<div class="form-row">
+		<input type="checkbox" id="node-input-binary" style="display: inline-block; width: auto; vertical-align: top;">
+		<label for="node-input-binary" style="width: auto">Binary file transfer mode (default is ASCII)</label>
+	</div>
+	
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
@@ -90,26 +214,21 @@ RED.nodes.registerType('ftp in',{
 </script>
 
 <script type="text/javascript">
-RED.nodes.registerType('ftp',{
-    category: 'storage',
+RED.nodes.registerType('ftp out',{
+    category: 'network',
     defaults: {
-        host: {value:"",required:true},
-        port: {value:"",required:true},
-        secure: {value: true},
-        path: {value: ""},
-        name: {value:""}
+        name: {value:""},
+    	server: {type:'ftp-server',required:true},
+    	dirname: {value:'',required:true},
+		binary: {value:false},
     },
-    credentials: {
-        username: {type:"text"},
-        password: {type: "password"}
-    },
-    color:"rgb(231, 231, 174)",
+    color:"rgb(174, 231, 174)",
     inputs:1,
     outputs:0,
     icon: "file-out.png",
     align: "right",
     label: function() {
-        return this.name||this.topic||"ftp";
+        return this.name||"ftp";
     },
     labelStyle: function() {
         return this.name?"node_label_italic":"";
@@ -118,7 +237,7 @@ RED.nodes.registerType('ftp',{
 </script>
 
 <!--
-  Copyright NepheleTech and other contributors, http://www.nepheletech.com
+  Copyright NepheleTech and other contributors.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -133,10 +252,24 @@ RED.nodes.registerType('ftp',{
   limitations under the License.
 -->
 
+<script type="text/x-red" data-help-name="ftp-server">
+  <p>Configuration for a connection to an remote FTP server.</p>
+  <p>&nbsp;</p>
+  <p><code>Host</code> is the address of your FTP server, it can be a URL or an IP address. Default: <code>localhost</code></p>
+  <p><code>Port</code> specifies on which port the FTP server listens for new control connections. Default: <code>21</code></p>
+  <p><code>User</code> specifies the username of the account to be used when logging into the FTP server. Default: <code>anonymous</code></p>
+  <p><code>Password</code>  specifies the password of the account to be used when logging into the FTP server. Required input.</p>
+  <p><code>Connection Timeout</code>  is the time in milliseconds that the FTP client will try to connect to a server. Default: <code>10000</code></p>
+  <p><code>PASV Timeout</code>is the time in milliseconds to wait for a PASV data connection to be established. Default: <code>10000</code></p>
+  <p><code>Keepalive</code> is the time in milliseconds to send a 'dummy' (NOOP) command to keep the connection alive. Default: <code>10000</code></p>
+  <p><code>Data connection encryption</code> is set to true for both control and data connection encryption. Default: <code>false</code></p>
+  <p><code>Secure Options</code> is an additional options to be passed to tls.connect(). Default: (none)</p>
+</script>
+
 <script type="text/x-red" data-help-name="ftp in">
 <p>Apache Camel FTP In node.</p>
 </script>
 
-<script type="text/x-red" data-help-name="ftp">
+<script type="text/x-red" data-help-name="ftp out">
 <p>Apache Camel FTP Out node.</p>
 </script>

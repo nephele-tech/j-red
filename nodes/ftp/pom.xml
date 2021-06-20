@@ -11,41 +11,23 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.nepheletech</groupId>
-			<artifactId>jred-camel-core-nodes</artifactId>
+			<artifactId>jred-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Camel Kafka support -->
-
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-core</artifactId>
-			<version>${apache.camel.version}</version>
-		</dependency>
+		<!-- Apache Camel -->
+		
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-ftp</artifactId>
-			<version>${apache.camel.version}</version>
 		</dependency>
+		
+		<!-- Apache Commons  -->
+		
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.12</version>
 		</dependency>
 	</dependencies>
-	<build>
-		<finalName>${project.artifactId}</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${maven-compiler-plugin.version}</version>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<!-- <release>${java.version}</release> -->
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
