@@ -20,6 +20,7 @@
 package com.nepheletech.jred.runtime;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
@@ -41,8 +42,10 @@ public class AbstractFlowsRuntime implements FlowsRuntime {
     this.flowsManager = new FlowsManager(this);
     this.camelContext = new DefaultCamelContext();
     this.camelContext.disableJMX();
-    //this.camelContext.getShutdownStrategy().setSuppressLoggingOnTimeout(true);
-    //this.camelContext.getShutdownStrategy().setLogInflightExchangesOnTimeout(false);
+    this.camelContext.getShutdownStrategy().setSuppressLoggingOnTimeout(true);
+    this.camelContext.getShutdownStrategy().setLogInflightExchangesOnTimeout(false);
+    this.camelContext.getShutdownStrategy().setTimeout(3);
+    this.camelContext.getShutdownStrategy().setTimeUnit(TimeUnit.SECONDS);
   }
 
   @Override

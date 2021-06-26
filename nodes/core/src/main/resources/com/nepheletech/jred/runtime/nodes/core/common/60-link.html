@@ -1,32 +1,18 @@
-<!--
-  Copyright NepheleTech and other contributors, http://www.nepheletech.com
-  Copyright JS Foundation and other contributors, http://js.foundation
 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
-
-<script type="text/x-red" data-template-name="link in">
+<script type="text/html" data-template-name="link in">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
     </div>
+    <div style="position:relative; height: 30px; text-align: right;"><div style="display:inline-block"><input type="text" id="node-input-link-target-filter"></div></div>
     <div class="form-row node-input-link-row"></div>
 </script>
-<script type="text/x-red" data-template-name="link out">
+<script type="text/html" data-template-name="link out">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
     </div>
+    <div style="position:relative; height: 30px; text-align: right;"><div style="display:inline-block"><input type="text" id="node-input-link-target-filter"></div></div>
     <div class="form-row node-input-link-row"></div>
 </script>
 
@@ -62,6 +48,24 @@
                 }
             });
         var candidateNodes = RED.nodes.filterNodes({type:targetType});
+
+        var search = $("#node-input-link-target-filter").searchBox({
+            style: "compact",
+            delay: 300,
+            change: function() {
+                var val = $(this).val().trim().toLowerCase();
+                if (val === "") {
+                    treeList.treeList("filter", null);
+                    search.searchBox("count","");
+                } else {
+                    var count = treeList.treeList("filter", function(item) {
+                        return item.label.toLowerCase().indexOf(val) > -1 || (item.node && item.node.type.toLowerCase().indexOf(val) > -1)
+                    });
+                    search.searchBox("count",count+" / "+candidateNodes.length);
+                }
+            }
+        });
+
 
         var flows = [];
         var flowMap = {};
@@ -99,7 +103,8 @@
                     id: n.id,
                     node: n,
                     label: n.name||n.id,
-                    selected: isChecked
+                    selected: isChecked,
+                    checkbox: true
                 })
             }
         });
@@ -182,7 +187,7 @@
         color:"#ddd",//"#87D8CF",
         defaults: {
             name: {value:""},
-            links: { value: [] }
+            links: { value: [], type:"link out[]" }
         },
         inputs:0,
         outputs:1,
@@ -211,7 +216,7 @@
         color:"#ddd",//"#87D8CF",
         defaults: {
             name: {value:""},
-            links: { value: []}
+            links: { value: [], type:"link in[]"}
         },
         align:"right",
         inputs:1,
@@ -237,22 +242,6 @@
     });
 })();
 </script>
-
-<!--
-  Copyright JS Foundation and other contributors, http://js.foundation
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
 
 <script type="text/x-red" data-help-name="link in">
     <p>Create virtual wires between flows.</p>

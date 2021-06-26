@@ -1,6 +1,4 @@
 /*
- * Copyright NepheleTech, http://www.nephelerech.com
- *
  * This file is part of J-RED API project.
  *
  * J-RED API is free software; you can redistribute it and/or
@@ -18,6 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package com.nepheletech.jred.runtime.util;
+
+import java.time.Instant;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +44,7 @@ public final class JRedUtil {
     JtonPathConfiguration.configure();
   }
 
-  private JRedUtil() {
-  }
+  private JRedUtil() {}
 
   /**
    * 
@@ -78,9 +77,10 @@ public final class JRedUtil {
     } else if ("json".equals(type)) {
       return JtonParser.parse(value);
     } else if ("re".equals(type)) {
+      // TODO regular expression
       throw new UnsupportedOperationException();
     } else if ("date".equals(type)) {
-      return new JtonPrimitive(System.currentTimeMillis());
+      return new JtonPrimitive(Instant.now().toEpochMilli());
     } else if ("bin".equals(type)) {
       final JtonArray byteArray = JtonParser.parse(value).asJtonArray();
       return new JtonPrimitive(JRedUtil.toBuffer(byteArray));
@@ -144,12 +144,13 @@ public final class JRedUtil {
    * For example, if the env var `WHO` is set to `Joe`, the string `Hello ${WHO}!`
    * will return `Hello Joe!`.
    * 
-   * @param value the string to parse
+   * @param env the string to parse
    * @return
    */
-  public static JtonElement evaluateEnvProperty(String value) {
-    final String _value = System.getenv().get(value);
-    return value != null ? new JtonPrimitive(_value) : JtonNull.INSTANCE;
+  public static JtonElement evaluateEnvProperty(String env) {
+    // TODO implementation
+    final String _value = env != null ? System.getenv(env) : null;
+    return _value != null ? new JtonPrimitive(_value) : JtonNull.INSTANCE;
   }
 
   /**
@@ -179,11 +180,18 @@ public final class JRedUtil {
    * @param value         the value to set
    * @param createMissing whether to create missing parent properties
    */
-  public static void setMessageProperty(JtonObject msg, String prop, JtonElement value, boolean createMissing) {
+  public static void setMessageProperty(JtonObject msg, String prop, Object value, boolean createMissing) {
     if (prop.indexOf("msg.") == 0) {
       prop = prop.substring(4);
     }
-    setObjectProperty(msg, prop, value, createMissing);
+    
+    final JtonElement _value = value instanceof JtonElement
+        ? (JtonElement) value
+        : value == null
+            ? JtonNull.INSTANCE
+            : new JtonPrimitive(value, false);
+    
+    setObjectProperty(msg, prop, _value, createMissing);
   }
 
   /**
@@ -296,7 +304,7 @@ public final class JRedUtil {
    * @param buffer
    * @return
    */
-  public static JtonArray toByteArray(byte[] buffer) {
+  public static JtonArray toJtonArray(byte[] buffer) {
     final JtonArray byteArray = new JtonArray();
     for (byte b : buffer) {
       byteArray.push(b);
@@ -321,12 +329,14 @@ public final class JRedUtil {
     return stackTrace;
   }
 
+  @Deprecated
   public static void publish(String localTopic, String topic, JtonObject data) {
     MessageBus.sendMessage(localTopic, new JtonObject()
         .set("topic", topic)
         .set("data", data));
   }
 
+  @Deprecated
   public static void publish(String localTopic, String topic, JtonObject data, boolean retain) { // TODO retain
     MessageBus.sendMessage(localTopic, new JtonObject()
         .set("topic", topic)

@@ -2,10 +2,11 @@ package com.nepheletech.jton;
 
 import java.util.stream.Stream;
 
+@Deprecated
 public final class JtonUtils {
 
   private JtonUtils() {}
-  
+
   public static JtonObject getAsJtonObject(final JtonElement element, boolean empty) {
     if (element != null && element.isJtonObject()) {
       return element.asJtonObject();

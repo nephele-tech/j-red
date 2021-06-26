@@ -19,6 +19,8 @@
  */
 package com.nepheletech.jred.runtime.flows;
 
+import static java.lang.System.getenv;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -500,7 +502,7 @@ public final class FlowsManager {
     @Override
     public JtonElement getSetting(String key) {
       final String value = System.getenv(key);
-      return (value != null) ? new JtonPrimitive(System.getenv(key)) : JtonNull.INSTANCE;
+      return (value != null) ? new JtonPrimitive(getenv(key)) : JtonNull.INSTANCE;
     }
 
     @Override

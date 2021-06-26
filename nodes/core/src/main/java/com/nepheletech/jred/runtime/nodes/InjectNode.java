@@ -21,6 +21,8 @@ package com.nepheletech.jred.runtime.nodes;
 
 import static com.nepheletech.jred.runtime.util.JRedUtil.evaluateNodeProperty;
 
+import java.time.Instant;
+
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,24 +62,30 @@ public class InjectNode extends AbstractNode {
     if (this.once && this.onceDelay > 0L) {
       final long delay = onceDelay;
       fromF("timer:%s?delay=%d&repeatCount=1", getId(), delay)
+          .routeId(getType() + ':' + getId() + ":once")
           .toF("log:%s?level=TRACE", logger.getName())
+          .process((x) -> setMsg(x, ensureMsg(x, null)))
           .toF("direct:%s", getId());
     } else if (this.repeat > 0L) {
       final long period = repeat * 1000L;
       fromF("timer:%s?period=%d&delay=%d", getId(), period, period)
+          .routeId(getType() + ':' + getId() + ":repeat")
           .toF("log:%s?level=TRACE", logger.getName())
+          .process((x) -> setMsg(x, ensureMsg(x, null)))
           .toF("direct:%s", getId());
     } else if (this.crontab != null) {
       final String schedule = crontab.replace(' ', '+');
       fromF("cron4j:%s?schedule=%s", getId(), schedule)
+          .routeId(getType() + ':' + getId() + ":crontab")
           .toF("log:%s?level=TRACE", logger.getName())
+          .process((x) -> setMsg(x, ensureMsg(x, null)))
           .toF("direct:%s", getId());
     }
   }
 
   @Override
   protected void onMessage(final Exchange exchange, final JtonObject msg) {
-    logger.trace(">>> onMessage: {}, {}", getId(), msg);
+    logger.trace(">>> onMessage: {}, {}", getId(), exchange);
 
     msg.set("topic", topic);
 
@@ -85,7 +93,7 @@ public class InjectNode extends AbstractNode {
       try {
         if ((payloadType == null && payload.isEmpty())
             || "date".equals(payloadType)) {
-          msg.set("payload", System.currentTimeMillis());
+          msg.set("payload", Instant.now().toEpochMilli());
         } else if (payloadType == null) {
           msg.set("payload", payload);
         } else if ("none".equals(payloadType)) {
@@ -95,12 +103,14 @@ public class InjectNode extends AbstractNode {
         }
       } catch (Exception err) {
         // error(err, msg);
+        throw new RuntimeException(err);
       }
     } else {
       try {
         msg.set("payload", evaluateNodeProperty(payload, payloadType, this, msg));
       } catch (Exception err) {
         // error(err, msg);
+        throw new RuntimeException(err);
       }
     }
 
