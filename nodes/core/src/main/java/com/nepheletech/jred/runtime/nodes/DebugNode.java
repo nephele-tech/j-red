@@ -19,6 +19,8 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import static com.nepheletech.jred.runtime.util.JRedUtil.toJtonArray;
+
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 
@@ -222,9 +224,9 @@ public final class DebugNode extends AbstractNode {
         final int bufferLength = buffer.length;
         msg.set("format", "buffer[" + bufferLength + "]");
         if (bufferLength > debugLength) {
-          msg.set("msg", new JtonPrimitive(Hex.encodeHexString(Arrays.copyOf(buffer, debugLength))));
+          msg.set("msg", toJtonArray(Arrays.copyOf(buffer, debugLength)));
         } else {
-          msg.set("msg", new JtonPrimitive(Hex.encodeHexString(buffer)));
+          msg.set("msg", toJtonArray(buffer));
         }
       } else {
         final String str = p.asString();
