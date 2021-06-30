@@ -28,7 +28,13 @@ import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 
+/**
+ * This class represents a flow within the runtime. It is responsible for
+ * creating, starting and stopping all nodes within the flow.
+ */
 public interface Flow {
+  
+  String getPath();
 
   <T extends Node> T getNode(String id);
 

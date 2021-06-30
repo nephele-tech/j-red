@@ -470,6 +470,12 @@ public final class FlowsManager {
     //=Settings.get().globalContext(); TODO use seed for global context
 
     @Override
+    public String getPath() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    @Override
     public Node getNode(String id) {
       return FlowsManager.this.getNode(id);
     }

@@ -102,6 +102,11 @@ public class FlowImpl implements Flow {
     this.statusNodes = new ArrayList<>();
     this.context = new JtonObject();
   }
+  
+  @Override
+  public String getPath() {
+    return id;
+  }
 
   /**
    * Start this flow.

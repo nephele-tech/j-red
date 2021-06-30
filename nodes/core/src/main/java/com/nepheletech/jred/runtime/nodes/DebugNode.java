@@ -1,6 +1,4 @@
 /*
- * Copyright NepheleTech, http://www.nephelerech.com
- *
  * This file is part of J-RED Nodes project.
  *
  * J-RED Nodes is free software; you can redistribute it and/or
@@ -19,79 +17,163 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import static com.nepheletech.jred.runtime.util.JRedUtil.getMessageProperty;
 import static com.nepheletech.jred.runtime.util.JRedUtil.toJtonArray;
 
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 import org.apache.camel.Exchange;
-import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
 
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
+import com.nepheletech.jton.JtonNull;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
 public final class DebugNode extends AbstractNode {
-  
-  private final int DEBUG_MAX_LENGTH = 1000;
-  private final boolean USE_COLORS = false;
+
+  // The maximum length, in characters, of any message sent to the debug sidebar
+  // tab
+  private final int DEBUG_MAX_LENGTH = 1000; // TODO settings
+
+// Colourise the console output of the debug node 
+  private final boolean USE_COLORS = false; // TODO settings
 
   private boolean active;
 
   private final boolean tosidebar;
   private final boolean console;
   private final boolean tostatus;
+  private final String statusType;
+  private final String statusVal;
   private final String complete;
   private final int severity;
 
+  private JtonObject oldState;
+
   private final String preparedEditExpression;
+  private final String preparedStatExpression;
 
   public DebugNode(Flow flow, JtonObject config) {
     super(flow, config);
 
     final String targetType = config.getAsString("targetType", "msg");
     final boolean hasEditExpression = "jsonpath".equals(targetType);
-    
     final String editExpression = hasEditExpression ? config.getAsString("complete") : null;
+
     final String complete = hasEditExpression ? null : config.getAsString("complete", "payload");
-    
     this.complete = "false".equals(complete) ? "payload" : complete;
-    this.console = config.get("console").asBoolean(false);
+
+    this.console = config.getAsBoolean("console", false);
     this.tostatus = !"true".equals(this.complete) && config.getAsBoolean("tostatus", false);
-    this.tosidebar = config.get("tosidebar").asBoolean(true);
+    this.statusVal = config.getAsString("", this.complete);
+    this.statusType = config.getAsString("statusType", "auto");
+    this.tosidebar = config.getAsBoolean("tosidebar", true);
+
     this.severity = config.get("severity").asInt(40);
-    this.active = config.get("active").asBoolean(true);
+
+    this.active = config.getAsBoolean("active", true);
 
     if (this.tostatus) {
-      // TODO set status
-    } else {
-      // TODO clear status
+      this.status(new JtonObject().set("fill", "grey").set("shape", "ring"));
+      this.oldState = new JtonObject();
     }
+
+    boolean hasStatExpression = "jsonpath".equals(this.statusType);
+    String statExpression = hasStatExpression ? config.getAsString("statusVal") : null;
 
     if (editExpression != null) {
       preparedEditExpression = editExpression;
     } else {
       preparedEditExpression = null;
     }
+
+    if (statExpression != null) {
+      preparedStatExpression = statExpression;
+    } else {
+      preparedStatExpression = null;
+    }
   }
 
-  public boolean isActive() { return active; }
+  public boolean isActive() {
+    return active;
+  }
 
   public void setActive(boolean active) {
     logger.trace(">>> setActive: {}", active);
+
     this.active = active;
   }
 
-  public boolean isTosidebar() { return tosidebar; }
+  public boolean isTosidebar() {
+    return tosidebar;
+  }
 
-  public boolean isTostatus() { return tostatus; }
+  public boolean isTostatus() {
+    return tostatus;
+  }
 
   @Override
   protected void onMessage(Exchange exchange, JtonObject msg) {
-    logger.trace(">>> onMessage: id={}, msg={}", getId(), msg);
+    logger.trace(">>> onMessage: exchange={}, msg={}", exchange, msg);
+
+    if (getId().equals(getMessageProperty(msg, "status.source.id").asString(null))) {
+      // done()
+      return;
+    }
+
+    if (tostatus) {
+      prepareStatus(msg, (err, debugMsg) -> {
+        if (err != null) {
+          error(err, msg);
+          return;
+        }
+        final JtonElement output = debugMsg.get("msg");
+        String st = output.isJtonPrimitive() && output.asJtonPrimitive().isString()
+            ? output.asString()
+            : output.toString();
+        String fill = "grey";
+        String shape = "dot";
+        if (output.isJtonObject()
+            && output.asJtonObject().has("fill")
+            && output.asJtonObject().has("shape")
+            && output.asJtonObject().has("text")) {
+          final JtonObject _output = output.asJtonObject();
+          fill = _output.getAsString("fill");
+          shape = _output.getAsString("shape");
+          st = _output.getAsString("text");
+        }
+        if ("auto".equals(statusType)) {
+          if (msg.has("error")) {
+            fill = "red";
+            st = getMessageProperty(msg, "error.message").asString("");
+          }
+          if (msg.has("status")) {
+            fill = getMessageProperty(msg, "status.fill").asString("grey");
+            shape = getMessageProperty(msg, "status.shape").asString("ring");
+            st = getMessageProperty(msg, "status.text").asString("");
+          }
+        }
+
+        if (st.length() > 32) {
+          st = st.substring(0, 32) + "...";
+        }
+        
+        final JtonObject newStatus = new JtonObject()
+            .set("fill", fill)
+            .set("shape", shape)
+            .set("text", st);
+
+        if (!newStatus.equals(oldState)) { // only send if we have to
+          status(newStatus);
+          oldState = newStatus; // TODO JSON.stringify(newStatus);
+        }
+      });
+    }
 
     if ("true".equals(complete)) {
       // debug complete msg object
@@ -101,45 +183,42 @@ public final class DebugNode extends AbstractNode {
       if (active && tosidebar) {
         sendDebug(new JtonObject()
             .set("id", getId())
-            .set("name", getName())
+            .set("z", getZ())
+            .set("_alias", getAlias())
+            .set("path", getFlow().getPath())
+            .set("name", StringUtils.stripToEmpty(getName()))
             .set("topic", msg.get("topic"))
-            .set("msg", msg)
-            .set("_path", msg.get("_path")));
+            .set("msg", msg));
       }
     } else {
-      prepareValue(msg, (error, _msg) -> {
+      prepareValue(msg, (error, debugMsg) -> {
         if (error != null) {
-          error(error, null);
+          error(error, msg); // FIXME
           return;
         }
-        final JtonElement output = _msg.get("msg");
+        final JtonElement output = debugMsg.get("msg");
         if (this.console) {
-          if (output.isJtonPrimitive()) {
-            final JtonPrimitive _output = output.asJtonPrimitive();
-            log(msg);
+          if (output.isJtonPrimitive() && output.asJtonPrimitive().isString()) {
+            log(msg); // FIXME
           } else if (output.isJtonObject()) {
             log(msg);
           } else {
             log(msg);
           }
         }
-        if (tostatus) {
-          String st = output.isJtonPrimitive() ? output.asString() : output.toString();
-          if (st.length() > 32) {
-            st = st.substring(0, 32) + "...";
+        if (active) {
+          if(tosidebar) {
+            sendDebug(debugMsg);
           }
-          
-          logger.debug("send status: {}", st);
-          
-          status(new JtonObject()
-              .set("fill", "grey")
-              .set("shape", "dot")
-              .set("text", st));
-        }
-        if (active && tosidebar) {
-          sendDebug(_msg);
         }
       });
+    }
+  }
+
+  @Override
+  protected void onClosed(boolean removed) {
+    if (oldState != null) {
+      status(new JtonObject());
     }
   }
 
@@ -147,100 +226,86 @@ public final class DebugNode extends AbstractNode {
     logger.trace(">>> sendDebug: active={}, msg={}", active, msg);
 
     // don't put blank errors in sidebar (but do add to logs)
-    msg = encodeObject(msg, null); // FIXME maxLength
-    
+    msg = JRedUtil.encodeObject(msg, new JtonObject().set("maxLength", DEBUG_MAX_LENGTH));
+
     JRedUtil.publish("debug", "debug", msg);
   }
 
   private void prepareValue(JtonObject msg, BiConsumer<Throwable, JtonObject> done) {
     // Either apply the jsonpath expression or...
     if (preparedEditExpression != null) {
-      JtonElement value = JRedUtil.evaluateJsonPathExpression(msg, preparedEditExpression);
+      final JtonElement value = JRedUtil.evaluateJsonPathExpression(msg, preparedEditExpression);
       done.accept(null, new JtonObject()
-          //.set("id", Optional.ofNullable(getAlias()).orElse(getId()))
           .set("id", getId())
           .set("z", getZ())
-          .set("name", getName())
+          .set("_alias", getAlias())
+          .set("path", getFlow().getPath())
+          .set("name", StringUtils.trimToEmpty(getName()))
           .set("topic", msg.get("topic"))
-          //.set("property", property)
-          .set("msg", value)
-          .set("_path", msg.get("_path")));
+          .set("msg", value));
     } else {
       // Extract the required message property
       String property = "payload";
-      JtonElement output = msg.get(property); // XXX FIXME
+      JtonElement output = msg.get(property);
       if (!"false".equals(complete) && complete != null) {
         property = this.complete;
-        output = msg.get(property); // XXX FIXME
+        try {
+          output = JRedUtil.getMessageProperty(msg, property);
+        } catch (Exception err) {
+          err.printStackTrace(); // FIXME
+          output = JtonNull.INSTANCE;
+        }
       }
       done.accept(null, new JtonObject()
-          //.set("id", Optional.ofNullable(getAlias()).orElse(getId()))
           .set("id", getId())
           .set("z", getZ())
-          .set("name", getName())
+          .set("_alias", getAlias())
+          .set("path", getFlow().getPath())
+          .set("name", StringUtils.stripToEmpty(getName()))
           .set("topic", msg.get("topic"))
           .set("property", property)
-          .set("msg", output)
-          .set("_path", msg.get("_path")));
+          .set("msg", output));
     }
   }
 
-  private JtonObject encodeObject(JtonObject msg, JtonObject opts) {
-    int debugLength = 1_000;
-    if (opts != null && opts.has("maxLength")) {
-      debugLength = opts.get("maxLength").asInt(debugLength);
-    }
-
-    final JtonElement _msg = msg.get("msg");
-    
-    if (_msg.isJtonObject()) {
-      msg.set("format", "Object");
-      msg.set("msg", _msg.toString());
-    } else if (_msg.isJtonArray()) {
-      final JtonArray a = _msg.asJtonArray();
-      final int arrayLength = a.size();
-      msg.set("format", "array[" + arrayLength + "]");
-      if (arrayLength > debugLength) {
-        msg.set("msg", new JtonObject()
-            .set("__enc__", true)
-            .set("type", "array")
-            .set("data", new JtonArray(a.subList(0, debugLength)))
-            .set("length", debugLength).toString());
+  private void prepareStatus(JtonObject msg, BiConsumer<Throwable, JtonObject> done) {
+    if ("auto".equals(statusType)) {
+      if ("true".equals(complete)) {
+        done.accept(null, new JtonObject()
+            .set("msg", msg.get("payload")));
       } else {
-        msg.set("msg", a.toString());
+        prepareValue(msg, (err, debugMsg) -> {
+            if (err != null) {
+              done.accept(err, null);
+            } else {
+              done.accept(null, new JtonObject()
+                  .set("msg", debugMsg.get("msg")));
+            }
+          }
+        );
       }
-    } else if (_msg.isJtonPrimitive()) {
-      final JtonPrimitive p = _msg.asJtonPrimitive();
-      if (p.isJtonTransient()) {
-        msg.set("msg", "[Type not printable]");
-      } else if (p.isBoolean()) {
-        msg.set("format", "boolean");
-        msg.set("msg", _msg);
-      } else if (p.isNumber()) {
-        msg.set("format", "number");
-        msg.set("msg", _msg);
-      } else if (p.getValue() instanceof byte[]) {
-        final byte[] buffer = (byte[]) p.getValue();
-        final int bufferLength = buffer.length;
-        msg.set("format", "buffer[" + bufferLength + "]");
-        if (bufferLength > debugLength) {
-          msg.set("msg", toJtonArray(Arrays.copyOf(buffer, debugLength)));
-        } else {
-          msg.set("msg", toJtonArray(buffer));
+    } else {
+      // Either apply the jsonata expression or...
+      if (preparedStatExpression != null) {
+        try {
+          done.accept(null, new JtonObject()
+              .set("msg", JRedUtil.evaluateJsonPathExpression(msg, preparedStatExpression)));
+        } catch (Exception err) {
+          done.accept(err, null);
         }
       } else {
-        final String str = p.asString();
-        final int strLength = str.length();
-        msg.set("format", "string[" + strLength + "]");
-        msg.set("msg", (strLength > debugLength)
-            ? str.substring(0, debugLength) + "..."
-            : str);
-      }
-    } else if (_msg.isJtonNull()) {
-      msg.set("format", "undefined");
-      msg.set("msg", "(undefined)");
-    }
+        // Extract the required message property
+        JtonElement output = null;
 
-    return msg;
+        try {
+          output = JRedUtil.getMessageProperty(msg, statusVal);
+          done.accept(null, new JtonObject()
+              .set("msg", output));
+        } catch (Exception err) {
+          done.accept(err, new JtonObject()
+              .set("msg", output));
+        }
+      }
+    }
   }
 }

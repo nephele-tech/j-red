@@ -1,6 +1,4 @@
 /*
- * Copyright NepheleTech, http://www.nephelerech.com
- *
  * This file is part of J-RED Runtime project.
  *
  * J-RED Runtime is free software; you can redistribute it and/or
@@ -35,12 +33,21 @@ final class SubflowNode extends AbstractNode {
     super(flow, config);
   }
 
-  public void setUpdateWires(BiConsumer<SubflowNode, JtonArray> updateWires) { this.updateWires = updateWires; }
+  public void setUpdateWires(BiConsumer<SubflowNode, JtonArray> updateWires) {
+    this.updateWires = updateWires;
+  }
+  
+  @Override
+  public void configure() throws Exception {
+    super.configure();
+    
+    logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {}", this);
+  }
 
   @Override
   protected void onMessage(final Exchange exchange, final JtonObject msg) {
     logger.trace(">>> onMessage: {}", getId());
-    
+
     send(exchange, msg);
   }
 

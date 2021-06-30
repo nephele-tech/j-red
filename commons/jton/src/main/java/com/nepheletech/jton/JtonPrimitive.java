@@ -118,7 +118,8 @@ public final class JtonPrimitive extends JtonElement {
 
   public boolean isJtonTransient() { return jtonTransient; }
 
-  public Object getValue() { return value; }
+  @SuppressWarnings("unchecked")
+  public <T> T getValue() { return (T) value; }
 
   /**
    * Check whether this primitive contains a boolean value.

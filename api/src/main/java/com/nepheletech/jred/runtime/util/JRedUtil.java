@@ -18,7 +18,9 @@
 package com.nepheletech.jred.runtime.util;
 
 import java.time.Instant;
+import java.util.Arrays;
 
+import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ import com.nepheletech.jton.JtonUtil;
 import com.nepheletech.jton.jsonpath.JtonPathConfiguration;
 import com.nepheletech.messagebus.MessageBus;
 
+// See: @node-red/util/lib/util.js
 public final class JRedUtil {
   private static final Logger logger = LoggerFactory.getLogger(JRedUtil.class);
 
@@ -44,7 +47,8 @@ public final class JRedUtil {
     JtonPathConfiguration.configure();
   }
 
-  private JRedUtil() {}
+  private JRedUtil() {
+  }
 
   /**
    * 
@@ -184,13 +188,13 @@ public final class JRedUtil {
     if (prop.indexOf("msg.") == 0) {
       prop = prop.substring(4);
     }
-    
+
     final JtonElement _value = value instanceof JtonElement
         ? (JtonElement) value
         : value == null
             ? JtonNull.INSTANCE
             : new JtonPrimitive(value, false);
-    
+
     setObjectProperty(msg, prop, _value, createMissing);
   }
 
@@ -283,6 +287,89 @@ public final class JRedUtil {
         logger.debug("JsonPath expr failed: " + jsonPath != null ? jsonPath.getPath() : null, e);
       }
       return JtonNull.INSTANCE;
+    }
+  }
+
+  /**
+   * Encode an object to JSON without losing information about non-JSON types such
+   * as Buffer and Function.
+   * 
+   * *This function is closely tied to its reverse within the editor*
+   * 
+   * @param msg
+   * @param opts
+   * @return the enocded object
+   */
+  public static JtonObject encodeObject(JtonObject msg, JtonObject opts) {
+    try {
+      int debugLength = 1_000;
+      if (opts != null && opts.has("maxLength")) {
+        debugLength = opts.get("maxLength").asInt(debugLength);
+      }
+
+      final JtonElement _msg = msg.get("msg");
+      
+      // TODO Error
+      
+      if (_msg.isJtonObject()) {
+        msg.set("format", "Object");
+        msg.set("msg", _msg.toString());
+      } else if (_msg.isJtonArray()) {
+        final JtonArray a = _msg.asJtonArray();
+        final int arrayLength = a.size();
+        msg.set("format", "array[" + arrayLength + "]");
+        if (arrayLength > debugLength) {
+          msg.set("msg", new JtonObject()
+              .set("__enc__", true)
+              .set("type", "array")
+              .set("data", new JtonArray(a.subList(0, debugLength)))
+              .set("length", debugLength).toString());
+        } else {
+          msg.set("msg", a.toString());
+        }
+      } else if (_msg.isJtonPrimitive()) {
+        final JtonPrimitive p = _msg.asJtonPrimitive();
+        if (p.isJtonTransient()) {
+          msg.set("msg", "[Type not printable]");
+        } else if (p.isBoolean()) {
+          msg.set("format", "boolean");
+          msg.set("msg", _msg);
+        } else if (p.isNumber()) {
+          msg.set("format", "number");
+          msg.set("msg", _msg);
+        } else if (p.getValue() instanceof byte[]) {
+          
+          //
+          // Buffer
+          //
+          
+          final byte[] buffer = p.getValue();
+          final int bufferLength = buffer.length;
+          msg.set("format", "buffer[" + bufferLength + "]");
+          if (bufferLength > debugLength) {
+            //msg.set("msg", toJtonArray(Arrays.copyOf(buffer, debugLength)));
+            msg.set("msg", new JtonPrimitive(Hex.encodeHexString(Arrays.copyOf(buffer, debugLength))));
+          } else {
+            //msg.set("msg", toJtonArray(buffer));
+            msg.set("msg", new JtonPrimitive(Hex.encodeHexString(buffer)));
+          }
+        } else {
+          final String str = p.asString();
+          final int strLength = str.length();
+          msg.set("format", "string[" + strLength + "]");
+          msg.set("msg", (strLength > debugLength)
+              ? str.substring(0, debugLength) + "..."
+              : str);
+        }
+      } else if (_msg.isJtonNull()) {
+        msg.set("format", "undefined");
+        msg.set("msg", "(undefined)");
+      }
+
+      return msg;
+    } catch (Exception e) {
+
+      return null;
     }
   }
 

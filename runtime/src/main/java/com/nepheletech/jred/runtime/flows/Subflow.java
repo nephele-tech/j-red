@@ -240,6 +240,13 @@ public class Subflow extends FlowImpl {
         }
       }
     }
+    
+    try {
+      getCamelContext().addRoutes(node);
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
 
     // TODO subflowDef.status
 

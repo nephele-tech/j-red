@@ -51,10 +51,12 @@ public class JoinNode extends AbstractNode {
 
           } else {
 
-            oldExchange.getIn().getBody(JtonArray.class)
-                .push(newExchange.getIn().getBody(JtonElement.class));
+            JtonArray body = oldExchange.getIn().getBody(JtonArray.class);
+            body.push(newExchange.getIn().getBody(JtonElement.class));
 
-            return oldExchange;
+            newExchange.getIn().setBody(body);
+
+            return newExchange;
           }
         })
 
@@ -65,8 +67,14 @@ public class JoinNode extends AbstractNode {
           // final int index = parts.getAsInt("index");
           final boolean complete = parts.getAsBoolean("complete", false);
           // return (count - 1) == index;
+
+          logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>{}", parts);
+          logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>{}", complete);
+          
           return complete;
         })
+        
+        .parallelProcessing()
 
         .toF("log:%s?level=TRACE&showBody=true", logger.getName())
         .process(this::handleAggregation);

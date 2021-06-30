@@ -118,6 +118,7 @@ public class SplitNode extends AbstractNode {
         .process(this::handleArrayParts);
 
     if ("len".equals(spltType)) {
+
       fromF("direct:%s#string", getId())
           .toF("log:%s?level=TRACE", logger.getName())
           .process((x) -> x.getIn().setHeader(HEADER_ID_KEY, randomUUID().toString()))
@@ -125,7 +126,17 @@ public class SplitNode extends AbstractNode {
           .split(bodyAs(String.class).tokenize("", spltLen, false)).streaming(stream)
           .toF("log:%s?level=TRACE", logger.getName())
           .process(this::handleStringParts);
+
+      fromF("direct:%s#buffer", getId())
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process((x) -> x.getIn().setHeader(HEADER_ID_KEY, randomUUID().toString()))
+          .process((x) -> x.getIn().setBody(x.getIn().getBody(JtonPrimitive.class).getValue()))
+          .split(bodyAs(byte.class).tokenize("", spltLen, false)).streaming(stream)
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process(this::handleBufferParts);
+
     } else if ("bin".equals(spltType)) {
+      
       fromF("direct:%s#string", getId())
           .toF("log:%s?level=TRACE", logger.getName())
           .process((x) -> x.getIn().setHeader(HEADER_ID_KEY, randomUUID().toString()))
@@ -133,7 +144,16 @@ public class SplitNode extends AbstractNode {
           .split(bodyAs(String.class).tokenize(new String(spltBin, UTF_8))).streaming(stream)
           .toF("log:%s?level=TRACE", logger.getName())
           .process(this::handleStringParts);
+
+      fromF("direct:%s#buffer", getId())
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process((x) -> x.getIn().setHeader(HEADER_ID_KEY, randomUUID().toString()))
+          .split(body())
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process(this::handleBufferParts);
+
     } else { // str
+      
       fromF("direct:%s#string", getId())
           .toF("log:%s?level=TRACE", logger.getName())
           .process((x) -> x.getIn().setHeader(HEADER_ID_KEY, randomUUID().toString()))
@@ -141,13 +161,14 @@ public class SplitNode extends AbstractNode {
           .split(bodyAs(String.class).tokenize(spltStr)).streaming(stream)
           .toF("log:%s?level=TRACE", logger.getName())
           .process(this::handleStringParts);
-    }
 
-    fromF("direct:%s#buffer", getId())
-        .toF("log:%s?level=TRACE", logger.getName())
-        .split(body())
-        .toF("log:%s?level=TRACE", logger.getName())
-        .process(this::handleBufferParts);
+      fromF("direct:%s#buffer", getId())
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process((x) -> x.getIn().setHeader(HEADER_ID_KEY, randomUUID().toString()))
+          .split(body())
+          .toF("log:%s?level=TRACE", logger.getName())
+          .process(this::handleBufferParts);
+    }
 
     fromF("direct:%s#otherwise", getId())
         .toF("log:%s?level=TRACE", logger.getName())
