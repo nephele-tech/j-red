@@ -65,6 +65,8 @@ public class FlowImpl implements Flow {
   private final Map<String, Subflow> subflowInstanceNodes;
   private final List<CatchNode> catchNodes;
   private final List<StatusNode> statusNodes;
+  
+  protected String path;
 
   private final JtonObject context;
 
@@ -100,12 +102,14 @@ public class FlowImpl implements Flow {
     this.subflowInstanceNodes = new HashMap<>();
     this.catchNodes = new ArrayList<>();
     this.statusNodes = new ArrayList<>();
-    this.context = new JtonObject();
+    this.path = this.id;
+    // Ensure a context exists for this flow
+    this.context = new JtonObject(); //context.getFlowContext(this.id,this.parent.id);
   }
   
   @Override
   public String getPath() {
-    return id;
+    return path;
   }
 
   /**

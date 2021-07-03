@@ -416,14 +416,12 @@ public final class JRedUtil {
     return stackTrace;
   }
 
-  @Deprecated
   public static void publish(String localTopic, String topic, JtonObject data) {
     MessageBus.sendMessage(localTopic, new JtonObject()
         .set("topic", topic)
         .set("data", data));
   }
-
-  @Deprecated
+ 
   public static void publish(String localTopic, String topic, JtonObject data, boolean retain) { // TODO retain
     MessageBus.sendMessage(localTopic, new JtonObject()
         .set("topic", topic)

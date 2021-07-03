@@ -73,6 +73,8 @@ public class Subflow extends FlowImpl {
     this.subflowDef = subflowDef;
     this.subflowInstance = subflowInstance;
     this.node_map = data[1];
+    this.path = parent.getPath() + "/"
+        + subflowInstance.getAsString("_alias", subflowInstance.getAsString("id"));
 
     final JtonObject env = new JtonObject();
     if (this.subflowDef.has("env")) {
@@ -119,7 +121,7 @@ public class Subflow extends FlowImpl {
                   || _payload.keySet().size() == 0) {
                 // msg.payload is an object that looks like a status object
                 throw new UnsupportedOperationException("status");
-                //return;
+                // return;
               }
             }
 
@@ -240,7 +242,7 @@ public class Subflow extends FlowImpl {
         }
       }
     }
-    
+
     try {
       getCamelContext().addRoutes(node);
     } catch (Exception e) {
@@ -349,7 +351,9 @@ public class Subflow extends FlowImpl {
    */
   @Override
   public Node getNode(String id, boolean cancelBubble) {
-    if (this.statusNode != null && this.statusNode.getId().equals(id)) { return statusNode; }
+    if (this.statusNode != null && this.statusNode.getId().equals(id)) {
+      return statusNode;
+    }
     return super.getNode(id, cancelBubble);
   }
 

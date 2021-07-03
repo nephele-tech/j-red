@@ -40,8 +40,6 @@ final class SubflowNode extends AbstractNode {
   @Override
   public void configure() throws Exception {
     super.configure();
-    
-    logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {}", this);
   }
 
   @Override
