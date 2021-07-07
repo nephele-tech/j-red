@@ -143,6 +143,8 @@ public class LocalFileSystemStorage implements Storage {
 
   @Override
   public Object getLibraryEntry(String type, String path) throws IOException {
+    logger.trace(">>> getLibraryEntry: type={}, path={}", type, path);
+    
     final Path fn = Paths.get(libDir.toString(), path);
         
         logger.info("---------------------------------{}", fn);
@@ -155,7 +157,9 @@ public class LocalFileSystemStorage implements Storage {
           throw new RuntimeException(e);
         }
       } else {
-        return readFile(fn);
+        final String fileContent = readFile(fn);
+        // TODO file extension
+        return fileContent.replaceAll("// meta:.*\\n", "");
       }
     } else {
       final JtonArray entries = new JtonArray();
@@ -324,6 +328,8 @@ public class LocalFileSystemStorage implements Storage {
   }
 
   private static String readFile(Path path) {
+    logger.trace(">>> readFile: path={}", path);
+    
     try {
       return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
     } catch (IOException e) {
