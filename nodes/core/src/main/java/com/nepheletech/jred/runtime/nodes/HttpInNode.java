@@ -88,12 +88,13 @@ public class HttpInNode extends AbstractNode {
     // normalize url
     this.url = (url.charAt(0) != '/') ? '/' + url : url;
 
+    this.method = config.get("method").asString("GET").toUpperCase();
+    this.upload = config.get("upload").asBoolean();
+
     // extract path parameters from url
-    final StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder(this.method);
     final String[] parts = url.split("/");
     for (String part : parts) {
-      logger.info("------------------- {}", part);
-
       if (StringUtils.trimToNull(part) == null) {
         continue;
       }
@@ -109,9 +110,6 @@ public class HttpInNode extends AbstractNode {
     }
     this.key = sb.toString();
 
-    this.method = config.get("method").asString("GET").toUpperCase();
-    this.upload = config.get("upload").asBoolean();
-
     // TODO swagger
 
     if (mappings.containsKey(this.key)) {
@@ -119,6 +117,7 @@ public class HttpInNode extends AbstractNode {
     }
 
     // last one wins
+    logger.debug("Register with key: '{}'", this.key);
     mappings.put(this.key, new WeakReference<>(this));
   }
 

@@ -55,6 +55,8 @@ public class HttpInNodeServlet extends HttpServlet {
 
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    logger.trace(">>> service: req={}, res={}", req, res);
+    
     final String method = req.getMethod();
     final String pathInfo = req.getPathInfo();
 
@@ -87,7 +89,9 @@ public class HttpInNodeServlet extends HttpServlet {
 
     final JtonObject msg = new JtonObject()
         .set("req", request)
-        .set(AsyncContext.class.getName(), ac, true);
+        .set(AsyncContext.class.getName(), ac, true)
+        .set("_req", req, true)
+        .set("_res", res, true);
 
     //
     // For a GET request, 'payload', contains an object of any query string
@@ -104,7 +108,7 @@ public class HttpInNodeServlet extends HttpServlet {
     // Dispatcher...
     //
 
-    final HttpInNode node = HttpInNode.byPath(pathInfo);
+    final HttpInNode node = HttpInNode.byPath(method + pathInfo);
     if (node != null) {
       node.receive(msg);
     } else {
