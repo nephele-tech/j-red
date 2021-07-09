@@ -19,11 +19,14 @@
  */
 package com.nepheletech.jred.runtime.nodes;
 
+import static com.nepheletech.jred.runtime.util.JRedUtil.getMessageProperty;
 
 import java.util.Objects;
 
 import org.apache.camel.Exchange;
 
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.nepheletech.jred.runtime.flows.Flow;
 import com.nepheletech.jred.runtime.util.JRedUtil;
 import com.nepheletech.jton.JtonArray;
@@ -33,7 +36,7 @@ import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
 
 public class SwitchNode extends AbstractNode {
-  
+
   private final JtonArray rules;
   private final String property;
   private final String propertyType;
@@ -43,7 +46,7 @@ public class SwitchNode extends AbstractNode {
 
   public SwitchNode(Flow flow, JtonObject config) {
     super(flow, config);
-    
+
     this.rules = config.getAsJtonArray("rules", true);
     this.property = config.getAsString("property");
     this.propertyType = config.getAsString("propertyType", "msg");
@@ -121,6 +124,7 @@ public class SwitchNode extends AbstractNode {
         continue;
       }
       JtonObject rule = _rule.asJtonObject();
+      logger.info("----------------------------------------------------------------{}", rule);
 
       JtonElement test = prop;
 
@@ -157,23 +161,27 @@ public class SwitchNode extends AbstractNode {
       } else if ("neq".equals(t)) {
         result = !Objects.equals(test, v1);
       } else if ("lt".equals(t)) {
-        double a = toDouble(test);
+        double a = test.asDouble(Double.NaN);
         double v = v1.asDouble(Double.NaN);
         result = isOneNaN(a, v) ? false : a < v;
       } else if ("lte".equals(t)) {
-        double a = toDouble(test);
+        double a = test.asDouble(Double.NaN);
         double v = v1.asDouble(Double.NaN);
         result = isOneNaN(a, v) ? false : a <= v;
       } else if ("gt".equals(t)) {
-        double a = toDouble(test);
+        double a = test.asDouble(Double.NaN);
         double v = v1.asDouble(Double.NaN);
         result = isOneNaN(a, v) ? false : a > v;
       } else if ("gte".equals(t)) {
-        double a = toDouble(test);
+        double a = test.asDouble(Double.NaN);
         double v = v1.asDouble(Double.NaN);
         result = isOneNaN(a, v) ? false : a >= v;
+      } else if ("hask".equals(t)) {
+        if (test.isJtonObject()) {
+          result = test.asJtonObject().has(v1.asString(""));
+        }
       } else if ("btwn".equals(t)) { // TODO handle dates...
-        double a = toDouble(test);
+        double a = test.asDouble(Double.NaN);
         double v = v1.asDouble(Double.NaN);
         double _v2 = v2.asDouble(Double.NaN);
         result = isOneNaN(a, v, _v2) ? false : a >= v && a <= _v2;
@@ -191,6 +199,80 @@ public class SwitchNode extends AbstractNode {
         result = test.isJtonNull();
       } else if ("nnull".equals(t)) {
         result = !test.isJtonNull();
+      } else if ("empty".equals(t)) {
+        if (test.isJtonPrimitive()) {
+          final JtonPrimitive _test = test.asJtonPrimitive();
+          if (_test.isString()) {
+            result = _test.asString().isEmpty();
+          } else if (_test.isBuffer()) {
+            final byte[] buffer = _test.getValue();
+            result = buffer.length == 0;
+          }
+        } else if (test.isJtonArray()) {
+          result = test.asJtonArray().isEmpty();
+        } else if (test.isJtonObject()) {
+          result = test.asJtonObject().isEmpty();
+        }
+      } else if ("nempty".equals(t)) {
+        if (test.isJtonPrimitive()) {
+          final JtonPrimitive _test = test.asJtonPrimitive();
+          if (_test.isString()) {
+            result = !_test.asString().isEmpty();
+          } else if (_test.isBuffer()) {
+            final byte[] buffer = _test.getValue();
+            result = buffer.length > 0;
+          }
+        } else if (test.isJtonArray()) {
+          result = !test.asJtonArray().isEmpty();
+        } else if (test.isJtonObject()) {
+          result = !test.asJtonObject().isEmpty();
+        }
+      } else if ("istype".equals(t)) {
+        final String b = v1.asString(null);
+        if ("array".equals(b)) {
+          result = test.isJtonArray();
+        } else if ("object".equals(b)) {
+          result = test.isJtonObject();
+        } else if ("undefined".equals(b) || "null".equals(b)) {
+          result = test.isJtonNull();
+        } else if (test.isJtonPrimitive()) {
+          final JtonPrimitive _test = test.asJtonPrimitive();
+          if ("string".equals(b)) {
+            result = _test.isString();
+          } else if ("number".equals(b)) {
+            result = _test.isNumber();
+          } else if ("boolean".equals(b)) {
+            result = _test.isBoolean();
+          } else if ("buffer".equals(b)) {
+            result = _test.isBuffer();
+          } else if ("json".equals(b)) {
+            try {
+              JsonParser.parseString(_test.asString());
+              result = true;
+            } catch (JsonParseException e) {
+              result = false;
+            }
+          }
+        }
+      } else if ("head".equals(t)) {
+        final int count = v1.asInt(0);
+        final JtonObject parts = msg.getAsJtonObject("parts", false);
+        if (parts != null) {
+          result = parts.getAsInt("index", 0) < count;
+        }
+      } else if ("index".equals(t)) {
+        final int min = v1.asInt(0);
+        final int max = v2.asInt(0);
+        final int index = getMessageProperty(msg, "msg.parts.index").asInt(0);
+        result = ((min <= index) && (index <= max));
+      } else if ("tail".equals(t)) {
+        final int count = v1.asInt(0);
+        final JtonObject parts = msg.getAsJtonObject("parts", false);
+        if (parts != null) {
+          result = parts.getAsInt("count", 0) - count <= parts.getAsInt("index", 0);
+        }
+      } else if ("jsonata_exp".equals(t)) {
+        throw new UnsupportedOperationException("jsonata_exp");
       } else if ("else".equals(t)) {
         result = test.asJtonPrimitive().asBoolean();
       }
@@ -207,10 +289,6 @@ public class SwitchNode extends AbstractNode {
     }
 
     send(exchange, onward);
-  }
-
-  private double toDouble(JtonElement value) {
-    return value.asJtonPrimitive().asDouble(Double.NaN);
   }
 
   private boolean isOneNaN(double a1, double a2) {

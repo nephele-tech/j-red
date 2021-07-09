@@ -14,7 +14,7 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="switch">
+<script type="text/html" data-template-name="switch">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
         <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
@@ -127,7 +127,7 @@
         },
         oneditprepare: function() {
             var node = this;
-            var previousValueType = {value:"prev",label:this._("inject.previous"),hasValue:false};
+            var previousValueType = {value:"prev",label:this._("switch.previous"),hasValue:false};
 
             $("#node-input-property").typedInput({default:this.propertyType||'msg',types:['msg','flow','global','jsonata','env']});
             var outputCount = $("#node-input-outputs").val("{}");
@@ -173,7 +173,7 @@
                 }
             }
 
-            $("#node-input-rule-container").css('min-height','250px').css('min-width','450px').editableList({
+            $("#node-input-rule-container").css('min-height','150px').css('min-width','450px').editableList({
                 addItem: function(container,i,opt) {
                     if (!opt.hasOwnProperty('r')) {
                         opt.r = {};
@@ -237,15 +237,15 @@
 
                     function createTypeValueField(){
                         return $('<input/>',{class:"node-input-rule-type-value",type:"text",style:"margin-left: 5px;"}).appendTo(row).typedInput({default:'string',types:[
-                            {value:"string",label:"string",hasValue:false},
-                            {value:"number",label:"number",hasValue:false},
-                            {value:"boolean",label:"boolean",hasValue:false},
-                            {value:"array",label:"array",hasValue:false},
-                            {value:"buffer",label:"buffer",hasValue:false},
-                            {value:"object",label:"object",hasValue:false},
-                            {value:"json",label:"JSON string",hasValue:false},
-                            {value:"undefined",label:"undefined",hasValue:false},
-                            {value:"null",label:"null",hasValue:false}
+                            {value:"string",label:RED._("common.type.string"),hasValue:false,icon:"red/images/typedInput/az.png"},
+                            {value:"number",label:RED._("common.type.number"),hasValue:false,icon:"red/images/typedInput/09.png"},
+                            {value:"boolean",label:RED._("common.type.boolean"),hasValue:false,icon:"red/images/typedInput/bool.png"},
+                            {value:"array",label:RED._("common.type.array"),hasValue:false,icon:"red/images/typedInput/json.png"},
+                            {value:"buffer",label:RED._("common.type.buffer"),hasValue:false,icon:"red/images/typedInput/bin.png"},
+                            {value:"object",label:RED._("common.type.object"),hasValue:false,icon:"red/images/typedInput/json.png"},
+                            {value:"json",label:RED._("common.type.jsonString"),hasValue:false,icon:"red/images/typedInput/json.png"},
+                            {value:"undefined",label:RED._("common.type.undefined"),hasValue:false},
+                            {value:"null",label:RED._("common.type.null"),hasValue:false}
                         ]});
                     }
 
@@ -354,7 +354,6 @@
                         if (!expValueField){
                             expValueField = createExpValueField();
                         }
-                    } else if (rule.t === "jsonata_exp") {
                         expValueField.typedInput('value',rule.v);
                         expValueField.typedInput('type',rule.vt||'jsonata');
                     } else if (typeof rule.v != "undefined") {
@@ -454,8 +453,61 @@
             }
             var editorRow = $("#dialog-form>div.node-input-rule-container-row");
             height -= (parseInt(editorRow.css("marginTop"))+parseInt(editorRow.css("marginBottom")));
+            height += 16;
             $("#node-input-rule-container").editableList('height',height);
         }
     });
 })();
 </script>
+
+<!--
+  Copyright JS Foundation and other contributors, http://js.foundation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/html" data-help-name="switch">
+    <p>Route messages based on their property values or sequence position.</p>
+    <h3>Details</h3>
+    <p>When a message arrives, the node will evaluate each of the defined rules
+    and forward the message to the corresponding outputs of any matching rules.</p>
+    <p>Optionally, the node can be set to stop evaluating rules once it finds one
+    that matches.</p>
+    <p>The rules can be evaluated against an individual message property, a flow or global
+    context property, environment variable or the result of a JSONata expression.</p>
+    <h4>Rules</h4>
+    <p>There are four types of rule:</p>
+    <ol>
+        <li><b>Value</b> rules are evaluated against the configured property</li>
+        <li><b>Sequence</b> rules can be used on message sequences, such as those
+            generated by the Split node</li>
+        <li>A JSONata <b>Expression</b> can be provided that will be evaluated
+            against the whole message and will match if the expression returns
+            a true value.</li>
+        <li>An <b>Otherwise</b> rule can be used to match if none of the preceeding
+            rules have matched.</li>
+    </ol>
+    <h4>Notes</h4>
+    <p>The <code>is true/false</code> and <code>is null</code> rules perform strict
+       comparisons against those types. They do not convert between types.</p>
+    <p>The <code>is empty</code> and <code>is not empty</code> rules can be used to test the length of Strings, Arrays and Buffers, or the number of properties an Object has. Neither rule will pass if the property being tested has a <code>boolean</code>, <code>null</code> 
+       or <code>undefined</code> value.</p>
+    <h4>Handling message sequences</h4>
+    <p>By default, the node does not modify the <code>msg.parts</code> property of messages
+       that are part of a sequence.</p>
+    <p>The <b>recreate message sequences</b> option can be enabled to generate new message sequences
+       for each rule that matches. In this mode, the node will buffer the entire incoming
+       sequence before sending the new sequences on. The runtime setting <code>nodeMessageBufferMaxLength</code>
+       can be used to limit how many messages nodes will buffer.</p>
+</script>
+
