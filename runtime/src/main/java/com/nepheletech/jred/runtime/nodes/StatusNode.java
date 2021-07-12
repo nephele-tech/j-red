@@ -1,6 +1,4 @@
 /*
- * Copyright NepheleTech, http://www.nephelerech.com
- *
  * This file is part of J-RED Runtime project.
  *
  * J-RED Runtime is free software; you can redistribute it and/or

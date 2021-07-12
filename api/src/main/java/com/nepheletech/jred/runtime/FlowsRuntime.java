@@ -1,6 +1,4 @@
 /*
- * Copyright NepheleTech, http://www.nephelerech.com
- *
  * This file is part of J-RED API project.
  *
  * J-RED API is free software; you can redistribute it and/or
@@ -71,8 +69,8 @@ public interface FlowsRuntime {
   // ---
 
   Storage getStorage();
-
-  CamelContext getCamelContext();
   
   JtonObject getGlobalContext();
+
+  CamelContext getCamelContext();
 }

@@ -1,6 +1,4 @@
 /*
- * Copyright NepheleTech, http://www.nephelerech.com
- *
  * This file is part of J-RED Runtime project.
  *
  * J-RED Runtime is free software; you can redistribute it and/or
@@ -34,18 +32,22 @@ import com.nepheletech.jton.JtonObject;
 public class AbstractFlowsRuntime implements FlowsRuntime {
 
   private final Storage storage;
-  private final FlowsManager flowsManager;
+  
   private final CamelContext camelContext;
+  
+  private final FlowsManager flowsManager;
 
   protected AbstractFlowsRuntime(Storage storage) {
     this.storage = storage;
-    this.flowsManager = new FlowsManager(this);
+    
     this.camelContext = new DefaultCamelContext();
     this.camelContext.disableJMX();
     this.camelContext.getShutdownStrategy().setSuppressLoggingOnTimeout(true);
     this.camelContext.getShutdownStrategy().setLogInflightExchangesOnTimeout(false);
     this.camelContext.getShutdownStrategy().setTimeout(3);
     this.camelContext.getShutdownStrategy().setTimeUnit(TimeUnit.SECONDS);
+
+    this.flowsManager = new FlowsManager(this);
   }
 
   @Override

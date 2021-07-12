@@ -56,7 +56,7 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
   private static final String JRED_MSG = "__jred_msg_";
-  
+
   // ---
 
   private final String id;
@@ -140,14 +140,23 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
   public void configure() throws Exception {
     logger.trace(">>> configure: {}", getId());
 
-    onException(RuntimeException.class)
+    errorHandler(deadLetterChannel("direct:" + getId() + "#deadLetterQueue")
+        .useOriginalMessage());
+
+    from("direct:" + getId() + "#deadLetterQueue")
         .log(LoggingLevel.ERROR, logger, "Runtime exception")
         .process((x) -> {
-          final JtonObject msg = x.getIn().getBody(JtonObject.class);
+          final JtonObject msg = getMsg(x);
+          
           final Exception e = x.getProperty(Exchange.EXCEPTION_CAUGHT,
               RuntimeException.class);
-          AbstractNode.this.error(e, msg);
-        }).handled(true);
+          
+          try {
+            AbstractNode.this.error(e, msg);
+          } catch(Exception ex) {
+            ex.printStackTrace();
+          }
+        });
 
     final String additionalFlow = getAdditionalRoute();
     logger.debug("additionalFlow={}", additionalFlow);
@@ -170,11 +179,11 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
 
   protected final void onMessage(Exchange exchange) {
     logger.trace(">>> onMessage: exchange={}", exchange);
-    
-/*
-    logger.trace("properties={}", 
-        exchange != null ? exchange.getAllProperties() : null, getId());
-*/
+
+    /*
+     * logger.trace("properties={}", exchange != null ? exchange.getAllProperties()
+     * : null, getId());
+     */
     onMessage(exchange, getMsg(exchange));
   }
 
@@ -292,6 +301,7 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
   }
 
   protected void onClosed(boolean removed) {
+    // do nothing
   }
 
   @Override
