@@ -156,16 +156,16 @@ public class FunctionNode extends AbstractNode {
     log_helper(TRACE, msg);
   }
 
-  public void trace(String messafe) {
-    log_helper(TRACE, messafe);
+  public void trace(String message) {
+    log_helper(TRACE, message);
   }
 
   public void debug(JtonObject msg) {
     log_helper(DEBUG, msg);
   }
 
-  public void debug(String messafe) {
-    log_helper(DEBUG, messafe);
+  public void debug(String message) {
+    log_helper(DEBUG, message);
   }
 
   @Override
@@ -177,15 +177,15 @@ public class FunctionNode extends AbstractNode {
     log_helper(WARN, msg);
   }
 
-  public void warn(String messafe) {
-    log_helper(WARN, messafe);
+  public void warn(String message) {
+    log_helper(WARN, message);
   }
 
   public void error(JtonObject msg) {
     log_helper(ERROR, msg);
   }
 
-  public void error(String messafe) {
-    log_helper(ERROR, messafe);
+  public void error(String message) {
+    log_helper(ERROR, message);
   }
 }

@@ -23,6 +23,7 @@ import static com.nepheletech.servlet.utils.HttpServletUtil.APPLICATION_FORM_URL
 import static com.nepheletech.servlet.utils.HttpServletUtil.APPLICATION_JSON;
 import static com.nepheletech.servlet.utils.HttpServletUtil.MULTIPART_FORM_DATA;
 import static com.nepheletech.servlet.utils.HttpServletUtil.TEXT_PLAIN;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -112,7 +113,9 @@ public class HttpInNodeServlet extends HttpServlet {
     if (node != null) {
       node.receive(msg);
     } else {
-      res.sendError(HttpServletResponse.SC_BAD_REQUEST);
+      logger.error("Bad Request: method={}, pathInfo={}", method, pathInfo);
+      res.sendError(SC_BAD_REQUEST);
+      ac.complete();
     }
   }
 
