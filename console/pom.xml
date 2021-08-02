@@ -27,7 +27,7 @@
 
 		<maven-invoker.version>3.1.0</maven-invoker.version>
 		
-		<ant.version>1.10.10</ant.version>
+		<ant.version>1.10.11</ant.version>
 
 		<!-- io.fabric8: docker-maven-plugin -->
 		<docker.repository>${project.artifactId}</docker.repository>
