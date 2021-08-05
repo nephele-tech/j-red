@@ -18,7 +18,7 @@
 
 	<properties>
 		<java.version>11</java.version>
-		<node-red.version>1.3.5</node-red.version>
+		<node-red.version>2.0.1</node-red.version>
 
 		<jaxb-api.version>2.3.1</jaxb-api.version>
 		<jaxb-runtime.version>2.3.2</jaxb-runtime.version>
@@ -32,16 +32,16 @@
 		<logback-classic.version>1.2.3</logback-classic.version>
 
 		<!-- Apache Camel -->
-		<apache-camel.version>3.10.0</apache-camel.version>
+		<apache-camel.version>3.11.0</apache-camel.version>
 
 		<!-- Apache Commons -->
 		<apache.commons-lang3.version>3.12.0</apache.commons-lang3.version>
 
 		<!-- Apache Tomcat -->
-		<tomcat.version>9.0.46</tomcat.version>
+		<tomcat.version>9.0.50</tomcat.version>
 
 		<!-- Jetty Maven Plugin (used by jred-editor-template) -->
-		<jetty-maven-plugin.version>9.4.41.v20210516</jetty-maven-plugin.version>
+		<jetty-maven-plugin.version>9.4.43.v20210629</jetty-maven-plugin.version>
 
 		<!-- In sync with Apache Tomcat -->
 		<servlet-api.version>4.0.1</servlet-api.version>

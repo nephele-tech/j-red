@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jred.runtime.FlowsRuntime;
+import com.nepheletech.jred.runtime.JRedRuntime;
 import com.nepheletech.jred.runtime.nodes.InjectNode;
 import com.nepheletech.jred.runtime.nodes.Node;
 
@@ -81,9 +81,9 @@ public class InjectNodeServlet extends HttpServlet {
     }
   }
 
-  private final FlowsRuntime getFlowsRuntime() {
-    return (FlowsRuntime) getServletContext()
-        .getAttribute(FlowsRuntime.class.getName());
+  private final JRedRuntime getFlowsRuntime() {
+    return (JRedRuntime) getServletContext()
+        .getAttribute(JRedRuntime.class.getName());
   }
 
   private static final String getNodeId(HttpServletRequest req) {

@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jred.runtime.FlowsRuntime;
+import com.nepheletech.jred.runtime.JRedRuntime;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
 
@@ -69,7 +69,7 @@ public class CredentialsServlet extends HttpServlet {
     res.sendError(HttpServletResponse.SC_BAD_REQUEST);
   }
 
-  private final FlowsRuntime getRuntime() {
-    return (FlowsRuntime) getServletContext().getAttribute(FlowsRuntime.class.getName());
+  private final JRedRuntime getRuntime() {
+    return (JRedRuntime) getServletContext().getAttribute(JRedRuntime.class.getName());
   }
 }

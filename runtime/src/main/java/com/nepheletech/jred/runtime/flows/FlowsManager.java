@@ -1,6 +1,4 @@
 /*
- * Copyright NepheleTech, http://www.nephelerech.com
- *
  * This file is part of J-RED Runtime project.
  *
  * J-RED Runtime is free software; you can redistribute it and/or
@@ -32,12 +30,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jred.runtime.FlowsRuntime;
+import com.nepheletech.jred.runtime.JRedRuntime;
 import com.nepheletech.jred.runtime.events.NodesStartedEvent;
 import com.nepheletech.jred.runtime.events.NodesStoppedEvent;
 import com.nepheletech.jred.runtime.events.RuntimeDeployEvent;
 import com.nepheletech.jred.runtime.nodes.HasCredentials;
 import com.nepheletech.jred.runtime.nodes.Node;
+import com.nepheletech.jred.runtime.storage.Storage;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonNull;
@@ -48,7 +47,10 @@ import com.nepheletech.messagebus.MessageBus;
 public final class FlowsManager {
   private static final Logger logger = LoggerFactory.getLogger(FlowsManager.class);
 
-  private final FlowsRuntime flowsRuntime;
+  private final JRedRuntime runtime;
+
+  private final Storage storage;
+  // TODO settings
 
   private JtonObject activeConfig = null;
   private JtonObject activeFlowConfig = null;
@@ -64,20 +66,25 @@ public final class FlowsManager {
   // TODO missing implementation
   private boolean settings_safeMode = false;
 
-  public FlowsManager(FlowsRuntime flowsRuntime) {
-    this.flowsRuntime = flowsRuntime;
-    this.credentials = new Credentials(flowsRuntime);
+  public FlowsManager(JRedRuntime runtime) {
+    this.runtime = runtime;
+    this.storage = runtime.getStorage();
+    this.credentials = new Credentials(runtime);
   }
 
-  public FlowsRuntime getFlowsRuntime() { return flowsRuntime; }
+  public JRedRuntime getRuntime() {
+    return runtime;
+  }
 
-  public Credentials getCredentials() { return credentials; }
+  public Credentials getCredentials() {
+    return credentials;
+  }
 
   private JtonObject loadFlows() {
     logger.trace(">>> loadFlows");
 
     try {
-      final JtonObject config = flowsRuntime.getStorage().getFlows();
+      final JtonObject config = storage.getFlows();
       // ---
       logger.debug("loaded flow revision: {}", config.getAsString("rev"));
       credentials.load(config.getAsJtonObject("credentials"));
@@ -85,6 +92,7 @@ public final class FlowsManager {
       return config;
       // ---
     } catch (Exception err) {
+      activeConfig = null;
 
       err.printStackTrace(); // TODO
 
@@ -94,9 +102,10 @@ public final class FlowsManager {
 
   /**
    * Load the current flow configuration from storage.
-   * 
+   *
    * @param forceStart
-   * @return the revision of the flow
+   * @return the revision of the flow TODO return a promise for the loading of the
+   *         `config'.
    */
   public String load(boolean forceStart) {
     logger.trace(">>> load: {}", forceStart);
@@ -105,12 +114,12 @@ public final class FlowsManager {
       // This is a force reload from the API - disable safeMode
       settings_safeMode = false;
     }
-    return setFlows(null, "load", forceStart);
+    return setFlows(null, null, "load", forceStart);
   }
 
   /**
    * Sets the current active configuration.
-   * 
+   *
    * @param _config new node array configuration.
    * @param type    the type of deployment to do: full (default), nodes, flows,
    *                load
@@ -119,20 +128,27 @@ public final class FlowsManager {
   public String setFlows(final JtonArray _config, final String type) {
     logger.trace(">>> setFlows: _config={}, type={}", _config, type);
 
-    return setFlows(_config, type, false);
+    return setFlows(_config, null, type, false);
   }
 
   /**
    * Sets the current active configuration.
-   * 
-   * @param _config    new node array configuration.
-   * @param type       the type of deployment to do: full (default), nodes, flows,
-   *                   load
+   *
+   * @param _config      new node array configuration.
+   * @param _credentials new credentials configuration (optional)
+   * @param type         the type of deployment to do: full (default), nodes,
+   *                     flows, load
    * @param forceStart
    * @return the revision of the new flow.
    */
-  public String setFlows(final JtonArray _config, String type, boolean forceStart) {
+  public String setFlows(final JtonArray _config, final JtonElement _credentials, String type, boolean forceStart) {
     logger.trace(">>> setFlows: _config={}, type={}, forceStart={}", _config, type, forceStart);
+    
+    if (_credentials != null 
+        && _credentials.isJtonPrimitive() 
+        && _credentials.asJtonPrimitive().isString()) {
+      type = _credentials.asJtonPrimitive().asString();
+    }
 
     type = (StringUtils.trimToNull(type) != null) ? type : "full";
 
@@ -146,11 +162,12 @@ public final class FlowsManager {
         settings_safeMode = false;
       }
     }
+    
+    String flowRevision = null; // return value
 
     JtonArray config = null;
     JtonObject diff = null;
     JtonObject newFlowConfig;
-    String flowRevision = null;
     boolean isLoad = false;
     if ("load".equals(type)) {
       isLoad = true;
@@ -159,7 +176,7 @@ public final class FlowsManager {
       config = __config.getAsJtonArray("flows").deepCopy();
       newFlowConfig = FlowUtil.parseConfig(config.deepCopy());
       type = "full";
-      flowRevision = __config.asString("rev"); // Future return
+      flowRevision = __config.getAsString("rev");
       // ---
     } else {
       // Clone the provided config so it can be manipulated
@@ -194,7 +211,7 @@ public final class FlowsManager {
           .set("credentials", creds);
 
       try {
-        flowRevision = flowsRuntime.getStorage().saveFlows(saveConfig);
+        flowRevision = runtime.getStorage().saveFlows(saveConfig);
       } catch (IOException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -249,17 +266,19 @@ public final class FlowsManager {
 
   /**
    * Gets the current flow configuration.
-   * 
+   *
    * @return the active flow configuration
    */
-  public JtonObject getFlows() { return activeConfig; }
+  public JtonObject getFlows() {
+    return activeConfig;
+  }
 
   /**
    * Start the current flow configuration.
    */
   public void startFlows() {
     logger.trace(">>> startFlows:");
-    
+
     try {
       startFlows("full", null);
     } catch (RuntimeException e) {
@@ -283,7 +302,9 @@ public final class FlowsManager {
 
     // In safe mode, don't actually start anything, emit the necessary runtime event
     // and return
-    if (settings_safeMode) { throw new UnsupportedOperationException("safe mode"); }
+    if (settings_safeMode) {
+      throw new UnsupportedOperationException("safe mode");
+    }
 
     if (logger.isInfoEnabled()) {
       if (!"full".equals(type)) {
@@ -386,7 +407,9 @@ public final class FlowsManager {
   }
 
   private void stopFlows(String type, JtonObject diff) {
-    if (!started) { return; }
+    if (!started) {
+      return;
+    }
 
     type = StringUtils.trimToNull(type) != null ? type : "full";
 
@@ -462,12 +485,13 @@ public final class FlowsManager {
   // -----
 
   private final JtonObject context = new JtonObject();
+
   public JtonObject getGlobalContext() {
     return context;
   }
 
   private Flow flowAPI = new Flow() {
-    //=Settings.get().globalContext(); TODO use seed for global context
+    // =Settings.get().globalContext(); TODO use seed for global context
 
     @Override
     public String getPath() {
@@ -535,7 +559,7 @@ public final class FlowsManager {
 
     @Override
     public CamelContext getCamelContext() {
-      return flowsRuntime.getCamelContext();
+      return runtime.getCamelContext();
     }
   };
 }

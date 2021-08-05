@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jred.runtime.FlowsRuntime;
+import com.nepheletech.jred.runtime.JRedRuntime;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
@@ -133,7 +133,7 @@ public class FlowsServlet extends HttpServlet {
     }
   }
 
-  private FlowsRuntime getRuntime() {
-    return (FlowsRuntime) getServletContext().getAttribute(FlowsRuntime.class.getName());
+  private JRedRuntime getRuntime() {
+    return (JRedRuntime) getServletContext().getAttribute(JRedRuntime.class.getName());
   }
 }
