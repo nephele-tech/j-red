@@ -19,7 +19,7 @@
 		<servlet-class>com.nepheletech.jred.editor.MainServlet</servlet-class>
 		<init-param>
 			<param-name>template</param-name>
-			<param-value>/WEB-INF/pages/index-1.3.5.jsp</param-value>
+			<param-value>/WEB-INF/pages/index-2.0.1.jsp</param-value>
 		</init-param>
 	</servlet>
 	<servlet-mapping>
@@ -29,8 +29,5 @@
 
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
-		<welcome-file>index.xhtml</welcome-file>
-		<welcome-file>index.htm</welcome-file>
-		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
 </web-app>

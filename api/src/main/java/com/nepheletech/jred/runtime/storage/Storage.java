@@ -29,6 +29,7 @@ public interface Storage {
 
   String saveFlows(JtonObject config) throws IOException;
 
+  @Deprecated
   JtonObject getCredentials();
 
   void saveCredentials(JtonObject credentials) throws IOException;
@@ -45,5 +46,5 @@ public interface Storage {
 
   void saveLibraryEntry(String type, String path, JtonObject meta, String text) throws IOException;
 
-  JtonObject listFlows(String path) throws IOException;
+  //JtonObject listFlows(String path) throws IOException;
 }

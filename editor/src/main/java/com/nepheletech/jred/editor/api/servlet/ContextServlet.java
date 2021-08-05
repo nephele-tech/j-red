@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jred.runtime.FlowsRuntime;
+import com.nepheletech.jred.runtime.JRedRuntime;
 import com.nepheletech.jred.runtime.nodes.Node;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.servlet.utils.HttpServletUtil;
@@ -58,19 +58,19 @@ public class ContextServlet extends HttpServlet {
           if ("node".equals(type)) {
             if (parts.length > 2) {
               final String id = parts[2];
-              final FlowsRuntime runtime = getRuntime();
+              final JRedRuntime runtime = getRuntime();
               final Node node = runtime.getNode(id);
                node.getContext(type);
             }
           } else if ("flow".equals(type)) {
             if (parts.length > 2) {
               final String id = parts[2];
-              final FlowsRuntime runtime = getRuntime();
+              final JRedRuntime runtime = getRuntime();
               final Node node = runtime.getNode(id);
                node.getContext(type);
             }
           } else if ("global".equals(type)) {
-            final FlowsRuntime runtime = getRuntime();
+            final JRedRuntime runtime = getRuntime();
             HttpServletUtil.sendJSON(res, runtime.getGlobalContext());
             return;
           }
@@ -90,7 +90,7 @@ public class ContextServlet extends HttpServlet {
     }
   }
 
-  private final FlowsRuntime getRuntime() {
-    return (FlowsRuntime) getServletContext().getAttribute(FlowsRuntime.class.getName());
+  private final JRedRuntime getRuntime() {
+    return (JRedRuntime) getServletContext().getAttribute(JRedRuntime.class.getName());
   }
 }

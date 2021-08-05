@@ -25,14 +25,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nepheletech.jred.runtime.FlowsRuntime;
+import com.nepheletech.jred.runtime.JRedRuntime;
 import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonObject;
 
 public final class Credentials {
   private static final Logger logger = LoggerFactory.getLogger(Credentials.class);
 
-  private final FlowsRuntime flowsRuntime;
+  private final JRedRuntime flowsRuntime;
 
   private final JtonObject credentialCache = new JtonObject();
   //private final JsonObject credentialsDef = new JsonObject();
@@ -41,11 +41,11 @@ public final class Credentials {
   private boolean encryptionEnabled;
   private boolean removeDefaultKey;
 
-  public Credentials(FlowsRuntime flowsRuntime) {
+  public Credentials(JRedRuntime flowsRuntime) {
     this.flowsRuntime = flowsRuntime;
   }
 
-  public FlowsRuntime getFlowsRuntime() { return flowsRuntime; }
+  public JRedRuntime getFlowsRuntime() { return flowsRuntime; }
 
   public boolean isDirty() { return dirty; }
   

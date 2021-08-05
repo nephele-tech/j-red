@@ -28,8 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.editor.nodes.NodeRegistry;
-import com.nepheletech.jred.runtime.DefaultFlowsRuntime;
-import com.nepheletech.jred.runtime.FlowsRuntime;
+import com.nepheletech.jred.runtime.DefaultJRedRuntime;
+import com.nepheletech.jred.runtime.JRedRuntime;
 import com.nepheletech.jred.runtime.storage.LocalFileSystemStorage;
 import com.nepheletech.jred.runtime.storage.Storage;
 import com.nepheletech.messagebus.MessageBus;
@@ -49,8 +49,8 @@ public class ContextListener implements ServletContextListener {
 
     final String baseDir = getBaseDir(servletContext);
     final Storage storage = new LocalFileSystemStorage(baseDir);
-    final FlowsRuntime flowsRuntime = new DefaultFlowsRuntime(storage);
-    servletContext.setAttribute(FlowsRuntime.class.getName(), flowsRuntime);
+    final JRedRuntime flowsRuntime = new DefaultJRedRuntime(storage);
+    servletContext.setAttribute(JRedRuntime.class.getName(), flowsRuntime);
     flowsRuntime.startFlows();
   }
 
@@ -58,7 +58,7 @@ public class ContextListener implements ServletContextListener {
     final ServletContext servletContext = sce.getServletContext();
     logger.info(">>> Context destroyed... {}", servletContext.getContextPath());
 
-    final FlowsRuntime flowsRuntime = (FlowsRuntime) servletContext.getAttribute(FlowsRuntime.class.getName());
+    final JRedRuntime flowsRuntime = (JRedRuntime) servletContext.getAttribute(JRedRuntime.class.getName());
     if (flowsRuntime != null) {
       flowsRuntime.stopFlows();
     }

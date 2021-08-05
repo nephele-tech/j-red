@@ -84,7 +84,9 @@ public class LocalFileSystemStorage implements Storage {
   @Override
   public JtonObject getFlows() {
     logger.trace(">>> getFlows:");
+    
     final JtonElement flows = readJSONFile(flowsFile, flowsBackupFile);
+    
     logger.debug("flows: {}", flows);
     final JtonElement credentials = readJSONFile(credentialsFile, credentialsBackupFile);
     final JtonObject result = new JtonObject()
@@ -251,8 +253,8 @@ public class LocalFileSystemStorage implements Storage {
     writeFile(fn, sb.toString());
   }
 
-  @Override
-  public JtonObject listFlows(String path) throws IOException {
+  //@Override
+  private JtonObject listFlows(String path) throws IOException {
     logger.trace(">>> listFlows: path={}", path);
     final Path fn = Paths.get(libDir.toString(), path);
     return listFlows(fn);
@@ -294,7 +296,7 @@ public class LocalFileSystemStorage implements Storage {
   }
 
   // ---
-
+  
   private static JtonElement readJSONFile(Path path, Path backupPath) {
     String data = readFile(path, backupPath);
     if (data != null) {
