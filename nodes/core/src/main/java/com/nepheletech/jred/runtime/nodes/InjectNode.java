@@ -20,25 +20,25 @@
 package com.nepheletech.jred.runtime.nodes;
 
 import static com.nepheletech.jred.runtime.util.JRedUtil.evaluateNodeProperty;
-
-import java.time.Instant;
+import static com.nepheletech.jred.runtime.util.JRedUtil.setMessageProperty;
+import static java.time.Instant.now;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nepheletech.jred.runtime.flows.Flow;
+import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonObject;
 
 /**
- * 
+ * Injects a message into a flow either manually or at regular intervals.
  */
 public class InjectNode extends AbstractNode {
   private final Logger logger = LoggerFactory.getLogger(InjectNode.class);
 
-  private final String topic;
-  private final String payload;
-  private final String payloadType;
+  private final JtonArray props;
   private final long repeat;
   private String crontab;
   private final boolean once;
@@ -46,13 +46,41 @@ public class InjectNode extends AbstractNode {
 
   public InjectNode(Flow flow, JtonObject config) {
     super(flow, config);
-    this.topic = config.get("topic").asString("");
-    this.payload = config.get("payload").asString("");
-    this.payloadType = config.get("payloadType").asString("");
+
+    /* Handle legacy */
+    if (!config.isJtonArray("props")) {
+      config.set("props", new JtonArray()
+          .push(new JtonObject()
+              .set("p", "payload")
+              .set("v", config.get("payload"))
+              .set("vt", config.get("payloadType")))
+          .push(new JtonObject()
+              .set("p", "topic")
+              .set("v", config.get("topic"))
+              .set("vt", "str")));
+    } else {
+      final JtonArray props = config.getAsJtonArray("props");
+      for (int i = 0, iMax = props.size(); i < iMax; i++) {
+        final JtonObject propI = props.getAsJtonObject(i);
+        if ("payload".equals(propI.getAsString("p", null))
+            && !propI.has("v")) {
+          propI.set("v", config.get("payload"));
+          propI.set("vt", config.get("payloadType"));
+        } else if("topic".equals(propI.getAsString("p", null))
+            && "str".equals(propI.getAsString("vt", null))
+            && !propI.has("v")) {
+          propI.set("v", config.get("topic"));
+        }
+      }
+    }
+    
+    this.props = config.getAsJtonArray("props");
     this.repeat = config.get("repeat").asLong(0L);
     this.crontab = config.get("crontab").asString(null);
     this.once = config.get("once").asBoolean(false);
     this.onceDelay = (long) Math.max(config.get("onceDelay").asDouble(0.1D) * 1000D, 0);
+    
+    // TODO parse jsonata/jsonpath expressions
   }
 
   @Override
@@ -85,34 +113,50 @@ public class InjectNode extends AbstractNode {
 
   @Override
   protected void onMessage(final Exchange exchange, final JtonObject msg) {
-    logger.trace(">>> onMessage: {}, {}", getId(), exchange);
-
-    msg.set("topic", topic);
-
-    if (!"flow".equals(payloadType) && !"global".equals(payloadType)) {
-      try {
-        if ((payloadType == null && payload.isEmpty())
-            || "date".equals(payloadType)) {
-          msg.set("payload", Instant.now().toEpochMilli());
-        } else if (payloadType == null) {
-          msg.set("payload", payload);
-        } else if ("none".equals(payloadType)) {
-          msg.set("payload", "");
-        } else {
-          msg.set("payload", evaluateNodeProperty(payload, payloadType, this, msg));
-        }
-      } catch (Exception err) {
-        // error(err, msg);
-        throw new RuntimeException(err);
-      }
-    } else {
-      try {
-        msg.set("payload", evaluateNodeProperty(payload, payloadType, this, msg));
-      } catch (Exception err) {
-        // error(err, msg);
-        throw new RuntimeException(err);
-      }
+    logger.trace(">>> onMessage: {}, {}", getId(), msg);
+    
+    JtonArray props = this.props;
+    
+    if (msg.has("__user_inject_props__") 
+        && msg.isJtonArray("__user_inject_props__")) {
+      logger.info("-------------------------------------");
+      props = msg.getAsJtonArray("__user_inject_props__");
     }
+    
+    props.stream().map(x -> x.asJtonObject())
+      .filter(prop -> isNotBlank(prop.getAsString("p", null)))
+      .forEach(p -> {
+        final String property = p.getAsString("p");
+        final String value = p.getAsString("v", "");
+        final String valueType = p.getAsString("vt", "str");
+
+        if (!"flow".equals(valueType) && !"global".equals(valueType)) {
+          try {
+            if ((valueType == null && value.isEmpty())
+                || "date".equals(valueType)) {
+              setMessageProperty(msg, property, now().toEpochMilli());
+            } else if (valueType == null) {
+              setMessageProperty(msg, property, value);
+            } else if ("none".equals(valueType)) {
+              setMessageProperty(msg, property, "");
+            } else {
+              setMessageProperty(msg, property, 
+                  evaluateNodeProperty(value, valueType, this, msg));
+            }
+          } catch (Exception err) {
+            // error(err, msg);
+            throw new RuntimeException(err);
+          }
+        } else {
+          try {
+            setMessageProperty(msg, property, 
+                evaluateNodeProperty(value, valueType, this, msg));
+          } catch (Exception err) {
+            // error(err, msg);
+            throw new RuntimeException(err);
+          }
+        }
+      });
 
     send(exchange, msg);
   }

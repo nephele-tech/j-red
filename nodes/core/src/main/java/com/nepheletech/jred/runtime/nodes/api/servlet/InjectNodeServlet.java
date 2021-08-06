@@ -19,9 +19,11 @@
  */
 package com.nepheletech.jred.runtime.nodes.api.servlet;
 
+import static com.nepheletech.servlet.utils.HttpServletUtil.getJSONBody;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.nepheletech.jred.runtime.JRedRuntime;
 import com.nepheletech.jred.runtime.nodes.InjectNode;
 import com.nepheletech.jred.runtime.nodes.Node;
+import com.nepheletech.jton.JtonObject;
 
 /**
  * Handle {@code "/inject/:id"} HTTP POST requests.
@@ -59,7 +62,13 @@ public class InjectNodeServlet extends HttpServlet {
     final InjectNode node = getInjectNode(nodeId);
     if (node != null) {
       try {
-        node.receive(null);
+        final Optional<JtonObject>  data = getJSONBody(req).asOptJtonObject();
+        if (data.isPresent() 
+            && data.get().has("__user_inject_props__")) {
+          node.receive(data.get());
+        } else {
+          node.receive(null);
+        }
       } catch (Exception e) {
         logger.warn("inject failed", e); // TODO send error
         res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

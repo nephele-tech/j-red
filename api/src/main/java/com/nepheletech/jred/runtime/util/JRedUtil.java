@@ -197,6 +197,10 @@ public final class JRedUtil {
 
     setObjectProperty(msg, prop, _value, createMissing);
   }
+  
+  public static void setMessageProperty(JtonObject msg, String prop, Object value) {
+    setMessageProperty(msg, prop, value, true);
+  }
 
   /**
    * Unlike {@link #removeObjectProperty(JtonObject, String)}, this function will

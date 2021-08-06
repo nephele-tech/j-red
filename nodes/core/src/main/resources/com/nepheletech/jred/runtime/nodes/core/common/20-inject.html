@@ -15,16 +15,14 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="inject">
+<script type="text/html" data-template-name="inject">
     <div class="form-row">
-        <label for="node-input-payload"><i class="fa fa-envelope"></i> <span data-i18n="common.label.payload"></span></label>
-        <input type="text" id="node-input-payload" style="width:70%">
-        <input type="hidden" id="node-input-payloadType">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
     </div>
 
-    <div class="form-row">
-        <label for="node-input-topic"><i class="fa fa-tasks"></i> <span data-i18n="common.label.topic"></span></label>
-        <input type="text" id="node-input-topic">
+    <div class="form-row node-input-property-container-row">
+        <ol id="node-input-property-container"></ol>
     </div>
 
     <div class="form-row" id="node-once">
@@ -115,12 +113,7 @@
             </div>
         </div>
     </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
-        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
-    </div>
 
-    <div class="form-tips" data-i18n="[html]inject.tip"></div>
 </script>
 <style>
     .inject-time-row {
@@ -139,11 +132,11 @@
         width: 100px;
     }
     .inject-time-days input {
-        width: auto;
-        vertical-align: baseline;
+        width: auto !important;
+        vertical-align: baseline !important;
     }
     .inject-time-times {
-        width: 90px;
+        width: 90px !important;
     }
     #inject-time-time {
         width: 75px;
@@ -156,37 +149,153 @@
 </style>
 
 <script type="text/javascript">
-    RED.nodes.registerType('inject',{
+(function() {
+
+    function resizeDialog(size) {
+        size = size || { height: $(".red-ui-tray-content form").height() }
+        var rows = $("#dialog-form>div:not(.node-input-property-container-row):visible");
+        var height = size.height;
+        for (var i=0; i<rows.length; i++) {
+            height -= $(rows[i]).outerHeight(true);
+        }
+        var editorRow = $("#dialog-form>div.node-input-property-container-row");
+        height -= (parseInt(editorRow.css("marginTop"))+parseInt(editorRow.css("marginBottom")));
+        height += 16;
+        $("#node-input-property-container").editableList('height',height);
+    }
+    /** Retrieve editableList items (refactored for re-use in the form inject button)*/
+    function getProps(el, legacy) {
+        var result = {
+            props: []
+        }
+        el.each(function(i) {
+            var prop = $(this);
+            var p = {
+                p:prop.find(".node-input-prop-property-name").typedInput('value')
+            };
+            if (p.p) {
+                p.v = prop.find(".node-input-prop-property-value").typedInput('value');
+                p.vt = prop.find(".node-input-prop-property-value").typedInput('type');
+                if(legacy) {
+                    if (p.p === "payload") { // save payload to old "legacy" property
+                        result.payloadType = p.vt;
+                        result.payload = p.v;
+                        delete p.v;
+                        delete p.vt;
+                    } else if (p.p === "topic" && p.vt === "str") {
+                        result.topic = p.v;
+                        delete p.v;
+                    }
+                }
+                result.props.push(p);
+            }
+        });
+        return result;
+    }
+    /** Perform inject, optionally sending a custom msg (refactored for re-use in the form inject button)*/
+    function doInject(node, customMsg) {
+        var label = node._def.label.call(node);
+        if (label.length > 30) {
+            label = label.substring(0, 50) + "...";
+        }
+        label = label.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        
+        console.log(customMsg);
+        
+        $.ajax({
+            url: "inject/" + node.id,
+            type: "POST",
+            // --- (ggeorg)
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(customMsg),
+            // -----------------
+            success: function (resp) {
+                RED.notify(node._("inject.success", { label: label }), { type: "success", id: "inject", timeout: 2000 });
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                if (jqXHR.status == 404) {
+                    RED.notify(node._("common.notification.error", { message: node._("common.notification.errors.not-deployed") }), "error");
+                } else if (jqXHR.status == 500) {
+                    RED.notify(node._("common.notification.error", { message: node._("inject.errors.failed") }), "error");
+                } else if (jqXHR.status == 0) {
+                    RED.notify(node._("common.notification.error", { message: node._("common.notification.errors.no-response") }), "error");
+                } else {
+                    RED.notify(node._("common.notification.error", { message: node._("common.notification.errors.unexpected", { status: jqXHR.status, message: textStatus }) }), "error");
+                }
+            }
+        });
+    }
+    RED.nodes.registerType('inject',{  
         category: 'common',
         color:"#a6bbcf",
         defaults: {
             name: {value:""},
-            topic: {value:""},
-            payload: {value:"", validate: RED.validators.typedInput("payloadType")},
-            payloadType: {value:"date"},
+            props:{value:[{p:"payload"},{p:"topic",vt:"str"}], validate:function(v) {
+                    if (!v || v.length === 0) { return true }
+                    for (var i=0;i<v.length;i++) {
+                        if (/msg|flow|global/.test(v[i].vt)) {
+                            if (!RED.utils.validatePropertyExpression(v[i].v)) {
+                                return false;
+                            }
+                        } else if (v[i].vt === "jsonata") {
+                            try{jsonata(v[i].v);}catch(e){return false;}
+                        } else if ([i].vt === "json") {
+                            try{JSON.parse(v[i].v);}catch(e){return false;}
+                        }
+                    }
+                    return true;
+                }
+            },
             repeat: {value:"", validate:function(v) { return ((v === "") || (RED.validators.number(v) && (v >= 0) && (v <= 2147483))) }},
             crontab: {value:""},
             once: {value:false},
-            onceDelay: {value:0.1}
+            onceDelay: {value:0.1},
+            topic: {value:""},
+            payload: {value:"", validate: RED.validators.typedInput("payloadType")},
+            payloadType: {value:"date"},
         },
         icon: "inject.svg",
         inputs:0,
         outputs:1,
         outputLabels: function(index) {
-            var lab = this.payloadType;
-            if (lab === "json") {
-                try {
-                    lab = typeof JSON.parse(this.payload);
-                    if (lab === "object") {
-                        if (Array.isArray(JSON.parse(this.payload))) { lab = "Array"; }
-                    }
-                } catch(e) {
-                    return this._("inject.label.invalid"); }
+            var lab = '';
+
+            // if only payload and topic - display payload type
+            // if only one property - show it's type
+            // if more than one property (other than payload and topic) - show "x properties" where x is the number of properties.
+            // this.props will not be an array for legacy inject nodes until they are re-deployed
+            //
+            var props = this.props;
+            if (!Array.isArray(props)) {
+                props = [
+                    { p:"payload", v: this.payload, vt: this.payloadType },
+                    { p:"topic", v: this.topic, vt: "str" }
+                ]
             }
-            var name = "inject.label."+lab;
-            var label = this._(name);
-            if (name !== label) {
-                return label;
+            if (props) {
+                for (var i=0,l=props.length; i<l; i++) {
+                    if (i > 0) lab += "\n";
+                    if (i === 5) {
+                        lab += "... +"+(props.length-5);
+                        break;
+                    }
+                    lab += props[i].p+": ";
+
+                    var propType = props[i].p === "payload"? this.payloadType : props[i].vt;
+                    if (propType === "json") {
+                        try {
+                            var parsedProp = JSON.parse(props[i].p === "payload"? this.payload : props[i].v);
+                            propType = typeof parsedProp;
+                            if (propType === "object" && Array.isArray(parsedProp)) {
+                                propType = "Array";
+                            }
+                        } catch(e) {
+                            propType = "invalid";
+                        }
+                    }
+                    lab += this._("inject.label."+propType);
+                }
             }
             return lab;
         },
@@ -202,27 +311,33 @@
             }
             if (this.name) {
                 return this.name+suffix;
-            } else if (this.payloadType === "string" ||
-                    this.payloadType === "str" ||
-                    this.payloadType === "num" ||
-                    this.payloadType === "bool" ||
-                    this.payloadType === "json") {
-                if ((this.topic !== "") && ((this.topic.length + this.payload.length) <= 32)) {
-                    return this.topic + ":" + this.payload+suffix;
-                } else if (this.payload.length > 0 && this.payload.length < 24) {
-                    return this.payload+suffix;
+            }
+
+            var payload = this.payload || "";
+            var payloadType = this.payloadType || "str";
+            var topic = this.topic || "";
+
+            if (payloadType === "string" ||
+                    payloadType === "str" ||
+                    payloadType === "num" ||
+                    payloadType === "bool" ||
+                    payloadType === "json") {
+                if ((topic !== "") && ((topic.length + payload.length) <= 32)) {
+                    return topic + ":" + payload+suffix;
+                } else if (payload.length > 0 && payload.length < 24) {
+                    return payload+suffix;
                 } else {
                     return this._("inject.inject")+suffix;
                 }
-            } else if (this.payloadType === 'date') {
-                if ((this.topic !== "") && (this.topic.length <= 16)) {
-                    return this.topic + ":" + this._("inject.timestamp")+suffix;
+            } else if (payloadType === 'date' || payloadType === 'bin' || payloadType === 'env') {
+                if ((topic !== "") && (topic.length <= 16)) {
+                    return topic + ":" + this._('inject.label.'+payloadType)+suffix;
                 } else {
-                    return this._("inject.timestamp")+suffix;
+                    return this._('inject.label.'+payloadType)+suffix;
                 }
-            } else if (this.payloadType === 'flow' || this.payloadType === 'global') {
-                var key = RED.utils.parseContextKey(this.payload);
-                return this.payloadType+"."+key.key+suffix;
+            } else if (payloadType === 'flow' || payloadType === 'global') {
+                var key = RED.utils.parseContextKey(payload);
+                return payloadType+"."+key.key+suffix;
             } else {
                 return this._("inject.inject")+suffix;
             }
@@ -231,22 +346,16 @@
             return this.name?"node_label_italic":"";
         },
         oneditprepare: function() {
-            if (this.payloadType == null) {
-                if (this.payload == "") {
-                    this.payloadType = "date";
+            var node = this;
+            if (node.payloadType == null) {
+                if (node.payload == "") {
+                    node.payloadType = "date";
                 } else {
-                    this.payloadType = "str";
+                    node.payloadType = "str";
                 }
-            } else if (this.payloadType === 'string' || this.payloadType === 'none') {
-                this.payloadType = "str";
+            } else if (node.payloadType === 'string' || node.payloadType === 'none') {
+                node.payloadType = "str";
             }
-            $("#node-input-payloadType").val(this.payloadType);
-
-            $("#node-input-payload").typedInput({
-                default: 'str',
-                typeField: $("#node-input-payloadType"),
-                types:['flow','global','str','num','bool','json','bin','date','env']
-            });
 
             $("#inject-time-type-select").on("change", function() {
                 $("#node-input-crontab").val('');
@@ -260,6 +369,11 @@
                     $("#node-once").hide();
                     $("#node-input-once").prop('checked', false);
                 }
+
+                // Scroll down
+                var scrollDiv = $("#dialog-form").parent();
+                scrollDiv.scrollTop(scrollDiv.prop('scrollHeight'));
+                resizeDialog();
             });
 
             $("#node-input-once").on("change", function() {
@@ -295,17 +409,17 @@
             });
 
             var repeattype = "none";
-            if (this.repeat != "" && this.repeat != 0) {
+            if (node.repeat != "" && node.repeat != 0) {
                 repeattype = "interval";
                 var r = "s";
-                var c = this.repeat;
-                if (this.repeat % 60 === 0) { r = "m"; c = c/60; }
-                if (this.repeat % 1440 === 0) { r = "h"; c = c/60; }
+                var c = node.repeat;
+                if (node.repeat % 60 === 0) { r = "m"; c = c/60; }
+                if (node.repeat % 1440 === 0) { r = "h"; c = c/60; }
                 $("#inject-time-interval-count").val(c);
                 $("#inject-time-interval-units").val(r);
                 $("#inject-time-interval-days").prop("disabled","disabled");
-            } else if (this.crontab) {
-                var cronparts = this.crontab.split(" ");
+            } else if (node.crontab) {
+                var cronparts = node.crontab.split(" ");
                 var days = cronparts[4];
                 if (!isNaN(cronparts[0]) && !isNaN(cronparts[1])) {
                     repeattype = "time";
@@ -379,7 +493,92 @@
             $("#inject-time-type-select").val(repeattype);
             $("#inject-time-row-"+repeattype).show();
 
-            $("#node-input-payload").typedInput('type',this.payloadType);
+            /* */
+
+            var eList = $('#node-input-property-container').css('min-height','120px').css('min-width','450px');
+
+            eList.editableList({
+                buttons: [
+                    {
+                        id: "node-inject-test-inject-button",
+                        label: node._("inject.injectNow"),
+                        click: function(e) {
+                            var items = eList.editableList('items');
+                            var result = getProps(items);
+                            var m = {__user_inject_props__: []};
+                            if (result && result.props && result.props.length) {
+                                m.__user_inject_props__ = result.props;
+                            }
+                            doInject(node, m);
+                        }
+                    }
+                ],
+                addItem: function(container,i,opt) {
+                    var prop = opt;
+                    if (!prop.hasOwnProperty('p')) {
+                        prop = {p:"",v:"",vt:"str"};
+                    }
+                    container.css({
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap'
+                    });
+                    var row = $('<div/>').appendTo(container);
+
+                    var propertyName = $('<input/>',{class:"node-input-prop-property-name",type:"text"})
+                        .css("width","30%")
+                        .appendTo(row)
+                        .typedInput({types:['msg']});
+
+                    $('<div/>',{style: 'display:inline-block; padding:0px 6px;'})
+                        .text('=')
+                        .appendTo(row);
+
+                    var propertyValue = $('<input/>',{class:"node-input-prop-property-value",type:"text"})
+                        .css("width","calc(70% - 30px)")
+                        .appendTo(row)
+                        .typedInput({default:'str',types:['flow','global','str','num','bool','json','bin','date','jsonata','env','msg']});
+
+                    propertyName.typedInput('value',prop.p);
+
+                    propertyValue.typedInput('value',prop.v);
+                    propertyValue.typedInput('type',prop.vt);
+                },
+                removable: true,
+                sortable: true
+            });
+            $('#node-inject-test-inject-button').css("float", "right").css("margin-right", "unset");
+
+            if (RED.nodes.subflow(node.z)) {
+                $('#node-inject-test-inject-button').attr("disabled",true);
+            }
+
+            if (!node.props) {
+                var payload = {
+                    p:'payload',
+                    v: node.payload ? node.payload : '',
+                    vt:node.payloadType ? node.payloadType : 'date'
+                };
+                var topic = {
+                    p:'topic',
+                    v: node.topic ? node.topic : '',
+                    vt:'string'
+                }
+                node.props = [payload,topic];
+            }
+
+            for (var i=0; i<node.props.length; i++) {
+                var prop = node.props[i];
+                var newProp = { p: prop.p, v: prop.v, vt: prop.vt };
+                if (newProp.v === undefined) {
+                    if (prop.p === 'payload') {
+                        newProp.v = node.payload ? node.payload : '';
+                        newProp.vt = node.payloadType ? node.payloadType : 'date';
+                    } else if (prop.p === 'topic' && prop.vt === "str") {
+                        newProp.v =  node.topic ? node.topic : '';
+                    }
+                }
+                eList.editableList('addItem',newProp);
+            }
 
             $("#inject-time-type-select").trigger("change");
             $("#inject-time-interval-time-start").trigger("change");
@@ -475,50 +674,34 @@
 
             $("#node-input-repeat").val(repeat);
             $("#node-input-crontab").val(crontab);
+
+            /* Gather the properties */
+            var items = $("#node-input-property-container").editableList('items');
+            delete this.payloadType;
+            delete this.payload;
+            this.topic = "";
+            var result = getProps(items, true);
+            this.props = result.props;
+            if(result.payloadType) { this.payloadType = result.payloadType; };
+            if(result.payload) { this.payload = result.payload; };
+            if(result.topic) { this.topic = result.topic; };
         },
         button: {
             enabled: function() {
                 return !this.changed
             },
-            onclick: function() {
+            onclick: function () {
                 if (this.changed) {
-                    return RED.notify(RED._("notification.warning", {message:RED._("notification.warnings.undeployedChanges")}),"warning");
+                    return RED.notify(RED._("notification.warning", { message: RED._("notification.warnings.undeployedChanges") }), "warning");
                 }
-                var payload = this.payload;
-                if ((this.payloadType === 'flow') ||
-                    (this.payloadType === 'global')) {
-                    var key = RED.utils.parseContextKey(payload);
-                    payload = this.payloadType+"."+key.key;
-                }
-                var label = this._def.label.call(this);
-                if (label.length > 30) {
-                    label = label.substring(0,50)+"...";
-                }
-                label = label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-                var node = this;
-                $.ajax({
-                    url: "inject/"+this.id,
-                    type:"POST",
-                    success: function(resp) {
-                        RED.notify(node._("inject.success",{label:label}),{type:"success",id:"inject"});
-                    },
-                    error: function(jqXHR,textStatus,errorThrown) {
-                        if (jqXHR.status == 404) {
-                            RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.not-deployed")}),"error");
-                        } else if (jqXHR.status == 500) {
-                            RED.notify(node._("common.notification.error",{message:node._("inject.errors.failed")}),"error");
-                        } else if (jqXHR.status == 0) {
-                            RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.no-response")}),"error");
-                        } else {
-                            RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.unexpected",{status:jqXHR.status,message:textStatus})}),"error");
-                        }
-                    }
-                });
+                doInject(this);
             }
-        }
+        },
+        oneditresize: resizeDialog
     });
-
+})();
 </script>
+
 
 <!--
   Copyright NepheleTech and other contributors, http://www.nepheletech.com
@@ -537,7 +720,7 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-help-name="inject">
+<script type="text/html" data-help-name="inject">
 <p>Injects a message into a flow either manually or at regular intervals. The message
 payload can be a variety of types, including strings, JavaScript objects or the current time.</p>
 <h3>Outputs</h3>

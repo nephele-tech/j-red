@@ -23,3 +23,17 @@
             icon:"red/images/typedInput/expr.svg"
         },
         bin: { ... }
+        
+- Patch 20-inject.html
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          $.ajax({
+            url: "inject/" + node.id,
+            type: "POST",
+            // --- (ggeorg)
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(customMsg),
+            // -----------------
+            success: function (resp) { 
+            ...
+  
