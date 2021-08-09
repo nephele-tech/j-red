@@ -15,8 +15,6 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 
 import com.nepheletech.jred.runtime.flows.Flow;
-import com.nepheletech.jred.runtime.util.JRedUtil;
-import com.nepheletech.jton.JtonArray;
 import com.nepheletech.jton.JtonElement;
 import com.nepheletech.jton.JtonObject;
 import com.nepheletech.jton.JtonPrimitive;
