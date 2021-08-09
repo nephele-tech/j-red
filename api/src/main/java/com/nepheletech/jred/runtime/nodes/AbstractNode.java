@@ -28,6 +28,7 @@ import java.util.Objects;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.RouteDefinition;
@@ -147,13 +148,13 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
         .log(LoggingLevel.ERROR, logger, "Runtime exception")
         .process((x) -> {
           final JtonObject msg = getMsg(x);
-          
+
           final Exception e = x.getProperty(Exchange.EXCEPTION_CAUGHT,
               RuntimeException.class);
-          
+
           try {
             AbstractNode.this.error(e, msg);
-          } catch(Exception ex) {
+          } catch (Exception ex) {
             ex.printStackTrace();
           }
         });
@@ -178,7 +179,8 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
   }
 
   protected final void onMessage(Exchange exchange) {
-    logger.trace(">>> onMessage: exchange={}", exchange);
+    logger.trace(">>> onMessage: exchange={} ({})", exchange,
+        Thread.currentThread().getId());
 
     /*
      * logger.trace("properties={}", exchange != null ? exchange.getAllProperties()
@@ -380,9 +382,11 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
               if (m.isJtonObject()) {
                 if (sendEvents.size() > 0) {
                   final JtonElement clonedMsg = m.deepCopy();
-                  sendEvents.add(new SendEvent(nodeId, clonedMsg.asJtonObject()));
+                  sendEvents.add(new SendEvent(nodeId, 
+                      clonedMsg.asJtonObject(), exchange.copy()));
                 } else {
-                  sendEvents.add(new SendEvent(nodeId, m.asJtonObject()));
+                  sendEvents.add(new SendEvent(nodeId, 
+                      m.asJtonObject(), exchange));
                 }
               }
             }
@@ -394,25 +398,32 @@ public abstract class AbstractNode extends RouteBuilder implements Node {
     // TODO: this.metric
 
     for (SendEvent ev : sendEvents) {
-      send(exchange, ev.m, ev.n);
+      send(ev.x, ev.m, ev.n);
     }
   }
 
   private final class SendEvent {
     final String n;
     final JtonObject m;
+    final Exchange x;
 
-    public SendEvent(final String n, final JtonObject m) {
+    public SendEvent(String n, JtonObject m, Exchange x) {
       this.n = n;
       this.m = m;
+      this.x = x;
     }
   }
 
   private void send(Exchange exchange, JtonObject msg, String nodeId) {
     logger.trace(">>> send: {} -> {}", getId(), nodeId);
 
-    template.send("direct:" + nodeId,
-        setMsg(exchange, ensureMsg(exchange, msg)));
+    if (exchange.isTransacted()) {
+      template.send("direct:" + nodeId,
+          setMsg(exchange, ensureMsg(exchange, msg)));
+    } else {
+      template.asyncSend("direct:" + nodeId,
+          setMsg(exchange, ensureMsg(exchange, msg)));
+    }
   }
 
   @Override
