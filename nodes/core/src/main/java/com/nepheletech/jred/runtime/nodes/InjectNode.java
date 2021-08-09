@@ -119,7 +119,6 @@ public class InjectNode extends AbstractNode {
     
     if (msg.has("__user_inject_props__") 
         && msg.isJtonArray("__user_inject_props__")) {
-      logger.info("-------------------------------------");
       props = msg.getAsJtonArray("__user_inject_props__");
     }
     

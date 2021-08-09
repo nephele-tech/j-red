@@ -200,13 +200,10 @@
         }
         label = label.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         
-        console.log(customMsg);
-        
         $.ajax({
             url: "inject/" + node.id,
             type: "POST",
             // --- (ggeorg)
-            dataType: 'json',
             contentType: 'application/json',
             data: JSON.stringify(customMsg),
             // -----------------

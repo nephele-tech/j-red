@@ -30,7 +30,6 @@
             url: "inject/" + node.id,
             type: "POST",
             // --- (ggeorg)
-            dataType: 'json',
             contentType: 'application/json',
             data: JSON.stringify(customMsg),
             // -----------------
