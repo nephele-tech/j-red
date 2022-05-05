@@ -99,6 +99,6 @@
 		<module>runtime</module>
 		<module>nodes</module>
 		<module>editor</module>
-		<module>console</module>
+		<!--  <module>console</module> -->
 	</modules>
 </project>
