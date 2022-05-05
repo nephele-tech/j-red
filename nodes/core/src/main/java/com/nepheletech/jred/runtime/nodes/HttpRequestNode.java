@@ -290,7 +290,7 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
             entity = new StringEntity(jsonToURLEncoding(payload), ContentType.APPLICATION_FORM_URLENCODED);
           } else {
             if (contentType == null) {
-              entity = new StringEntity(jsonToURLEncoding(payload), ContentType.APPLICATION_JSON);
+              entity = new StringEntity(payload.toString(), ContentType.APPLICATION_JSON);
               requestBuilder.addHeader("Content-Type", ContentType.APPLICATION_JSON.getMimeType());
             } else {
               entity = new StringEntity(payload.toString(), ContentType.create(contentType, Consts.UTF_8));
@@ -371,11 +371,16 @@ public class HttpRequestNode extends AbstractNode implements HasCredentials {
 
       } catch (IOException e) {
         e.printStackTrace();
+        
+        throw new RuntimeException(e);
       }
 
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
+      
+      throw new RuntimeException(e);
+      
     } finally {
       status(new JtonObject());
     }
